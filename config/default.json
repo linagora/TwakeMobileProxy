@@ -1,0 +1,11 @@
+{
+  "twake": {
+    "host": "https://api.twake.app/ajax"
+  },
+  "server": {
+    "port": 3123
+  },
+  "jwt": {
+    "secret": "secret"
+  }
+}
