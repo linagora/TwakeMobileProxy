@@ -36,17 +36,22 @@ export default class extends Base {
 
         const data = await this.api.post('/core/collections/init', j)
 
+        console.log(data)
+
         const filterOnlyNamed = data['get'].filter((a: any) => a.name) as any[]
 
         return filterOnlyNamed.map((a: any) => (
                 {
                     id: a.id,
                     name: a.name,
+                    icon: a.icon,
                     description: a.description,
                     members_count: a.members_count,
                     private: a.private,
                     direct: a.direct,
-                    last_activity: a.last_activity
+                    last_activity: a.last_activity,
+                    messages_total: a.messages_increment,
+                    messages_unread: a.messages_increment - a._user_last_message_increment
                 } as Channel
             )
         )

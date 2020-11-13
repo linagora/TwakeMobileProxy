@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import Base from './base'
+import Base, {UserProfile} from './base'
 import assert from "assert";
 
 export interface AuthParams {
@@ -55,6 +55,19 @@ export default class extends Base {
             profile[kv[0]] = kv[1]
         })
 
-        return {"token": jwt.sign(profile, "supersecret", {expiresIn: 60 * 60})}
+        const out = {"token": jwt.sign(profile, "supersecret", {expiresIn: 60 * 60 * 24 * 7})}
+        return out
+    }
+
+    async prolong() {
+        const profile = {
+            'SESSID': this.userProfile?.SESSID,
+            'REMEMBERME': this.userProfile?.REMEMBERME,
+        } as any
+
+        const token = jwt.sign(profile, "supersecret", {expiresIn: 60 * 60 * 24 * 7})
+
+        return {"token":token}
+
     }
 }

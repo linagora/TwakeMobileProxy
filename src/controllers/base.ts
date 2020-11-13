@@ -1,17 +1,22 @@
 import Api from '../common/twakeapi'
 import User from "../models/user";
 
+export interface UserProfile {
+    'SESSID': string
+    'REMEMBERME': string
+}
+
 /**
  * The Base controller
  */
 export default class {
-    public readonly userProfile?: User
+    public readonly userProfile?: UserProfile
     private _api?: Api
 
     /**
      * @param {object} userProfile
      */
-    constructor(userProfile?: User) {
+    constructor(userProfile?: UserProfile) {
         this.userProfile = userProfile
     }
 
