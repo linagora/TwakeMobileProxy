@@ -7,19 +7,19 @@ import Authorization, {AuthParams} from './controllers/authorization'
 import Users from './controllers/users'
 import Channels from './controllers/channels'
 import Messages from './controllers/messages'
-
-import User from "./models/user";
+import {UserProfile} from "./controllers/base";
 
 const fastify: FastifyInstance = Fastify({ logger: true })
 
 declare module "fastify" {
+
     export interface FastifyInstance {
         jwt: any
     }
 
     export interface FastifyRequest {
         jwtVerify: any,
-        user: User,
+        user: UserProfile,
 
     }
 }
@@ -37,6 +37,7 @@ fastify.addHook("onRequest", async (request, reply) => {
 })
 
 fastify.post('/authorize', async (request, reply) => await new Authorization().auth(request.body as AuthParams))
+fastify.post('/authorization/prolong', async (request, reply) => await new Authorization(request.user).prolong())
 fastify.get('/users/current/get', async (request) =>
     await new Users(request.user).getCurrent((request.query as any).timezoneoffset))
 fastify.get('/workspace/:workspace_id/channels', async (request) =>

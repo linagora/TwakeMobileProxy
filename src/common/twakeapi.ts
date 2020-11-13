@@ -1,5 +1,5 @@
 import axios from 'axios'
-import User from "../models/user";
+import {UserProfile} from "../controllers/base";
 
 const HOST = 'https://api.twake.app/ajax'
 /**
@@ -11,7 +11,7 @@ export default class {
   /**
    * @param {object} userProfile
    */
-  constructor(userProfile?: User) {
+  constructor(userProfile?: UserProfile) {
     this.userProfile = userProfile
   }
 
