@@ -2,6 +2,8 @@ import Base from './base'
 import {arrayToObject} from '../common/helpers'
 import Users from './users'
 import User from "../models/user";
+import assert from "assert";
+import {fixIt} from "../common/twacode"
 
 
 /**
@@ -31,7 +33,6 @@ export default class extends Base {
         }
 
         const usersIds = new Set()
-
         const filteredMessages =
             messages.filter((a: any) => !(a['hidden_data'] instanceof Object && a['hidden_data']['type'] === 'init_channel'))
                 .map((a: any) => {
@@ -49,12 +50,40 @@ export default class extends Base {
                         creation_date: a.creation_date,
                         content: {
                             original_str: a.content.original_str,
-                            prepared: a.content.prepared || [a.content.formatted],
+                            prepared: null
                             // files: a.files
                         },
                         reactions: a.reactions,
 
                     } as any
+
+
+                    let prepared = a.content.prepared || a.content.formatted || a.content
+
+                    assert(Array.isArray(prepared), 'wrong message content data')
+
+                    const ready = [] as any[]
+
+                    prepared.forEach(item => {
+                        if (Array.isArray(item)) {
+                            item.forEach(subitem => ready.push(subitem))
+                        } else {
+                            ready.push(item)
+                        }
+                    })
+
+                    for (let idx in ready) {
+                        try {
+                            ready[idx] = fixIt(ready[idx])
+                        } catch (e) {
+                            console.error('---')
+                            console.error(JSON.stringify(a.content, null, 2))
+                            console.error('---')
+                            ready[idx] = {"type": "unparseable"}
+                        }
+                    }
+
+                    r.content.prepared = ready.filter(r => r)
 
                     if (!a.parent_message_id) {
                         r.responses = []
@@ -74,7 +103,7 @@ export default class extends Base {
                 if (user) {
                     a.sender = user
                 } else {
-                    console.log('Not found for', a.sender)
+                    console.error('Not found for', a.sender)
                 }
             }
             if (a['parent_message_id']) {

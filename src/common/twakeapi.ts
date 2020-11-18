@@ -29,7 +29,7 @@ export default class {
 
     const res = await axios.post(HOST + url, params, {headers})
     if (res.data.status && res.data.status === 'error') {
-      console.log(res.data)
+      console.error(res.data)
       throw new Error('Unknown error')
     }
     return res.data.data as any
