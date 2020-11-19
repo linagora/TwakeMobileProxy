@@ -53,7 +53,7 @@ export default class extends Base {
                             prepared: null
                             // files: a.files
                         },
-                        reactions: a.reactions,
+                        reactions: Object.keys(a.reactions).length ? a.reactions : null,
 
                     } as any
 

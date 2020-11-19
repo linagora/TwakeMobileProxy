@@ -65,6 +65,8 @@ export function fixIt(item: any): Object | null {
         }
         // return item
 
+        // TODO: progress_bar — progress→content
+
     } else if (typeof(item) === 'string') {
         return {"type": "text", "content": item}
     }
