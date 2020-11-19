@@ -59,13 +59,14 @@ export function fixIt(item: any): Object | null {
             return r
         }
 
+        if (item.type=='progress_bar'){
+            return {"type": "progress_bar", "content": item.progress}
+        }
+
         // passing by as is
         if (['url','system', 'br', 'image','attachment'].includes(item.type)) {
             return item
         }
-        // return item
-
-        // TODO: progress_bar — progress→content
 
     } else if (typeof(item) === 'string') {
         return {"type": "text", "content": item}
