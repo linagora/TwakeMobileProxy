@@ -6,10 +6,10 @@ import {AssertionError} from "assert";
 import Authorization, {AuthParams} from './controllers/authorization'
 import Users from './controllers/users'
 import Channels from './controllers/channels'
-import Messages from './controllers/messages'
+import Messages, {PostMessage} from './controllers/messages'
 import {UserProfile} from "./controllers/base";
 
-const fastify: FastifyInstance = Fastify({ logger: true })
+const fastify: FastifyInstance = Fastify({logger: true})
 
 declare module "fastify" {
 
@@ -49,9 +49,9 @@ fastify.get('/channels/:channel_id/messages', async (request) => {
     const limit = (request.query as any).limit as number
     return new Messages(request.user).get(channel_id, limit, before)
 })
-fastify.post('/channels/:channel_id/message', async (request) => {
+fastify.post('/channels/:channel_id/messages', async (request) => {
     const channel_id = (request.params as any).channel_id
-    return new Messages(request.user).update(channel_id, request.body)
+    return new Messages(request.user).post(channel_id, request.body as PostMessage)
 })
 
 fastify.setErrorHandler(function (error: Error, request, reply) {

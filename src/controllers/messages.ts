@@ -6,6 +6,12 @@ import assert from "assert";
 import {fixIt} from "../common/twacode"
 
 
+interface PostMessage {
+    parent_message_id: string
+    content: Array<Object>
+}
+
+export { PostMessage }
 /**
  * Messages methods
  */
@@ -130,43 +136,21 @@ export default class extends Base {
      * @param {object} message
      * @return {Promise<{object}>}
      */
-    async update(channelId: string, message: any) {
-        throw Error('Not implemented')
+    async post(channelId: string, message: PostMessage) {
 
         const obj = {
             'object': {
-                id: '259e3670-1de0-11eb-991a-0242ac120004',
-                front_id: '1093c37d-2b09-091e-e235-86c2561c0e29',
-                channel_id: 'acf640c2-1dcc-11eb-9aff-0242ac120004',
-                parent_message_id: '',
-                responses_count: 1,
-                message_type: null,
-                sender: '46a68a02-1dcc-11eb-95bd-0242ac120004',
-                application_id: null,
-                edited: false,
-                pinned: false,
-                hidden_data: [],
-                reactions: [],
-                modification_date: 1604413410,
-                creation_date: 1604413410,
+                channel_id: channelId,
+                parent_message_id: message.parent_message_id,
                 content: {
-                    original_str: 'Hello there2!',
-                    fallback_string: 'Hello there!',
-                    prepared: ['Hello there'],
-                    files: [],
-                },
-                user_specific_content: [],
-                increment_at_time: '1',
-                // _user_reaction: ":+1:"
-                _user_reaction: '',
-            },
+                    prepared: message.content
+                }
+            }
         }
-        // const x = await this.api.post('/discussion/save', obj)
+        const x = await this.api.post('/discussion/save', obj)
 
-        /**
-         *
-         */
-        console.log(obj)
-        return {'ok': 'ok'}
+        return {
+            "id": x['object']['id']
+        }
     }
 }

@@ -1,11 +1,13 @@
 import jwt from 'jsonwebtoken'
 import Base, {UserProfile} from './base'
 import assert from "assert";
+import Users from './users'
 
 export interface AuthParams {
     username: string
     password: string
     device: string
+    timezoneoffset: number
 }
 
 /**
@@ -26,6 +28,7 @@ export default class extends Base {
         assert(params.password, 'password is required');
         assert(params.device, 'device is required');
         assert(Object.keys(types).includes(params.device), "device should be in [" + Object.keys(types) + "]");
+        assert(params.timezoneoffset, 'timezoneoffset is required');
 
         const loginObject = {
             '_username': params.username,
@@ -40,13 +43,14 @@ export default class extends Base {
 
         const res = await this.api.postDirect('/users/login', loginObject)
 
-        const profile = {
+        let profile = {
             'SESSID': null,
             'REMEMBERME': null,
         } as any
 
-        const cookies = res.headers['set-cookie']
+        console.log(res.data)
 
+        const cookies = res.headers['set-cookie']
 
         assert(cookies, 'Wrong credentials')
 
@@ -55,15 +59,19 @@ export default class extends Base {
             profile[kv[0]] = kv[1]
         })
 
-        const out = {"token": jwt.sign(profile, "supersecret", {expiresIn: 60 * 60 * 24 * 7})}
-        return out
+        profile = profile as UserProfile;
+
+        let user = await new Users(profile).getCurrent(params.timezoneoffset)
+        profile.userId = user.user_id
+
+        return {"token": jwt.sign(profile, "supersecret", {expiresIn: 60 * 60 * 24 * 7})}
     }
 
     async prolong() {
         const profile = {
             'SESSID': this.userProfile?.SESSID,
             'REMEMBERME': this.userProfile?.REMEMBERME,
-        } as any
+        } as UserProfile
 
         const token = jwt.sign(profile, "supersecret", {expiresIn: 60 * 60 * 24 * 7})
 

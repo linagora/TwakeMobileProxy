@@ -4,6 +4,7 @@ import User from "../models/user";
 export interface UserProfile {
     'SESSID': string
     'REMEMBERME': string
+    userId: string
 }
 
 /**
