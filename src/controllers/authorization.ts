@@ -92,6 +92,8 @@ export default class extends Base {
             throw new Forbidden("Invalid token")
         }
         // temporary solution (waiting for full JWT implementation)
-        return this.auth(refreshTokenCache[params.refresh_token])
+        const auth = this.auth(refreshTokenCache[params.refresh_token])
+        delete refreshTokenCache[params.refresh_token]
+        return auth
     }
 }
