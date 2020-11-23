@@ -60,12 +60,13 @@ export default class extends Base {
         }
         return this.api.post('/users/all/get', {'id': userId}).then((a) => {
             const user = {
+                user_id: a.id,
                 username: a.username,
-                id: a.id,
                 firstname: a.firstname,
                 lastname: a.lastname,
-                img: a.thumbnail
-            }
+                thumbnail: a.thumbnail,
+                companies: []
+            } as User
             usersCache[a.id] = user
             return user
         })

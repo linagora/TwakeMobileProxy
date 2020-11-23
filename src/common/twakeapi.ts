@@ -1,7 +1,7 @@
 import axios from 'axios'
-import {UserProfile} from "../controllers/base";
+import UserProfile from "../models/user_profile";
 
-const HOST = 'https://api.twake.app/ajax'
+const HOST = 'https://devapi.twake.app/ajax'
 /**
  * TwakeApi connector
  */
@@ -22,10 +22,15 @@ export default class {
    */
   async post(url: string, params: any): Promise<any> {
     let headers = {}
-    if (this.userProfile) {
-      headers = {Cookie: `SESSID=${this.userProfile['SESSID']}; REMEMBERME=${this.userProfile['REMEMBERME']};`}
+
+    if (this.userProfile && this.userProfile.jwtToken){
+      headers = {"Authorization": "Bearer " + this.userProfile.jwtToken}
     }
-    // console.log(cookies)
+
+    // if (this.userProfile) {
+    //   headers = {Cookie: `SESSID=${this.userProfile['SESSID']}; REMEMBERME=${this.userProfile['REMEMBERME']};`}
+    // }
+    // // console.log(cookies)
 
     const res = await axios.post(HOST + url, params, {headers})
     if (res.data.status && res.data.status === 'error') {

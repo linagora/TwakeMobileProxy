@@ -1,17 +1,21 @@
 import Fastify, {FastifyInstance} from 'fastify'
 
 // import {HandledException} from "./common/helpers";
+import {Forbidden} from './common/errors';
 import {AssertionError} from "assert";
 
-import Authorization, {AuthParams} from './controllers/authorization'
+import Authorization, {ProlongParams} from './controllers/authorization'
 import Users from './controllers/users'
 import Channels from './controllers/channels'
 import Messages, {PostMessage} from './controllers/messages'
-import {UserProfile} from "./controllers/base";
+import {authCache} from "./common/simplecache";
+import AuthParams from "./models/auth_params";
+import UserProfile from "./models/user_profile";
 
 const fastify: FastifyInstance = Fastify({logger: true})
 
 declare module "fastify" {
+
 
     export interface FastifyInstance {
         jwt: any
@@ -23,21 +27,40 @@ declare module "fastify" {
 
     }
 }
-fastify.register(require('fastify-jwt'), {secret: 'supersecret'})
+// fastify.register(require('fastify-jwt'), {secret: 'supersecret'})
 
 
 fastify.addHook("onRequest", async (request, reply) => {
     try {
-        if (request.routerPath !== '/authorize') {
-            await request.jwtVerify()
+        if (request.routerPath !== '/authorize' && request.routerPath !== '/authorization/prolong') {
+
+            if (request.headers.authorization && request.headers.authorization.toLowerCase().indexOf('bearer')>-1){
+                const token = request.headers.authorization.substring(7)
+                if (!authCache[token]){
+                    return reply
+                        .code(401)
+                        .header('Content-Type', 'application/json; charset=utf-8')
+                        .send({ "error": "Wrong token" })
+                }
+                const user = authCache[token]
+
+                request.user = {
+                    jwtToken: request.headers.authorization.substring(6),
+                    userId: user.user_id
+                }
+
+                console.log(request.user)
+            }
         }
     } catch (err) {
         reply.send(err)
     }
 })
-
+//
 fastify.post('/authorize', async (request, reply) => await new Authorization().auth(request.body as AuthParams))
-fastify.post('/authorization/prolong', async (request, reply) => await new Authorization(request.user).prolong())
+fastify.post('/authorization/prolong', async (request, reply) => {
+    return await new Authorization(request.user).prolong(request.body as ProlongParams)
+})
 fastify.get('/users/current/get', async (request) =>
     await new Users(request.user).getCurrent((request.query as any).timezoneoffset))
 fastify.get('/workspace/:workspace_id/channels', async (request) =>
@@ -58,8 +81,11 @@ fastify.setErrorHandler(function (error: Error, request, reply) {
     // if (error instanceof HandledException) {
     //     reply.status(400).send({"error": (error as HandledException).message})
     // }
+
     if (error instanceof AssertionError) {
         reply.status(400).send({"error": (error as AssertionError).message})
+    } else if (error instanceof Forbidden) {
+            reply.status(403).send({"error": error.message})
     } else {
         console.error(error)
         reply.status(500).send({"error": "something went wrong"})

@@ -1,11 +1,8 @@
 import Api from '../common/twakeapi'
 import User from "../models/user";
+import UserProfile from "../models/user_profile";
 
-export interface UserProfile {
-    'SESSID': string
-    'REMEMBERME': string
-    userId: string
-}
+
 
 /**
  * The Base controller
