@@ -10,7 +10,7 @@ import Channels from './controllers/channels'
 import Messages, {PostMessage} from './controllers/messages'
 import {authCache} from "./common/simplecache";
 import AuthParams from "./models/auth_params";
-import UserProfile from "./models/user_profile";
+import UserProfile, {UserProfileMock} from "./models/user_profile";
 
 const fastify: FastifyInstance = Fastify({logger: true})
 
@@ -35,7 +35,8 @@ fastify.addHook("onRequest", async (request, reply) => {
         if (request.routerPath !== '/authorize' && request.routerPath !== '/authorization/prolong') {
 
             if (request.headers.authorization && request.headers.authorization.toLowerCase().indexOf('bearer')>-1){
-                const token = request.headers.authorization.substring(7)
+                const token = request.headers.authorization.substring(7).trim()
+
                 if (!authCache[token]){
                     return reply
                         .code(401)
@@ -45,11 +46,12 @@ fastify.addHook("onRequest", async (request, reply) => {
                 const user = authCache[token]
 
                 request.user = {
-                    jwtToken: request.headers.authorization.substring(6),
-                    userId: user.user_id
+                    jwtToken: token,
+                    userId: user.userId,
+                    timeZoneOffset: user.timeZoneOffset || 0
                 }
 
-                console.log(request.user)
+                // console.log(request.user)
             }
         }
     } catch (err) {
@@ -57,7 +59,7 @@ fastify.addHook("onRequest", async (request, reply) => {
     }
 })
 //
-fastify.post('/authorize', async (request, reply) => await new Authorization().auth(request.body as AuthParams))
+fastify.post('/authorize', async (request, reply) => await new Authorization(UserProfileMock).auth(request.body as AuthParams))
 fastify.post('/authorization/prolong', async (request, reply) => {
     return await new Authorization(request.user).prolong(request.body as ProlongParams)
 })
@@ -76,6 +78,13 @@ fastify.post('/channels/:channel_id/messages', async (request) => {
     const channel_id = (request.params as any).channel_id
     return new Messages(request.user).post(channel_id, request.body as PostMessage)
 })
+
+
+fastify.get('/channels/:channel_id/init', async (request) => {
+    const channel_id = (request.params as any).channel_id
+    return new Messages(request.user).init(channel_id)
+})
+
 
 fastify.setErrorHandler(function (error: Error, request, reply) {
     // if (error instanceof HandledException) {

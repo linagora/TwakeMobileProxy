@@ -8,13 +8,13 @@ import UserProfile from "../models/user_profile";
  * The Base controller
  */
 export default class {
-    public readonly userProfile?: UserProfile
+    public readonly userProfile: UserProfile
     private _api?: Api
 
     /**
      * @param {object} userProfile
      */
-    constructor(userProfile?: UserProfile) {
+    constructor(userProfile: UserProfile) {
         this.userProfile = userProfile
     }
 

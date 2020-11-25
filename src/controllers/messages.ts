@@ -17,6 +17,32 @@ export { PostMessage }
  */
 export default class extends Base {
 
+    async init(channelId: string){
+        const data = await this.api.post('/core/collections/init', {
+            multiple: [
+                {
+                    "collection_id":"messages/" + channelId,
+                    "options":{
+                        "type":"messages",
+
+                        //If you let this empty, then you'll retrieve only the websocket information
+                        "get_options":{
+                            "channel_id": channelId,
+                            "limit": 0,
+                            "offset":  false,
+                            "parent_message_id":  ""
+                        }
+                    },
+                    "_grouped":true
+                }
+            ]
+        })
+
+        const wsInfo = data[0].data
+
+        return wsInfo
+    }
+
     /**
      * Get messages GET /channels/<channel_id>/messages
      * @param {string} channelId
@@ -65,6 +91,11 @@ export default class extends Base {
 
 
                     let prepared = a.content.prepared || a.content.formatted || a.content
+
+                    // console.log(prepared)
+                    if (!Array.isArray(prepared)){
+                        prepared = [prepared]
+                    }
 
                     assert(Array.isArray(prepared), 'wrong message content data')
 

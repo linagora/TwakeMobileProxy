@@ -36,8 +36,8 @@ export default class extends Base {
                     'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTGyI3IzeJ0NMtz2CJnuolnLc_WFyVHtMffwg&usqp=CAU',
             }
         })
-        return {
-            user_id: data.id,
+        const user =  {
+            userId: data.id,
             username: data.username,
             firstname: data.firstname,
             lastname: data.lastname,
@@ -46,7 +46,12 @@ export default class extends Base {
                 c.workspaces = Object.values(c.workspaces)
                 return c
             }),
+            timeZoneOffset: timeZoneOffset
         } as User
+
+        usersCache[user.userId] = user
+        return user
+
     }
 
     /**
@@ -60,13 +65,12 @@ export default class extends Base {
         }
         return this.api.post('/users/all/get', {'id': userId}).then((a) => {
             const user = {
-                user_id: a.id,
+                userId: a.id,
                 username: a.username,
                 firstname: a.firstname,
                 lastname: a.lastname,
-                thumbnail: a.thumbnail,
-                companies: []
-            } as User
+                thumbnail: a.thumbnail
+            }
             usersCache[a.id] = user
             return user
         })

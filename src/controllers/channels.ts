@@ -36,6 +36,8 @@ export default class extends Base {
 
         const data = await this.api.post('/core/collections/init', j)
 
+        console.log(data)
+
         const filterOnlyNamed = data['get'].filter((a: any) => a.name) as any[]
 
         return filterOnlyNamed.map((a: any) => (

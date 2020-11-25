@@ -23,6 +23,8 @@ export default class {
   async post(url: string, params: any): Promise<any> {
     let headers = {}
 
+    // console.log('token: "' + this.userProfile.jwtToken + '"')
+
     if (this.userProfile && this.userProfile.jwtToken){
       headers = {"Authorization": "Bearer " + this.userProfile.jwtToken}
     }
@@ -31,6 +33,8 @@ export default class {
     //   headers = {Cookie: `SESSID=${this.userProfile['SESSID']}; REMEMBERME=${this.userProfile['REMEMBERME']};`}
     // }
     // // console.log(cookies)
+
+    // console.log(HOST + url, params, headers)
 
     const res = await axios.post(HOST + url, params, {headers})
     if (res.data.status && res.data.status === 'error') {
