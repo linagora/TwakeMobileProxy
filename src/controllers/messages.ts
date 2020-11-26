@@ -132,7 +132,7 @@ export default class extends Base {
                 })
 
         const usersCtrl = new Users(this.userProfile)
-        const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => usersCtrl.getUser(user_id as string))), 'id')
+        const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => usersCtrl.getUser(user_id as string))), 'userId')
         const messagesHash = arrayToObject(filteredMessages, 'id')
         filteredMessages.forEach((a: any) => {
             if (a.sender.user_id) {
