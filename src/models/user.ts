@@ -6,4 +6,5 @@ export default interface User {
     thumbnail: string
     companies?: any[]
     timeZoneOffset?: number
+    status?: {"icon": string, "title": string},
 }
