@@ -37,8 +37,6 @@ export default class extends Base {
 
         const data = await this.api.post('/ajax/core/collections/init', j)
 
-        console.log(data)
-
         const filterOnlyNamed = data['get'].filter((a: any) => a.name) as any[]
 
         return filterOnlyNamed.map((a: any) => (
@@ -61,9 +59,20 @@ export default class extends Base {
     async listPublic2(companyId: string, workspaceId: string) {
         const res = await this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`,
             {
-                "mine":false,
+                "mine":true,
                 "limit": 100,
-                "websockets": false})
+                "websockets": true})
+        console.log(res)
+        return res
+    }
+
+
+    async members(companyId: string, workspaceId: string, channelId: string){
+
+        const res = await this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}/members`,
+            {
+                "limit": 100,
+                "websockets": true})
         console.log(res)
         return res
     }

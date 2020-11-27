@@ -88,6 +88,13 @@ fastify.get('/company/:company_id/workspace/:workspace_id/channels', async (requ
     const company_id = (request.params as any).company_id
     const workspace_id = (request.params as any).workspace_id
     return new Channels(request.user).listPublic2(company_id, workspace_id)
+})
+
+fastify.get('/company/:company_id/workspace/:workspace_id/channels/:channel_id/members', async (request) => {
+    const companyId = (request.params as any).company_id
+    const workspaceId = (request.params as any).workspace_id
+    const channelId = (request.params as any).channel_id
+    return new Channels(request.user).members(companyId, workspaceId, channelId)
 
 })
 

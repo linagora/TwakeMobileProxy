@@ -68,7 +68,7 @@ export default class {
 
            return res.data as any
         } catch (e) {
-          console.log(2)
+          console.error(e)
             throw new BadRequest(e.response.data.message)
         }
 
