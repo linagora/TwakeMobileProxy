@@ -12,6 +12,7 @@ export interface Channel {
     last_activity: number
 }
 
+
 /**
  * Channels methods
  */
@@ -34,7 +35,7 @@ export default class extends Base {
             },
         }
 
-        const data = await this.api.post('/core/collections/init', j)
+        const data = await this.api.post('/ajax/core/collections/init', j)
 
         console.log(data)
 
@@ -55,5 +56,15 @@ export default class extends Base {
                 } as Channel
             )
         )
+    }
+
+    async listPublic2(companyId: string, workspaceId: string) {
+        const res = await this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`,
+            {
+                "mine":false,
+                "limit": 100,
+                "websockets": false})
+        console.log(res)
+        return res
     }
 }

@@ -11,14 +11,20 @@ interface PostMessage {
     content: Array<Object>
 }
 
-export { PostMessage }
+interface ReactionsRequest{
+    "message_id": string
+    "add"?: string
+    "delete"?: string
+}
+
+export { PostMessage, ReactionsRequest }
 /**
  * Messages methods
  */
 export default class extends Base {
 
     async init(channelId: string){
-        const data = await this.api.post('/core/collections/init', {
+        const data = await this.api.post('/ajax/core/collections/init', {
             multiple: [
                 {
                     "collection_id":"messages/" + channelId,
@@ -51,7 +57,7 @@ export default class extends Base {
      * @return {Promise<object[]>}
      */
     async get(channelId: string, limit: number = 50, beforeMessageId?: string) {
-        let messages = await this.api.post('/discussion/get', {
+        let messages = await this.api.post('/ajax/discussion/get', {
             'options': {
                 'channel_id': channelId,
                 'limit': limit,
@@ -178,10 +184,28 @@ export default class extends Base {
                 }
             }
         }
-        const x = await this.api.post('/discussion/save', obj)
+        const x = await this.api.post('/ajax/discussion/save', obj)
 
         return {
             "id": x['object']['id']
         }
+    }
+
+    async reactions(channelId: string, data: ReactionsRequest){
+
+        const reaction = ':' + data.add + ':'
+
+        const obj = {
+            'object': {
+                channel_id: channelId,
+                id: data.message_id,
+                _user_reaction: reaction
+            }
+        }
+        const x = await this.api.post('/ajax/discussion/save', obj)
+        console.log(x['object'])
+
+        return data
+
     }
 }

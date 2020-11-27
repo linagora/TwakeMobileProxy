@@ -1,13 +1,13 @@
 import Fastify, {FastifyInstance} from 'fastify'
 
 // import {HandledException} from "./common/helpers";
-import {Forbidden} from './common/errors';
+import {BadRequest, Forbidden} from './common/errors';
 import {AssertionError} from "assert";
 
 import Authorization, {ProlongParams} from './controllers/authorization'
 import Users from './controllers/users'
 import Channels from './controllers/channels'
-import Messages, {PostMessage} from './controllers/messages'
+import Messages, {PostMessage, ReactionsRequest} from './controllers/messages'
 import {authCache} from "./common/simplecache";
 import AuthParams from "./models/auth_params";
 import UserProfile, {UserProfileMock} from "./models/user_profile";
@@ -79,6 +79,18 @@ fastify.post('/channels/:channel_id/messages', async (request) => {
     return new Messages(request.user).post(channel_id, request.body as PostMessage)
 })
 
+fastify.post('/channels/:channel_id/messages/reactions', async (request) => {
+    const channel_id = (request.params as any).channel_id
+    return new Messages(request.user).reactions(channel_id, request.body as ReactionsRequest)
+})
+
+fastify.get('/company/:company_id/workspace/:workspace_id/channels', async (request) => {
+    const company_id = (request.params as any).company_id
+    const workspace_id = (request.params as any).workspace_id
+    return new Channels(request.user).listPublic2(company_id, workspace_id)
+
+})
+
 
 fastify.get('/channels/:channel_id/init', async (request) => {
     const channel_id = (request.params as any).channel_id
@@ -95,6 +107,8 @@ fastify.setErrorHandler(function (error: Error, request, reply) {
         reply.status(400).send({"error": (error as AssertionError).message})
     } else if (error instanceof Forbidden) {
             reply.status(403).send({"error": error.message})
+    } else if (error instanceof BadRequest) {
+        reply.status(400).send({"error": error.message})
     } else {
         console.error(error)
         reply.status(500).send({"error": "something went wrong"})

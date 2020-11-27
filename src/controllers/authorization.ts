@@ -45,7 +45,7 @@ export default class extends Base {
             },
         }
 
-        const res = await this.api.postDirect('/users/login', loginObject)
+        const res = await this.api.postDirect('/ajax/users/login', loginObject)
 
         // let profile = {
         //     'SESSID': null,
@@ -70,7 +70,7 @@ export default class extends Base {
         assert(params.refresh_token, 'refresh_token is required')
         assert(params.timezoneoffset, 'timezoneoffset is required')
 
-        const res = await this.api.postDirect('/users/login', {}, {"Authorization": "Bearer " + params.refresh_token})
+        const res = await this.api.postDirect('/ajax/users/login', {}, {"Authorization": "Bearer " + params.refresh_token})
 
         return this.doAuth(res.data, params.timezoneoffset)
     }

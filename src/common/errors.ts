@@ -5,3 +5,10 @@ export class Forbidden extends Error {
     }
 }
 
+export class BadRequest extends Error {
+    constructor(m: string) {
+        super(m);
+        Object.setPrototypeOf(this, BadRequest.prototype);
+    }
+}
+
