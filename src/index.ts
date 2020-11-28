@@ -101,6 +101,10 @@ fastify.get('/company/:company_id/workspace/:workspace_id/channels/:channel_id/m
 
 })
 
+fastify.get('/company/:company_id/direct', async(request)=>{
+    const companyId = (request.params as any).company_id
+    return new Channels(request.user).listDirect(companyId)
+})
 
 fastify.get('/channels/:channel_id/init', async (request) => {
     const channel_id = (request.params as any).channel_id

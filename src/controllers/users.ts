@@ -43,15 +43,17 @@ export default class extends Base {
             firstname: data.firstname,
             lastname: data.lastname,
             thumbnail: data.thumbnail,
-            status: {"icon": data.status_icon[0], "title": data.status_icon[1]},
-            companies: Object.values(companiesHash).map((c: any) => {
-                c.workspaces = Object.values(c.workspaces)
-                return c
-            }),
             timeZoneOffset: timeZoneOffset
         } as User
 
         usersCache[user.userId] = user
+
+        user.status =  {"icon": data.status_icon[0], "title": data.status_icon[1]}
+        user.companies = Object.values(companiesHash).map((c: any) => {
+            c.workspaces = Object.values(c.workspaces)
+            return c
+        })
+
         return user
 
     }
