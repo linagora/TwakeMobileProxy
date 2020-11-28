@@ -63,8 +63,11 @@ fastify.post('/authorize', async (request, reply) => await new Authorization(Use
 fastify.post('/authorization/prolong', async (request, reply) => {
     return await new Authorization(request.user).prolong(request.body as ProlongParams)
 })
-fastify.get('/users/current/get', async (request) =>
-    await new Users(request.user).getCurrent((request.query as any).timezoneoffset))
+fastify.get('/users/current/get', async (request, reply) => {
+    const timeZoneOffset = request.user.timeZoneOffset
+    return  new Users(request.user).getCurrent(timeZoneOffset);
+})
+
 fastify.get('/workspace/:workspace_id/channels', async (request) =>
     new Channels(request.user).listPublic((request.params as any).workspace_id)
 )

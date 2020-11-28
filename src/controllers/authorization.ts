@@ -77,6 +77,10 @@ export default class extends Base {
 
     async doAuth(data: any, timezoneoffset: number) {
 
+        if (!data.access_token){
+            throw new Forbidden('Authorization failed')
+        }
+
         const token = data.access_token.value;
 
         if(this.userProfile){
