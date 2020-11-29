@@ -4,6 +4,7 @@ import Users from './users'
 import User from "../models/user";
 import assert from "assert";
 import {fixIt, toTwacode} from "../common/twacode"
+import {BadRequest} from "../common/errors";
 
 
 interface PostMessage {
@@ -184,6 +185,10 @@ export default class extends Base {
         message.original_str
 
         const prepared = message.prepared || toTwacode(message.original_str)
+
+        if (prepared?.length === 0){
+            throw new BadRequest('Unparseable message')
+        }
 
         const obj = {
             'object': {

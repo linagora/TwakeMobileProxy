@@ -158,8 +158,14 @@ export function toTwacode(inputString: string | null) {
                 return restString
             }
         } else {
+            if(inputString){
+                result.push({ "type": "text", content:inputString })
+            }
             return null
         }
+
+
+
     }
 
 
