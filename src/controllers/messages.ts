@@ -78,6 +78,10 @@ export default class extends Base {
                         usersIds.add(a.sender)
                     }
 
+                    if(!a.content){
+                        a.content = {}
+                    }
+
                     const r = {
                         id: a.id,
                         responses_count: a.responses_count,
