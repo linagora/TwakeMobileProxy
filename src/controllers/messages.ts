@@ -3,18 +3,18 @@ import {arrayToObject} from '../common/helpers'
 import Users from './users'
 import User from "../models/user";
 import assert from "assert";
-import {fixIt} from "../common/twacode"
+import {fixIt, toTwacode} from "../common/twacode"
 
 
 interface PostMessage {
     parent_message_id: string
-    content: Array<Object>
+    original_str: string
+    prepared: Array<Object>
 }
 
 interface ReactionsRequest{
     "message_id": string
-    "add"?: string
-    "delete"?: string
+    "reaction": string
 }
 
 export { PostMessage, ReactionsRequest }
@@ -176,37 +176,45 @@ export default class extends Base {
      */
     async post(channelId: string, message: PostMessage) {
 
+        message.original_str
+
+        const prepared = message.prepared || toTwacode(message.original_str)
+
         const obj = {
             'object': {
                 channel_id: channelId,
                 parent_message_id: message.parent_message_id,
                 content: {
-                    prepared: message.content
+                    original_str: message.original_str,
+                    prepared: prepared
                 }
             }
         }
+
         const x = await this.api.post('/ajax/discussion/save', obj)
 
-        return {
-            "id": x['object']['id']
-        }
+        // return {
+        //     "id": x['object']['id']
+        // }
+
+        return x
     }
 
     async reactions(channelId: string, data: ReactionsRequest){
-
-        const reaction = ':' + data.add + ':'
 
         const obj = {
             'object': {
                 channel_id: channelId,
                 id: data.message_id,
-                _user_reaction: reaction
+                _user_reaction:  data.reaction
             }
         }
-        const x = await this.api.post('/ajax/discussion/save', obj)
-        console.log(x['object'])
+        const res = await this.api.post('/ajax/discussion/save', obj)
 
-        return data
+        return {
+            id: res.object.id,
+            reactions: res.object.reactions
+        }
 
     }
 }
