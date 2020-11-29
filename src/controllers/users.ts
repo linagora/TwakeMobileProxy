@@ -48,13 +48,15 @@ export default class extends Base {
 
         usersCache[user.userId] = user
 
-        user.status =  {"icon": data.status_icon[0], "title": data.status_icon[1]}
-        user.companies = Object.values(companiesHash).map((c: any) => {
+        const out = Object.assign({}, user)
+
+        out.status =  {"icon": data.status_icon[0], "title": data.status_icon[1]}
+        out.companies = Object.values(companiesHash).map((c: any) => {
             c.workspaces = Object.values(c.workspaces)
             return c
         })
 
-        return user
+        return out
 
     }
 
