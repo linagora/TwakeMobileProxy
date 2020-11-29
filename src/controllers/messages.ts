@@ -71,7 +71,7 @@ export default class extends Base {
         }
 
         const usersIds = new Set()
-        const filteredMessages =
+        let filteredMessages =
             messages.filter((a: any) => !(a['hidden_data'] instanceof Object && a['hidden_data']['type'] === 'init_channel'))
                 .map((a: any) => {
                     if (a.sender) {
@@ -141,6 +141,7 @@ export default class extends Base {
 
                     return r
                 })
+
 
         const usersCtrl = new Users(this.userProfile)
         const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => usersCtrl.getUser(user_id as string))), 'userId')
