@@ -77,7 +77,31 @@ export function fixIt(item: any): Object | null {
         }
 
         // passing by as is
-        if (['url','system', 'br', 'image','attachment'].includes(item.type)) {
+        if ([
+            'br',
+            'icode',
+            'mcode',
+            'underline',
+            'strikethrough',
+            'bold',
+            'italic',
+            'mquote',
+            'quote',
+            'user',
+            'channel',
+            'nop',
+            'compile',
+            'url',
+            'email',
+            'system',
+            'image',
+            'emoji',
+            'progress_bar',
+            'attachment',
+            'icon',
+            'copiable',
+            'text'
+        ].includes(item.type)) {
             return item
         }
 
@@ -86,6 +110,7 @@ export function fixIt(item: any): Object | null {
     }
 
     console.log(item)
+
     throw Error("Unparseable data")
 }
 
