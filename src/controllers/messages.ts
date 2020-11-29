@@ -186,7 +186,7 @@ export default class extends Base {
 
         const prepared = message.prepared || toTwacode(message.original_str)
 
-        if (prepared?.length === 0){
+        if (!prepared || prepared?.length === 0){
             throw new BadRequest('Unparseable message')
         }
 
