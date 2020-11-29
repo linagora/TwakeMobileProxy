@@ -182,7 +182,7 @@ export default class extends Base {
      */
     async post(channelId: string, message: PostMessage) {
 
-        message.original_str
+        assert(message.original_str, 'original_str is missing')
 
         const prepared = message.prepared || toTwacode(message.original_str)
 
