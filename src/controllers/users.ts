@@ -16,7 +16,8 @@ export default class extends Base {
     async getCurrent(timeZoneOffset: number): Promise<User> {
         assert(timeZoneOffset, 'timezoneoffset is required')
         assert(!isNaN(+timeZoneOffset), 'timezone should be numeric (i.e. -180 for Moscow)')
-        const data = await this.api.post('/users/current/get', {timezone: timeZoneOffset})
+        const data = await this.api.post('/ajax/users/current/get', {timezone: timeZoneOffset})
+
         const companiesHash = {} as any
         data.workspaces.forEach((ws: any) => {
             if (!companiesHash[ws.group.id]) {
@@ -36,17 +37,27 @@ export default class extends Base {
                     'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTGyI3IzeJ0NMtz2CJnuolnLc_WFyVHtMffwg&usqp=CAU',
             }
         })
-        return {
-            user_id: data.id,
+        const user =  {
+            userId: data.id,
             username: data.username,
             firstname: data.firstname,
             lastname: data.lastname,
             thumbnail: data.thumbnail,
-            companies: Object.values(companiesHash).map((c: any) => {
-                c.workspaces = Object.values(c.workspaces)
-                return c
-            }),
+            timeZoneOffset: timeZoneOffset
         } as User
+
+        usersCache[user.userId] = user
+
+        const out = Object.assign({}, user)
+
+        out.status =  {"icon": data.status_icon[0], "title": data.status_icon[1]}
+        out.companies = Object.values(companiesHash).map((c: any) => {
+            c.workspaces = Object.values(c.workspaces)
+            return c
+        })
+
+        return out
+
     }
 
     /**
@@ -58,13 +69,13 @@ export default class extends Base {
         if (usersCache[userId]) {
             return Promise.resolve(usersCache[userId])
         }
-        return this.api.post('/users/all/get', {'id': userId}).then((a) => {
+        return this.api.post('/ajax/users/all/get', {'id': userId}).then((a) => {
             const user = {
+                userId: a.id,
                 username: a.username,
-                id: a.id,
                 firstname: a.firstname,
                 lastname: a.lastname,
-                img: a.thumbnail
+                thumbnail: a.thumbnail
             }
             usersCache[a.id] = user
             return user

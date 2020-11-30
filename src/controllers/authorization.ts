@@ -1,11 +1,17 @@
 import jwt from 'jsonwebtoken'
-import Base, {UserProfile} from './base'
+import Base from './base'
 import assert from "assert";
+import Users from './users'
+import {authCache, refreshTokenCache, usersCache} from "../common/simplecache";
+import {v4 as uuidv4} from 'uuid';
+import AuthParams from "../models/auth_params";
+import {Forbidden} from '../common/errors';
+import {UserProfileMock} from "../models/user_profile";
 
-export interface AuthParams {
-    username: string
-    password: string
-    device: string
+
+export interface ProlongParams {
+    refresh_token: string,
+    timezoneoffset: number
 }
 
 /**
@@ -26,6 +32,7 @@ export default class extends Base {
         assert(params.password, 'password is required');
         assert(params.device, 'device is required');
         assert(Object.keys(types).includes(params.device), "device should be in [" + Object.keys(types) + "]");
+        assert(params.timezoneoffset, 'timezoneoffset is required');
 
         const loginObject = {
             '_username': params.username,
@@ -38,36 +45,58 @@ export default class extends Base {
             },
         }
 
-        const res = await this.api.postDirect('/users/login', loginObject)
+        const res = await this.api.postDirect('/ajax/users/login', loginObject)
 
-        const profile = {
-            'SESSID': null,
-            'REMEMBERME': null,
-        } as any
-
-        const cookies = res.headers['set-cookie']
+        // let profile = {
+        //     'SESSID': null,
+        //     'REMEMBERME': null,
+        // } as any
 
 
-        assert(cookies, 'Wrong credentials')
+        // const cookies = res.headers['set-cookie']
 
-        cookies.forEach((c: string) => {
-            const kv = c.split(';')[0].split('=')
-            profile[kv[0]] = kv[1]
-        })
+        // assert(cookies, 'Wrong credentials')
 
-        const out = {"token": jwt.sign(profile, "supersecret", {expiresIn: 60 * 60 * 24 * 7})}
-        return out
+        // cookies.forEach((c: string) => {
+        //     const kv = c.split(';')[0].split('=')
+        //     profile[kv[0]] = kv[1]
+        // })
+
+        return this.doAuth(res.data, params.timezoneoffset)
     }
 
-    async prolong() {
-        const profile = {
-            'SESSID': this.userProfile?.SESSID,
-            'REMEMBERME': this.userProfile?.REMEMBERME,
-        } as any
+    async prolong(params: ProlongParams) {
 
-        const token = jwt.sign(profile, "supersecret", {expiresIn: 60 * 60 * 24 * 7})
+        assert(params.refresh_token, 'refresh_token is required')
+        assert(params.timezoneoffset, 'timezoneoffset is required')
 
-        return {"token":token}
+        const res = await this.api.postDirect('/ajax/users/login', {}, {"Authorization": "Bearer " + params.refresh_token})
 
+        return this.doAuth(res.data, params.timezoneoffset)
+    }
+
+    async doAuth(data: any, timezoneoffset: number) {
+
+        if (!data.access_token){
+            throw new Forbidden('Authorization failed')
+        }
+
+        const token = data.access_token.value;
+
+        if(this.userProfile){
+            delete authCache[this.userProfile.jwtToken]
+        }
+
+        const mock = UserProfileMock
+        mock.jwtToken = token
+
+        authCache[token] = await new Users(UserProfileMock).getCurrent(timezoneoffset)
+
+        return {
+            "token": token,
+            "expiration": data.access_token.expiration,
+            "refresh_token": data.access_token.refresh,
+            "refresh_expiration": data.access_token.refresh_expiration
+        }
     }
 }

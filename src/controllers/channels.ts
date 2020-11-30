@@ -1,5 +1,8 @@
 import Base from './base'
 import assert from "assert";
+import User from "../models/user";
+import Users from "./users";
+import {arrayToObject} from "../common/helpers";
 
 
 export interface Channel {
@@ -10,7 +13,9 @@ export interface Channel {
     private: boolean
     direct: boolean
     last_activity: number
+    members? : any[]
 }
+
 
 /**
  * Channels methods
@@ -34,9 +39,7 @@ export default class extends Base {
             },
         }
 
-        const data = await this.api.post('/core/collections/init', j)
-
-        console.log(data)
+        const data = await this.api.post('/ajax/core/collections/init', j)
 
         const filterOnlyNamed = data['get'].filter((a: any) => a.name) as any[]
 
@@ -55,5 +58,80 @@ export default class extends Base {
                 } as Channel
             )
         )
+    }
+
+
+    /**
+     * List public channels /company/<company_id>/direct
+     * @return {Promise< {private, last_activity, name, direct, description, members_count, id}[] >}
+     * @param user
+     */
+    async listDirect(companyId: number): Promise<Channel[]> {
+
+        const j = {
+            "collection_id": `channels/direct_messages/${this.userProfile.userId}`,
+            "options": {
+                "type": "channels/direct_messages",
+                "get_options": {}
+            },
+            "_grouped": true
+        }
+
+        const data = await this.api.post('/ajax/core/collections/init', j)
+
+        const usersIds = new Set()
+
+        data['get'].forEach((c:any) =>{
+            c.members.forEach((m:string)=>{usersIds.add(m)})
+        })
+
+
+        const usersCtrl = new Users(this.userProfile)
+        const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => usersCtrl.getUser(user_id as string))), 'userId')
+
+        console.log(usersHash)
+
+        return data['get'].map((a: any) => (
+                {
+                    id: a.id,
+                    name:a.name,
+                    members: a.members.map( (u:string) =>{
+                        return usersHash[u]
+                    }) as any,
+                    icon: a.icon,
+                    description: a.description,
+                    members_count: a.members_count,
+                    private: a.private,
+                    direct: a.direct,
+                    last_activity: a.last_activity,
+                    messages_total: a.messages_increment,
+                    messages_unread: a.messages_increment - a._user_last_message_increment
+                } as Channel
+            )
+        )
+    }
+
+
+    async listPublic2(companyId: string, workspaceId: string) {
+        const res = await this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`,
+            {
+                "mine": true,
+                "limit": 100,
+                "websockets": true
+            })
+        console.log(res)
+        return res
+    }
+
+
+    async members(companyId: string, workspaceId: string, channelId: string) {
+
+        const res = await this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}/members`,
+            {
+                "limit": 100,
+                "websockets": true
+            })
+        console.log(res)
+        return res
     }
 }
