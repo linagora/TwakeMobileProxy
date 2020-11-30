@@ -7,18 +7,21 @@ import {fixIt, toTwacode} from "../common/twacode"
 import {BadRequest} from "../common/errors";
 
 
-interface PostMessage {
+export interface PostMessage {
     parent_message_id: string
     original_str: string
     prepared: Array<Object>
 }
 
-interface ReactionsRequest{
+export  interface DeleteMessageRequest{
+    message_id: string
+}
+
+export  interface ReactionsRequest{
     "message_id": string
     "reaction": string
 }
 
-export { PostMessage, ReactionsRequest }
 /**
  * Messages methods
  */
@@ -208,6 +211,19 @@ export default class extends Base {
         // }
 
         return x
+    }
+
+    async deleteMessage(channelId: string, message: DeleteMessageRequest){
+        assert(channelId, 'message_id is required');
+
+        const obj = {
+            'object': {
+                channel_id: channelId,
+                id: message.message_id,
+            }
+        }
+        return await this.api.post('/ajax/discussion/remove', obj)
+
     }
 
     async reactions(channelId: string, data: ReactionsRequest){

@@ -7,7 +7,7 @@ import {AssertionError} from "assert";
 import Authorization, {ProlongParams} from './controllers/authorization'
 import Users from './controllers/users'
 import Channels from './controllers/channels'
-import Messages, {PostMessage, ReactionsRequest} from './controllers/messages'
+import Messages, {DeleteMessageRequest, PostMessage, ReactionsRequest} from './controllers/messages'
 import {authCache} from "./common/simplecache";
 import AuthParams from "./models/auth_params";
 import UserProfile, {UserProfileMock} from "./models/user_profile";
@@ -81,6 +81,12 @@ fastify.post('/channels/:channel_id/messages', async (request) => {
     const channel_id = (request.params as any).channel_id
     return new Messages(request.user).post(channel_id, request.body as PostMessage)
 })
+
+fastify.delete('/channels/:channel_id/messages', async (request) => {
+    const channel_id = (request.params as any).channel_id
+    return new Messages(request.user).deleteMessage(channel_id, request.body as DeleteMessageRequest)
+})
+
 
 fastify.post('/channels/:channel_id/messages/reactions', async (request) => {
     const channel_id = (request.params as any).channel_id
