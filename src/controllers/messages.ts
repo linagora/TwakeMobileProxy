@@ -78,94 +78,109 @@ export default class extends Base {
             messages = []
         }
 
-        messages.forEach((m: any)=>{
-            if(m.id == 'eb948a72-3583-11eb-8d6b-0242ac120004'){
-                console.log(m.content)
-                console.log(m.content.prepared[0].content)
+        // messages.forEach((m: any)=>{
+        //     if(m.id == 'eb948a72-3583-11eb-8d6b-0242ac120004'){
+        //         console.log(m.content)
+        //         console.log(m.content.prepared[0].content)
+        //     }
+        // })
+
+
+        const getPreview = async (elementId: string) =>{
+            const x = await this.api.post('/ajax/drive/v2/find', {
+                'options': {
+                    'element_id': elementId,
+                    'workspace_id': "ac6c84e0-1dcc-11eb-82c8-0242ac120004",
+                    "public_access_token": null
+                },
+            })
+            return x.preview_link
+        }
+
+        const formatMessages = async (a:any) => {
+            if (a.sender) {
+                usersIds.add(a.sender)
             }
-        })
+
+            if(!a.content){
+                a.content = {}
+            }
+
+            const r = {
+                id: a.id,
+                parent_message_id: a.parent_message_id || null,
+                responses_count: a.responses_count,
+                sender: a.sender ? {user_id: a.sender} : {
+                    username: a.hidden_data.custom_title,
+                    img: a.hidden_data.custom_icon,
+                },
+                creation_date: a.creation_date,
+                content: {
+                    original_str: a.content.original_str,
+                    prepared: null
+                    // files: a.files
+                },
+                reactions: Object.keys(a.reactions).length ? a.reactions : null,
+                user_reaction: a._user_reaction
+
+            } as any
+
+            let prepared = a.content.prepared || a.content.formatted || a.content
+
+            // console.log(prepared)
+            if (!Array.isArray(prepared)){
+                prepared = [prepared]
+            }
+
+            assert(Array.isArray(prepared), 'wrong message content data')
+
+            const ready = [] as any[]
+
+            prepared.forEach(item => {
+                if (Array.isArray(item)) {
+                    item.forEach(subitem => ready.push(subitem))
+                } else {
+                    // NOP also can contains data ...
+                    if (item.type == 'nop' && Array.isArray(item.content) && item.content.length){
+                        item.content.forEach((s:any)=>{
+                            ready.push(s)
+                        })
+                        // console.log('push', item)
+                    } else {
+                        ready.push(item)
+                    }
+                }
+            })
+
+            for (let idx in ready) {
+                try {
+                    ready[idx] = await fixIt(ready[idx], getPreview)
+                } catch (e) {
+                    console.error('--- GOT ERROR ---')
+                    console.log(e)
+                    console.error(JSON.stringify(a.content, null, 2))
+                    console.error('---')
+                    ready[idx] = {"type": "unparseable"}
+                }
+            }
+
+            r.content.prepared = ready.filter(r => r)
+
+            if (!a.parent_message_id) {
+                r.responses = []
+            } else {
+                r.parent_message_id = a.parent_message_id
+            }
+
+            return r
+        }
 
 
         const usersIds = new Set()
         let filteredMessages =
             messages.filter((a: any) => !(a['hidden_data'] instanceof Object && a['hidden_data']['type'] === 'init_channel'))
-                .map((a: any) => {
-                    if (a.sender) {
-                        usersIds.add(a.sender)
-                    }
 
-                    if(!a.content){
-                        a.content = {}
-                    }
-
-                    const r = {
-                        id: a.id,
-                        parent_message_id: a.parent_message_id || null,
-                        responses_count: a.responses_count,
-                        sender: a.sender ? {user_id: a.sender} : {
-                            username: a.hidden_data.custom_title,
-                            img: a.hidden_data.custom_icon,
-                        },
-                        creation_date: a.creation_date,
-                        content: {
-                            original_str: a.content.original_str,
-                            prepared: null
-                            // files: a.files
-                        },
-                        reactions: Object.keys(a.reactions).length ? a.reactions : null,
-                        user_reaction: a._user_reaction
-
-                    } as any
-
-                    let prepared = a.content.prepared || a.content.formatted || a.content
-
-                    // console.log(prepared)
-                    if (!Array.isArray(prepared)){
-                        prepared = [prepared]
-                    }
-
-                    assert(Array.isArray(prepared), 'wrong message content data')
-
-                    const ready = [] as any[]
-
-                    prepared.forEach(item => {
-                        if (Array.isArray(item)) {
-                            item.forEach(subitem => ready.push(subitem))
-                        } else {
-                            // NOP also can contains data ...
-                            if (item.type == 'nop' && Array.isArray(item.content) && item.content.length){
-                                item.content.forEach((s:any)=>{
-                                    ready.push(s)
-                                })
-                                // console.log('push', item)
-                            } else {
-                                ready.push(item)
-                            }
-                        }
-                    })
-
-                    for (let idx in ready) {
-                        try {
-                            ready[idx] = fixIt(ready[idx])
-                        } catch (e) {
-                            console.error('---')
-                            console.error(JSON.stringify(a.content, null, 2))
-                            console.error('---')
-                            ready[idx] = {"type": "unparseable"}
-                        }
-                    }
-
-                    r.content.prepared = ready.filter(r => r)
-
-                    if (!a.parent_message_id) {
-                        r.responses = []
-                    } else {
-                        r.parent_message_id = a.parent_message_id
-                    }
-
-                    return r
-                })
-
+        filteredMessages = await Promise.all(filteredMessages.map((a: any) => formatMessages(a)))
 
         const usersCtrl = new Users(this.userProfile)
         const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => usersCtrl.getUser(user_id as string))), 'userId')

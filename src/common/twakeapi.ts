@@ -36,7 +36,9 @@ export default class {
         // // console.log(cookies)
 
         const res = await axios.post(HOST + url, params, {headers})
+
         if (res.data.status && res.data.status === 'error') {
+            console.log(HOST + url, params)
             console.error(res.data)
             throw new Error('Unknown error')
         }

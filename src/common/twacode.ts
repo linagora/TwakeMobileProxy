@@ -11,7 +11,7 @@ interface TwacodeItem {
 }
 
 
-export function fixIt(item: any): Object | null {
+export async function fixIt(item: any, previewFunction: (elementId: string) => Promise<string>): Promise<Object | null> {
 
     if (typeof (item) === 'object') {
         if (item.type === 'nop') {
@@ -19,7 +19,14 @@ export function fixIt(item: any): Object | null {
         }
 
         if (item.type === 'file' && item.mode === 'preview'){
-            return {"type": "image", "content":`https://s3.eu-west-3.amazonaws.com/twake.eu-west-3/public/uploads/previews/${item.content}.png`}
+
+            try {
+                const url = await previewFunction(item.content)
+                return {"type": "image", "content": url}
+            } catch(e){
+                console.error(e)
+                return {"type": "unparseable", "content":"File not found"}
+            }
         }
 
         if (item.start === '@') {
@@ -126,7 +133,7 @@ export function fixIt(item: any): Object | null {
         return {"type": "text", "content": item}
     }
 
-    console.log(item)
+    console.error("error item", item)
 
     throw Error("Unparseable data")
 }
