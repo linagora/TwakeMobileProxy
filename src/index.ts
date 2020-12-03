@@ -15,20 +15,11 @@ import UserProfile, {UserProfileMock} from "./models/user_profile";
 const fastify: FastifyInstance = Fastify({logger: true})
 
 declare module "fastify" {
-
-
-    export interface FastifyInstance {
-        jwt: any
-    }
-
     export interface FastifyRequest {
         jwtVerify: any,
         user: UserProfile,
-
     }
 }
-// fastify.register(require('fastify-jwt'), {secret: 'supersecret'})
-
 
 fastify.addHook("onRequest", async (request, reply) => {
     try {
@@ -75,7 +66,8 @@ fastify.get('/channels/:channel_id/messages', async (request) => {
     const channel_id = (request.params as any).channel_id
     const before = (request.query as any).before as string
     const limit = (request.query as any).limit as number
-    return new Messages(request.user).get(channel_id, limit, before)
+    const message_id = (request.query as any).message_id as string
+    return new Messages(request.user).get(channel_id, limit, before, message_id)
 })
 fastify.post('/channels/:channel_id/messages', async (request) => {
     const channel_id = (request.params as any).channel_id
@@ -138,7 +130,6 @@ fastify.setErrorHandler(function (error: Error, request, reply) {
 const start = async () => {
     try {
         await fastify.listen(3123, '::')
-        // console.log(`fastify listening on 3123`)
     } catch (err) {
         fastify.log.error(err)
         process.exit(1)

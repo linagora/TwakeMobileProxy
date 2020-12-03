@@ -15,10 +15,12 @@ export interface PostMessage {
 
 export  interface DeleteMessageRequest{
     message_id: string
+    parent_message_id: string
 }
 
 export  interface ReactionsRequest{
-    "message_id": string
+    message_id: string
+    parent_message_id: string
     "reaction": string
 }
 
@@ -58,15 +60,17 @@ export default class extends Base {
      * @param {string} channelId
      * @param {int} [limit]
      * @param {string} [beforeMessageId]
+     * @param {string} [messageId]
      * @return {Promise<object[]>}
      */
-    async get(channelId: string, limit: number = 50, beforeMessageId?: string) {
+    async get(channelId: string, limit: number = 50, beforeMessageId?: string, messageId?: string) {
         let messages = await this.api.post('/ajax/discussion/get', {
             'options': {
                 'channel_id': channelId,
                 'limit': limit,
                 'offset': beforeMessageId,
                 'parent_message_id': '',
+                'id': messageId
             },
         })
 
@@ -88,6 +92,7 @@ export default class extends Base {
 
                     const r = {
                         id: a.id,
+                        parent_message_id: a.parent_message_id || null,
                         responses_count: a.responses_count,
                         sender: a.sender ? {user_id: a.sender} : {
                             username: a.hidden_data.custom_title,
@@ -103,7 +108,6 @@ export default class extends Base {
                         user_reaction: a._user_reaction
 
                     } as any
-
 
                     let prepared = a.content.prepared || a.content.formatted || a.content
 
@@ -165,14 +169,20 @@ export default class extends Base {
             }
         })
         filteredMessages.forEach((a: any) => {
+
+            if (!a.sender.userId){ // Fake ID for bots
+                a.sender.userId = '00000000'
+            }
+
             if (a.responses) {
                 a.responses = a.responses.sort((a: any, b: any) => {
                     return a.creation_date - b.creation_date
                 })
             } else {
-                delete a['parent_message_id']
+                // pass
             }
         })
+
         return Object.values(messagesHash).sort((a: any, b: any) => a.creation_date - b.creation_date)
     }
 
@@ -210,7 +220,7 @@ export default class extends Base {
         //     "id": x['object']['id']
         // }
 
-        return x
+        return x['object']
     }
 
     async deleteMessage(channelId: string, message: DeleteMessageRequest){
@@ -220,8 +230,11 @@ export default class extends Base {
             'object': {
                 channel_id: channelId,
                 id: message.message_id,
+                parent_message_id: message.parent_message_id
             }
         }
+
+        // console.log(obj)
         return await this.api.post('/ajax/discussion/remove', obj)
 
     }
@@ -232,6 +245,7 @@ export default class extends Base {
             'object': {
                 channel_id: channelId,
                 id: data.message_id,
+                parent_message_id: data.parent_message_id,
                 _user_reaction:  data.reaction
             }
         }

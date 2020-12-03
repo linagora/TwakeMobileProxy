@@ -56,6 +56,20 @@ export function fixIt(item: any): Object | null {
             }
         }
 
+        if(item.start==='`' && item.end.indexOf('`') >-1){
+            return {
+                "type": "mcode",
+                "content": item.content.trim()
+            }
+        }
+
+        if(item.start ==='>' && !item.end){
+            return {
+                "type": "quote",
+                "content": item.content.trim()
+            }
+        }
+
 
         if(item.start==='#' && !item.end){
             const content = item.content.split(':')
