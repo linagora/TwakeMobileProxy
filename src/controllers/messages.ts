@@ -78,6 +78,14 @@ export default class extends Base {
             messages = []
         }
 
+        messages.forEach((m: any)=>{
+            if(m.id == 'eb948a72-3583-11eb-8d6b-0242ac120004'){
+                console.log(m.content)
+                console.log(m.content.prepared[0].content)
+            }
+        })
+
+
         const usersIds = new Set()
         let filteredMessages =
             messages.filter((a: any) => !(a['hidden_data'] instanceof Object && a['hidden_data']['type'] === 'init_channel'))
@@ -124,7 +132,15 @@ export default class extends Base {
                         if (Array.isArray(item)) {
                             item.forEach(subitem => ready.push(subitem))
                         } else {
-                            ready.push(item)
+                            // NOP also can contains data ...
+                            if (item.type == 'nop' && Array.isArray(item.content) && item.content.length){
+                                item.content.forEach((s:any)=>{
+                                    ready.push(s)
+                                })
+                                // console.log('push', item)
+                            } else {
+                                ready.push(item)
+                            }
                         }
                     })
 
@@ -182,6 +198,7 @@ export default class extends Base {
                 // pass
             }
         })
+
 
         return Object.values(messagesHash).sort((a: any, b: any) => a.creation_date - b.creation_date)
     }
