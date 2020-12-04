@@ -10,4 +10,6 @@ if docker ps -a | grep -q twake-mobile-server; then
   docker rm -f twake-mobile-server
 fi
 
-docker run -e NODE_ENV=production -p 80:3128 --name twake-mobile-server -d twake-mobile-server
+
+docker run -e NODE_ENV=production -p 80:3123 --name twake-mobile-server -d twake-mobile-server
+

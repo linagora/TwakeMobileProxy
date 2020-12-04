@@ -23,7 +23,7 @@ declare module "fastify" {
 
 fastify.addHook("onRequest", async (request, reply) => {
     try {
-        if (request.routerPath !== '/authorize' && request.routerPath !== '/authorization/prolong') {
+        if (request.routerPath !== '/' && request.routerPath !== '/authorize' && request.routerPath !== '/authorization/prolong') {
 
             if (request.headers.authorization && request.headers.authorization.toLowerCase().indexOf('bearer')>-1){
                 const token = request.headers.authorization.substring(7).trim()
@@ -50,6 +50,8 @@ fastify.addHook("onRequest", async (request, reply) => {
     }
 })
 //
+
+fastify.get('/', async (request, reply) => ({"ready":true}))
 fastify.post('/authorize', async (request, reply) => await new Authorization(UserProfileMock).auth(request.body as AuthParams))
 fastify.post('/authorization/prolong', async (request, reply) => {
     return await new Authorization(request.user).prolong(request.body as ProlongParams)
