@@ -61,15 +61,16 @@ export default class extends Base {
      * @param {int} [limit]
      * @param {string} [beforeMessageId]
      * @param {string} [messageId]
+     * @param {string} [parentMessageId]
      * @return {Promise<object[]>}
      */
-    async get(channelId: string, limit: number = 50, beforeMessageId?: string, messageId?: string) {
+    async get(channelId: string, limit: number = 50, beforeMessageId?: string, messageId?: string, parentMessageId?: string) {
         let messages = await this.api.post('/ajax/discussion/get', {
             'options': {
                 'channel_id': channelId,
                 'limit': limit,
                 'offset': beforeMessageId,
-                'parent_message_id': '',
+                'parent_message_id': parentMessageId,
                 'id': messageId
             },
         })

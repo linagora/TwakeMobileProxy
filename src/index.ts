@@ -69,7 +69,8 @@ fastify.get('/channels/:channel_id/messages', async (request) => {
     const before = (request.query as any).before as string
     const limit = (request.query as any).limit as number
     const message_id = (request.query as any).message_id as string
-    return new Messages(request.user).get(channel_id, limit, before, message_id)
+    const parent_message_id = (request.query as any).parent_message_id as string
+    return new Messages(request.user).get(channel_id, limit, before, message_id ,parent_message_id)
 })
 fastify.post('/channels/:channel_id/messages', async (request) => {
     const channel_id = (request.params as any).channel_id
