@@ -65,7 +65,8 @@ export default class extends Base {
      * @return {Promise<object[]>}
      */
     async get(channelId: string, limit: number = 50, beforeMessageId?: string, messageId?: string, parentMessageId?: string) {
-        let messages = await this.api.post('/ajax/discussion/get', {
+
+        const params = {
             'options': {
                 'channel_id': channelId,
                 'limit': limit,
@@ -73,7 +74,13 @@ export default class extends Base {
                 'parent_message_id': parentMessageId,
                 'id': messageId
             },
-        })
+        }
+
+        // console.log(JSON.stringify(params))
+
+        let messages = await this.api.post('/ajax/discussion/get', params)
+
+            // console.log(messages)
 
         if (!messages) {
             messages = []
@@ -195,7 +202,7 @@ export default class extends Base {
                     console.error('Not found for', a.sender)
                 }
             }
-            if (a['parent_message_id']) {
+            if (a['parent_message_id'] && messagesHash[a['parent_message_id']]) {
                 messagesHash[a['parent_message_id']].responses.push(a)
                 delete messagesHash[a.id]
             }
