@@ -61,7 +61,7 @@ fastify.post('/authorize', async (request, reply) => await new Authorization(Use
 fastify.post('/authorization/prolong', async (request, reply) => {
     return await new Authorization(request.user).prolong(request.body as ProlongParams)
 })
-fastify.get('/users/current/get', async (request, reply) => {
+fastify.get('/user', async (request, reply) => {
     const timeZoneOffset = request.user.timeZoneOffset
     return new Users(request.user).getCurrent(timeZoneOffset);
 })
