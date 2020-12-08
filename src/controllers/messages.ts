@@ -8,19 +8,19 @@ import {BadRequest} from "../common/errors";
 
 
 export interface PostMessage {
-    parent_message_id: string
+    thread_id: string
     original_str: string
     prepared: Array<Object>
 }
 
 export  interface DeleteMessageRequest{
     message_id: string
-    parent_message_id: string
+    thread_id: string
 }
 
 export  interface ReactionsRequest{
     message_id: string
-    parent_message_id: string
+    thread_id: string
     "reaction": string
 }
 
@@ -42,7 +42,7 @@ export default class extends Base {
                             "channel_id": channelId,
                             "limit": 0,
                             "offset":  false,
-                            "parent_message_id":  ""
+                            "thread_id":  ""
                         }
                     },
                     "_grouped":true
@@ -61,18 +61,19 @@ export default class extends Base {
      * @param {int} [limit]
      * @param {string} [beforeMessageId]
      * @param {string} [messageId]
-     * @param {string} [parentMessageId]
+     * @param {string} [threadId]
      * @return {Promise<object[]>}
      */
-    async get(channelId: string, limit: number = 50, beforeMessageId?: string, messageId?: string, parentMessageId?: string) {
+    async get(channelId: string, limit: number = 50, beforeMessageId?: string, messageId?: string, threadId?: string) {
 
         const params = {
             'options': {
-                'channel_id': channelId,
-                'limit': limit,
-                'offset': beforeMessageId,
-                'parent_message_id': parentMessageId,
-                'id': messageId
+                channel_id: channelId,
+                limit: limit,
+                offset: beforeMessageId,
+                parent_message_id: threadId, // backward compatibility
+                thread_id: threadId,
+                id: messageId
             },
         }
 
@@ -116,7 +117,8 @@ export default class extends Base {
 
             const r = {
                 id: a.id,
-                parent_message_id: a.parent_message_id || null,
+                parent_message_id: a.thread_id || a.parent_message_id || null, // backward compatibility
+                thread_id: a.thread_id || a.parent_message_id || null,
                 responses_count: a.responses_count,
                 sender: a.sender ? {user_id: a.sender} : {
                     username: a.hidden_data.custom_title,
@@ -174,10 +176,10 @@ export default class extends Base {
 
             r.content.prepared = ready.filter(r => r)
 
-            if (!a.parent_message_id) {
+            if (!a.thread_id) {
                 r.responses = []
             } else {
-                r.parent_message_id = a.parent_message_id
+                r.thread_id = a.thread_id
             }
 
             return r
@@ -202,8 +204,8 @@ export default class extends Base {
                     console.error('Not found for', a.sender)
                 }
             }
-            if (a['parent_message_id'] && messagesHash[a['parent_message_id']]) {
-                messagesHash[a['parent_message_id']].responses.push(a)
+            if (a['thread_id'] && messagesHash[a['thread_id']]) {
+                messagesHash[a['thread_id']].responses.push(a)
                 delete messagesHash[a.id]
             }
         })
@@ -246,7 +248,8 @@ export default class extends Base {
         const obj = {
             'object': {
                 channel_id: channelId,
-                parent_message_id: message.parent_message_id,
+                parent_message_id: message.thread_id, // backward compatibility
+                thread_id: message.thread_id,
                 content: {
                     original_str: message.original_str,
                     prepared: prepared
@@ -270,7 +273,8 @@ export default class extends Base {
             'object': {
                 channel_id: channelId,
                 id: message.message_id,
-                parent_message_id: message.parent_message_id
+                parent_message_id: message.thread_id, // backward compatibility
+                thread_id:  message.thread_id
             }
         }
 
@@ -285,7 +289,8 @@ export default class extends Base {
             'object': {
                 channel_id: channelId,
                 id: data.message_id,
-                parent_message_id: data.parent_message_id,
+                parent_message_id: data.thread_id, // backward compatibility
+                thread_id: data.thread_id,
                 _user_reaction:  data.reaction
             }
         }
