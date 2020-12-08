@@ -7,7 +7,12 @@ import {AssertionError} from "assert";
 import Authorization, {ProlongParams} from './controllers/authorization'
 import Users from './controllers/users'
 import Channels from './controllers/channels'
-import Messages, {DeleteMessageRequest, PostMessage, ReactionsRequest} from './controllers/messages'
+import Messages, {
+    DeleteMessageRequest,
+    GetMessagesRequest,
+    ReactionsRequest,
+    UpsertMessageRequest
+} from './controllers/messages'
 import {authCache} from "./common/simplecache";
 import AuthParams from "./models/auth_params";
 import UserProfile, {UserProfileMock} from "./models/user_profile";
@@ -25,14 +30,14 @@ fastify.addHook("onRequest", async (request, reply) => {
     try {
         if (request.routerPath !== '/' && request.routerPath !== '/authorize' && request.routerPath !== '/authorization/prolong') {
 
-            if (request.headers.authorization && request.headers.authorization.toLowerCase().indexOf('bearer')>-1){
+            if (request.headers.authorization && request.headers.authorization.toLowerCase().indexOf('bearer') > -1) {
                 const token = request.headers.authorization.substring(7).trim()
 
-                if (!authCache[token]){
+                if (!authCache[token]) {
                     return reply
                         .code(401)
                         .header('Content-Type', 'application/json; charset=utf-8')
-                        .send({ "error": "Wrong token" })
+                        .send({"error": "Wrong token"})
                 }
                 const user = authCache[token]
 
@@ -51,41 +56,30 @@ fastify.addHook("onRequest", async (request, reply) => {
 })
 //
 
-fastify.get('/', async (request, reply) => ({"ready":true}))
+fastify.get('/', async (request, reply) => ({"ready": true}))
 fastify.post('/authorize', async (request, reply) => await new Authorization(UserProfileMock).auth(request.body as AuthParams))
 fastify.post('/authorization/prolong', async (request, reply) => {
     return await new Authorization(request.user).prolong(request.body as ProlongParams)
 })
 fastify.get('/users/current/get', async (request, reply) => {
     const timeZoneOffset = request.user.timeZoneOffset
-    return  new Users(request.user).getCurrent(timeZoneOffset);
+    return new Users(request.user).getCurrent(timeZoneOffset);
 })
 
-fastify.get('/workspace/:workspace_id/channels', async (request) =>
-    new Channels(request.user).listPublic((request.params as any).workspace_id)
+fastify.get('/channels', async (request) =>
+    new Channels(request.user).listPublic((request.query as any).workspace_id)
 )
-fastify.get('/channels/:channel_id/messages', async (request) => {
-    const channelId = (request.params as any).channel_id
-    const before = (request.query as any).before as string
-    const limit = (request.query as any).limit as number
-    const messageId = (request.query as any).id as string
-    const threadId = (request.query as any).thread_id as string
-    return new Messages(request.user).get(channelId, limit, before, messageId ,threadId)
-})
-fastify.post('/channels/:channel_id/messages', async (request) => {
-    const channel_id = (request.params as any).channel_id
-    return new Messages(request.user).post(channel_id, request.body as PostMessage)
-})
+fastify.get('/messages', async (request) =>
+    new Messages(request.user).get(request.query as GetMessagesRequest))
 
-fastify.delete('/channels/:channel_id/messages', async (request) => {
-    const channel_id = (request.params as any).channel_id
-    return new Messages(request.user).deleteMessage(channel_id, request.body as DeleteMessageRequest)
-})
+fastify.post('/messages', async (request) =>
+    new Messages(request.user).upsertMessage(request.body as UpsertMessageRequest))
 
+fastify.delete('/messages', async (request) =>
+    new Messages(request.user).deleteMessage(request.body as DeleteMessageRequest))
 
-fastify.post('/channels/:channel_id/messages/reactions', async (request) => {
-    const channel_id = (request.params as any).channel_id
-    return new Messages(request.user).reactions(channel_id, request.body as ReactionsRequest)
+fastify.post('/reactions', async (request) => {
+    return new Messages(request.user).reactions(request.body as ReactionsRequest)
 })
 
 fastify.get('/company/:company_id/workspace/:workspace_id/channels', async (request) => {
@@ -102,8 +96,8 @@ fastify.get('/company/:company_id/workspace/:workspace_id/channels/:channel_id/m
 
 })
 
-fastify.get('/company/:company_id/direct', async(request)=>{
-    const companyId = (request.params as any).company_id
+fastify.get('/direct', async (request) => {
+    const companyId = (request.query as any).company_id
     return new Channels(request.user).listDirect(companyId)
 })
 
@@ -121,7 +115,7 @@ fastify.setErrorHandler(function (error: Error, request, reply) {
     if (error instanceof AssertionError) {
         reply.status(400).send({"error": (error as AssertionError).message})
     } else if (error instanceof Forbidden) {
-            reply.status(403).send({"error": error.message})
+        reply.status(403).send({"error": error.message})
     } else if (error instanceof BadRequest) {
         reply.status(400).send({"error": error.message})
     } else {

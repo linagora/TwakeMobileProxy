@@ -7,21 +7,37 @@ import {fixIt, toTwacode} from "../common/twacode"
 import {BadRequest} from "../common/errors";
 
 
-export interface PostMessage {
+export interface UpsertMessageRequest {
+    company_id: string,
+    channel_id: string,
     thread_id: string
+    message_id: string,
     original_str: string
     prepared: Array<Object>
 }
 
+export interface GetMessagesRequest {
+    company_id: string,
+    channel_id: string,
+    thread_id: string
+    message_id: string,
+    before_message_id: string,
+    limit: number
+}
+
 export  interface DeleteMessageRequest{
+    company_id: string
+    channel_id: string
     message_id: string
     thread_id: string
 }
 
 export  interface ReactionsRequest{
+    company_id: string
+    channel_id: string
     message_id: string
     thread_id: string
-    "reaction": string
+    reaction: string
 }
 
 /**
@@ -57,23 +73,19 @@ export default class extends Base {
 
     /**
      * Get messages GET /channels/<channel_id>/messages
-     * @param {string} channelId
-     * @param {int} [limit]
-     * @param {string} [beforeMessageId]
-     * @param {string} [messageId]
-     * @param {string} [threadId]
+     * @param {GetMessagesRequest} req
      * @return {Promise<object[]>}
      */
-    async get(channelId: string, limit: number = 50, beforeMessageId?: string, messageId?: string, threadId?: string) {
+    async get(req: GetMessagesRequest) {
 
         const params = {
             'options': {
-                channel_id: channelId,
-                limit: limit,
-                offset: beforeMessageId,
-                parent_message_id: threadId, // backward compatibility
-                thread_id: threadId,
-                id: messageId
+                channel_id: req.channel_id,
+                limit: req.limit || 50,
+                offset: req.before_message_id,
+                parent_message_id: req.thread_id, // backward compatibility
+                thread_id: req.thread_id,
+                id: req.message_id
             },
         }
 
@@ -235,7 +247,7 @@ export default class extends Base {
      * @param {object} message
      * @return {Promise<{object}>}
      */
-    async post(channelId: string, message: PostMessage) {
+    async upsertMessage(message: UpsertMessageRequest) {
 
         assert(message.original_str, 'original_str is missing')
 
@@ -247,7 +259,7 @@ export default class extends Base {
 
         const obj = {
             'object': {
-                channel_id: channelId,
+                channel_id: message.channel_id,
                 parent_message_id: message.thread_id, // backward compatibility
                 thread_id: message.thread_id,
                 content: {
@@ -266,12 +278,13 @@ export default class extends Base {
         return x['object']
     }
 
-    async deleteMessage(channelId: string, message: DeleteMessageRequest){
-        assert(channelId, 'message_id is required');
+    async deleteMessage(message: DeleteMessageRequest){
+        assert(message.channel_id, 'channel_id is required');
+        assert(message.message_id, 'message_id is required');
 
         const obj = {
             'object': {
-                channel_id: channelId,
+                channel_id: message.channel_id,
                 id: message.message_id,
                 parent_message_id: message.thread_id, // backward compatibility
                 thread_id:  message.thread_id
@@ -283,15 +296,14 @@ export default class extends Base {
 
     }
 
-    async reactions(channelId: string, data: ReactionsRequest){
-
+    async reactions(req: ReactionsRequest){
         const obj = {
             'object': {
-                channel_id: channelId,
-                id: data.message_id,
-                parent_message_id: data.thread_id, // backward compatibility
-                thread_id: data.thread_id,
-                _user_reaction:  data.reaction
+                channel_id: req.channel_id,
+                id: req.message_id,
+                parent_message_id: req.thread_id, // backward compatibility
+                thread_id: req.thread_id,
+                _user_reaction:  req.reaction
             }
         }
         const res = await this.api.post('/ajax/discussion/save', obj)
