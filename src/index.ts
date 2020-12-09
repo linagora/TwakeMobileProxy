@@ -2,7 +2,7 @@ import Fastify, {FastifyInstance} from 'fastify'
 
 // import {HandledException} from "./common/helpers";
 import {BadRequest, Forbidden} from './common/errors';
-import {AssertionError} from "assert";
+import assert, {AssertionError} from "assert";
 
 import Authorization, {ProlongParams} from './controllers/authorization'
 import Users from './controllers/users'
@@ -17,7 +17,7 @@ import {authCache} from "./common/simplecache";
 import AuthParams from "./models/auth_params";
 import UserProfile, {UserProfileMock} from "./models/user_profile";
 
-const fastify: FastifyInstance = Fastify({logger: true})
+const fastify: FastifyInstance = Fastify({logger: false})
 
 declare module "fastify" {
     export interface FastifyRequest {
@@ -25,6 +25,25 @@ declare module "fastify" {
         user: UserProfile,
     }
 }
+
+function reqGet(listOfFields: string[]): object {
+    return {
+        querystring: {
+            type: 'object',
+            required: listOfFields
+        }
+    }
+}
+
+function reqPost(listOfFields: string[]): object {
+    return {
+        body: {
+            type: 'object',
+            required: listOfFields
+        }
+    }
+}
+
 
 fastify.addHook("onRequest", async (request, reply) => {
     try {
@@ -66,19 +85,22 @@ fastify.get('/user', async (request, reply) => {
     return new Users(request.user).getCurrent(timeZoneOffset);
 })
 
-fastify.get('/channels', async (request) =>
+fastify.get('/channels', {schema: reqGet(['workspace_id'])},async (request) =>
     new Channels(request.user).listPublic((request.query as any).workspace_id)
 )
-fastify.get('/messages', async (request) =>
-    new Messages(request.user).get(request.query as GetMessagesRequest))
 
-fastify.post('/messages', async (request) =>
+fastify.get('/messages', {schema: reqGet(['company_id', 'workspace_id', 'channel_id'])}, async (request) =>
+    // console.log(is(o, request.query))
+    new Messages(request.user).get(request.query as any)
+)
+
+fastify.post('/messages', {schema: reqPost(['company_id', 'workspace_id', 'channel_id', 'original_str'])},async (request) =>
     new Messages(request.user).upsertMessage(request.body as UpsertMessageRequest))
 
-fastify.delete('/messages', async (request) =>
+fastify.delete('/messages', {schema: reqPost(['company_id', 'workspace_id', 'channel_id', 'message_id'])},async (request) =>
     new Messages(request.user).deleteMessage(request.body as DeleteMessageRequest))
 
-fastify.post('/reactions', async (request) => {
+fastify.post('/reactions', {schema: reqPost(['company_id', 'workspace_id', 'channel_id', 'message_id', 'reaction'])},async (request) => {
     return new Messages(request.user).reactions(request.body as ReactionsRequest)
 })
 
@@ -96,15 +118,15 @@ fastify.get('/company/:company_id/workspace/:workspace_id/channels/:channel_id/m
 
 })
 
-fastify.get('/direct', async (request) => {
+fastify.get('/direct', {schema: reqGet(['company_id'])},async (request) => {
     const companyId = (request.query as any).company_id
     return new Channels(request.user).listDirect(companyId)
 })
 
-fastify.get('/channels/:channel_id/init', async (request) => {
-    const channel_id = (request.params as any).channel_id
-    return new Messages(request.user).init(channel_id)
-})
+// fastify.get('/channels/:channel_id/init', async (request) => {
+//     const channel_id = (request.params as any).channel_id
+//     return new Messages(request.user).init(channel_id)
+// })
 
 
 fastify.setErrorHandler(function (error: Error, request, reply) {
@@ -112,11 +134,14 @@ fastify.setErrorHandler(function (error: Error, request, reply) {
     //     reply.status(400).send({"error": (error as HandledException).message})
     // }
 
+
     if (error instanceof AssertionError) {
         reply.status(400).send({"error": (error as AssertionError).message})
     } else if (error instanceof Forbidden) {
         reply.status(403).send({"error": error.message})
     } else if (error instanceof BadRequest) {
+        reply.status(400).send({"error": error.message})
+    } else if ((error as any).validation) {
         reply.status(400).send({"error": error.message})
     } else {
         console.error(error)

@@ -9,6 +9,7 @@ import {BadRequest} from "../common/errors";
 
 export interface UpsertMessageRequest {
     company_id: string,
+    workspace_id: string,
     channel_id: string,
     thread_id: string
     message_id: string,
@@ -18,6 +19,7 @@ export interface UpsertMessageRequest {
 
 export interface GetMessagesRequest {
     company_id: string,
+    workspace_id: string,
     channel_id: string,
     thread_id: string
     message_id: string,
@@ -27,6 +29,7 @@ export interface GetMessagesRequest {
 
 export  interface DeleteMessageRequest{
     company_id: string
+    workspace_id: string,
     channel_id: string
     message_id: string
     thread_id: string
@@ -34,6 +37,7 @@ export  interface DeleteMessageRequest{
 
 export  interface ReactionsRequest{
     company_id: string
+    workspace_id: string,
     channel_id: string
     message_id: string
     thread_id: string

@@ -35,6 +35,8 @@ export default class {
         // }
         // // console.log(cookies)
 
+        console.log('POST', url, JSON.stringify(params))
+
         const res = await axios.post(HOST + url, params, {headers})
 
         if (res.data.status && res.data.status === 'error') {
@@ -60,6 +62,7 @@ export default class {
         // }
         // // console.log(cookies)
 
+        console.log('GET', url, JSON.stringify(params))
 
         try {
           // console.log(HOST + url)
