@@ -10,6 +10,7 @@ interface TwacodeItem {
     content?: string
 }
 
+import {emojiGetCode} from './helpers'
 
 export async function fixIt(item: any, previewFunction: (elementId: string) => Promise<string>): Promise<Object | null> {
 
@@ -39,9 +40,11 @@ export async function fixIt(item: any, previewFunction: (elementId: string) => P
         }
 
         if (item.start === ':' && item.end === ':') {
+
             return {
                 "type": "emoji",
                 "content": item.content,
+                "id": emojiGetCode(item.content)
             }
         }
 
