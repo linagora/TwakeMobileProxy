@@ -23,7 +23,7 @@ export default class extends Base {
             if (!companiesHash[ws.group.id]) {
                 companiesHash[ws.group.id] = {
                     id: ws.group.id,
-                    name: ws.group.name,
+                    name: ws.group.name.trim(),
                     // unique_name: ws.group.unique_name,
                     logo: ws.group.logo,
                     workspaces: {},
@@ -31,7 +31,7 @@ export default class extends Base {
             }
             companiesHash[ws.group.id].workspaces[ws.id] = {
                 id: ws.id,
-                name: ws.name,
+                name: ws.name.trim(),
                 // unique_name: ws.unique_name,
                 logo: ws.logo ||
                     'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTGyI3IzeJ0NMtz2CJnuolnLc_WFyVHtMffwg&usqp=CAU',
@@ -52,9 +52,9 @@ export default class extends Base {
 
         out.status =  {"icon": data.status_icon[0], "title": data.status_icon[1]}
         out.companies = Object.values(companiesHash).map((c: any) => {
-            c.workspaces = Object.values(c.workspaces)
+            c.workspaces = Object.values(c.workspaces).sort((a : any,b :any)=>a.name.localeCompare(b.name))
             return c
-        })
+        }).sort((a:any,b:any)=>a.name.localeCompare(b.name))
 
         return out
 
