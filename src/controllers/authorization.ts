@@ -81,7 +81,7 @@ export default class extends Base {
             },
         }
 
-        const res = await this.api.postDirect('/ajax/users/login', {}, {"Authorization": "Bearer " + params.refresh_token})
+        const res = await this.api.postDirect('/ajax/users/login', loginObject, {"Authorization": "Bearer " + params.refresh_token})
 
         return this.doAuth(res.data, params.timezoneoffset)
     }
