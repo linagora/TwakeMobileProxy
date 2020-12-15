@@ -3,4 +3,5 @@ export default interface AuthParams {
   password: string
   device: string
   timezoneoffset: number
+  fcm_token: string
 }

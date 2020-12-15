@@ -33,14 +33,15 @@ export default class extends Base {
         assert(params.device, 'device is required');
         assert(Object.keys(types).includes(params.device), "device should be in [" + Object.keys(types) + "]");
         assert(params.timezoneoffset, 'timezoneoffset is required');
+        assert(params.fcm_token, 'fcm_token is required');
 
         const loginObject = {
             '_username': params.username,
             '_password': params.password,
             '_remember_me': true,
             'device': {
-                'type': types[params.device],
-                'value': 'some',
+                'type': "fcm",
+                'value': params.fcm_token,
                 'version': '2020.Q3.107',
             },
         }
