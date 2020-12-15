@@ -10,8 +10,9 @@ import {UserProfileMock} from "../models/user_profile";
 
 
 export interface ProlongParams {
-    refresh_token: string,
+    refresh_token: string
     timezoneoffset: number
+    fcm_token: string
 }
 
 /**
@@ -70,6 +71,15 @@ export default class extends Base {
 
         assert(params.refresh_token, 'refresh_token is required')
         assert(params.timezoneoffset, 'timezoneoffset is required')
+        assert(params.fcm_token, 'fcm_token is required')
+
+        const loginObject = {
+            'device': {
+                'type': "fcm",
+                'value': params.fcm_token,
+                'version': '2020.Q3.107',
+            },
+        }
 
         const res = await this.api.postDirect('/ajax/users/login', {}, {"Authorization": "Bearer " + params.refresh_token})
 
