@@ -16,6 +16,7 @@ import Messages, {
 import {authCache} from "./common/simplecache";
 import AuthParams from "./models/auth_params";
 import UserProfile, {UserProfileMock} from "./models/user_profile";
+import Settings from './controllers/settings'
 
 const fastify: FastifyInstance = Fastify({logger: false})
 
@@ -86,6 +87,7 @@ fastify.post('/messages', {schema: validBody(['company_id', 'workspace_id', 'cha
 fastify.delete('/messages', {schema: validBody(['company_id', 'workspace_id', 'channel_id', 'message_id'])}, async (request) => new Messages(request.user).deleteMessage(request.body as DeleteMessageRequest))
 fastify.post('/reactions', {schema: validBody(['company_id', 'workspace_id', 'channel_id', 'message_id', 'reaction'])}, async (request) => new Messages(request.user).reactions(request.body as ReactionsRequest))
 fastify.get('/direct', {schema: validQuery(['company_id'])}, async (request) => new Channels(request.user).listDirect((request.query as any).company_id))
+fastify.get('/settings/emoji',  async (request) => new Settings(request.user).emoji())
 
 
 // fastify.get('/company/:company_id/workspace/:workspace_id/channels', async (request) => {
