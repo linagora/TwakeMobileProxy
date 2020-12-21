@@ -8,11 +8,13 @@ import {arrayToObject} from "../common/helpers";
 export interface Channel {
     id: string
     name: string
+    icon: string
     description: string
     members_count: number
     private: boolean
-    direct: boolean
+    workspace_id: string | null
     last_activity: number
+    messages_unread: number
     members? : any[]
 }
 
@@ -51,7 +53,7 @@ export default class extends Base {
                     description: a.description,
                     members_count: a.members_count,
                     private: a.private,
-                    direct: a.direct,
+                    workspace_id: workspaceId,
                     last_activity: a.last_activity,
                     messages_total: a.messages_increment,
                     messages_unread: a.messages_increment - a._user_last_message_increment
@@ -102,7 +104,7 @@ export default class extends Base {
                     description: a.description,
                     members_count: a.members_count,
                     private: a.private,
-                    direct: a.direct,
+                    workspace_id: null,
                     last_activity: a.last_activity,
                     messages_total: a.messages_increment,
                     messages_unread: a.messages_increment - a._user_last_message_increment
