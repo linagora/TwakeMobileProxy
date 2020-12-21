@@ -17,6 +17,8 @@ import {authCache} from "./common/simplecache";
 import AuthParams from "./models/auth_params";
 import UserProfile, {UserProfileMock} from "./models/user_profile";
 import Settings from './controllers/settings'
+import Companies from './controllers/companies'
+import Workspaces from './controllers/workspaces'
 
 const fastify: FastifyInstance = Fastify({logger: false})
 
@@ -81,6 +83,8 @@ fastify.get('/', async (request, reply) => ({"ready": true}))
 fastify.post('/authorize', async (request, reply) => await new Authorization(UserProfileMock).auth(request.body as AuthParams))
 fastify.post('/authorization/prolong', async (request, reply) => new Authorization(request.user).prolong(request.body as ProlongParams))
 fastify.get('/user', async (request, reply) => new Users(request.user).getCurrent(request.user.timeZoneOffset))
+fastify.get('/companies', async (request, reply) => new Companies(request.user).list())
+fastify.get('/workspaces', async (request, reply) => new Workspaces(request.user).list())
 fastify.get('/channels', {schema: validQuery(['workspace_id'])}, async (request) => new Channels(request.user).listPublic((request.query as any).workspace_id))
 fastify.get('/messages', {schema: validQuery(['company_id', 'workspace_id', 'channel_id'])}, async (request) => new Messages(request.user).get(request.query as any))
 fastify.post('/messages', {schema: validBody(['company_id', 'workspace_id', 'channel_id', 'original_str'])}, async (request) => new Messages(request.user).upsertMessage(request.body as UpsertMessageRequest))

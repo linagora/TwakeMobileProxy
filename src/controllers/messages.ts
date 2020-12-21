@@ -180,6 +180,7 @@ export default class extends Base {
 
             for (let idx in ready) {
                 try {
+
                     ready[idx] = await fixIt(ready[idx], getPreview)
                 } catch (e) {
                     console.error('--- GOT ERROR ---')
@@ -253,6 +254,7 @@ export default class extends Base {
      */
     async upsertMessage(message: UpsertMessageRequest) {
 
+
         assert(message.original_str, 'original_str is missing')
 
         const prepared = message.prepared || toTwacode(message.original_str)
@@ -263,6 +265,8 @@ export default class extends Base {
 
         const obj = {
             'object': {
+                company_id: message.company_id,
+                workspace_id: message.workspace_id,
                 channel_id: message.channel_id,
                 parent_message_id: message.thread_id, // backward compatibility
                 thread_id: message.thread_id,
@@ -278,16 +282,21 @@ export default class extends Base {
         // return {
         //     "id": x['object']['id']
         // }
+        console.log('server response', x)
 
         return x['object']
     }
 
     async deleteMessage(message: DeleteMessageRequest){
+        assert(message.company_id, 'company_id is required');
+        assert(message.workspace_id, 'workspace_id is required');
         assert(message.channel_id, 'channel_id is required');
         assert(message.message_id, 'message_id is required');
 
         const obj = {
             'object': {
+                company_id: message.company_id,
+                workspace_id: message.workspace_id,
                 channel_id: message.channel_id,
                 id: message.message_id,
                 parent_message_id: message.thread_id, // backward compatibility

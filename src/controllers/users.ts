@@ -18,26 +18,8 @@ export default class extends Base {
         assert(!isNaN(+timeZoneOffset), 'timezone should be numeric (i.e. -180 for Moscow)')
         const data = await this.api.post('/ajax/users/current/get', {timezone: timeZoneOffset})
 
-        const companiesHash = {} as any
-        data.workspaces.forEach((ws: any) => {
-            if (!companiesHash[ws.group.id]) {
-                companiesHash[ws.group.id] = {
-                    id: ws.group.id,
-                    name: ws.group.name.trim(),
-                    // unique_name: ws.group.unique_name,
-                    logo: ws.group.logo,
-                    workspaces: {},
-                }
-            }
-            companiesHash[ws.group.id].workspaces[ws.id] = {
-                id: ws.id,
-                name: ws.name.trim(),
-                // unique_name: ws.unique_name,
-                logo: ws.logo ||
-                    'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTGyI3IzeJ0NMtz2CJnuolnLc_WFyVHtMffwg&usqp=CAU',
-            }
-        })
-        const user =  {
+
+        const user = {
             userId: data.id,
             username: data.username,
             firstname: data.firstname,
@@ -50,11 +32,7 @@ export default class extends Base {
 
         const out = Object.assign({}, user)
 
-        out.status =  {"icon": data.status_icon[0], "title": data.status_icon[1]}
-        out.companies = Object.values(companiesHash).map((c: any) => {
-            c.workspaces = Object.values(c.workspaces).sort((a : any,b :any)=>a.name.localeCompare(b.name))
-            return c
-        }).sort((a:any,b:any)=>a.name.localeCompare(b.name))
+        out.status = {"icon": data.status_icon[0], "title": data.status_icon[1]}
 
         return out
 

@@ -39,6 +39,8 @@ export default class {
 
         const res = await axios.post(HOST + url, params, {headers})
 
+        // console.log(res.data)
+
         if (res.data.status && res.data.status === 'error') {
             console.log(HOST + url, params)
             console.error(res.data)

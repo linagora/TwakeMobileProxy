@@ -15,7 +15,7 @@ import {emojiGetCode} from './helpers'
 export async function fixIt(item: any, previewFunction: (elementId: string) => Promise<string>): Promise<Object | null> {
 
     if (typeof (item) === 'object') {
-        if (item.type === 'nop') {
+        if (!Object.keys(item).length || item.type === 'nop') {
             return null
         }
 
@@ -135,8 +135,6 @@ export async function fixIt(item: any, previewFunction: (elementId: string) => P
     } else if (typeof (item) === 'string') {
         return {"type": "text", "content": item}
     }
-
-    console.error("error item", item)
 
     throw Error("Unparseable data")
 }
