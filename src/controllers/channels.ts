@@ -45,13 +45,14 @@ export default class extends Base {
 
         const filterOnlyNamed = data['get'].filter((a: any) => a.name) as any[]
 
+
         return filterOnlyNamed.map((a: any) => (
                 {
                     id: a.id,
                     name: a.name,
                     icon: a.icon,
                     description: a.description,
-                    members_count: a.members_count,
+                    members_count: a.members.length,
                     private: a.private,
                     workspace_id: workspaceId,
                     last_activity: a.last_activity,
@@ -102,7 +103,7 @@ export default class extends Base {
                     }) as any,
                     icon: a.icon,
                     description: a.description,
-                    members_count: a.members_count,
+                    members_count: a.members.length,
                     private: a.private,
                     workspace_id: null,
                     last_activity: a.last_activity,
