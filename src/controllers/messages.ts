@@ -3,7 +3,7 @@ import {arrayToObject} from '../common/helpers'
 import Users from './users'
 import User from "../models/user";
 import assert from "assert";
-import {fixIt, toTwacode} from "../common/twacode"
+import {fixIt, parseCompile, toTwacode} from "../common/twacode"
 import {BadRequest} from "../common/errors";
 
 
@@ -27,7 +27,7 @@ export interface GetMessagesRequest {
     limit: number
 }
 
-export  interface DeleteMessageRequest{
+export interface DeleteMessageRequest {
     company_id: string
     workspace_id: string,
     channel_id: string
@@ -35,7 +35,7 @@ export  interface DeleteMessageRequest{
     thread_id: string
 }
 
-export  interface ReactionsRequest{
+export interface ReactionsRequest {
     company_id: string
     workspace_id: string,
     channel_id: string
@@ -49,23 +49,23 @@ export  interface ReactionsRequest{
  */
 export default class extends Base {
 
-    async init(channelId: string){
+    async init(channelId: string) {
         const data = await this.api.post('/ajax/core/collections/init', {
             multiple: [
                 {
-                    "collection_id":"messages/" + channelId,
-                    "options":{
-                        "type":"messages",
+                    "collection_id": "messages/" + channelId,
+                    "options": {
+                        "type": "messages",
 
                         //If you let this empty, then you'll retrieve only the websocket information
-                        "get_options":{
+                        "get_options": {
                             "channel_id": channelId,
                             "limit": 0,
-                            "offset":  false,
-                            "thread_id":  ""
+                            "offset": false,
+                            "thread_id": ""
                         }
                     },
-                    "_grouped":true
+                    "_grouped": true
                 }
             ]
         })
@@ -97,8 +97,6 @@ export default class extends Base {
 
         let messages = await this.api.post('/ajax/discussion/get', params)
 
-            // console.log(messages)
-
         if (!messages) {
             messages = []
         }
@@ -111,7 +109,7 @@ export default class extends Base {
         // })
 
 
-        const getPreview = async (elementId: string) =>{
+        const getPreview = async (elementId: string) => {
             const x = await this.api.post('/ajax/drive/v2/find', {
                 'options': {
                     'element_id': elementId,
@@ -122,12 +120,12 @@ export default class extends Base {
             return x.preview_link
         }
 
-        const formatMessages = async (a:any) => {
+        const formatMessages = async (a: any) => {
             if (a.sender) {
                 usersIds.add(a.sender)
             }
 
-            if(!a.content){
+            if (!a.content) {
                 a.content = {}
             }
 
@@ -137,7 +135,7 @@ export default class extends Base {
                 thread_id: a.thread_id || a.parent_message_id || null,
                 responses_count: a.responses_count,
                 sender: a.sender ? {user_id: a.sender} : {
-                    username: a.hidden_data.custom_title,
+                    username: 'Bot',
                     img: a.hidden_data.custom_icon,
                 },
                 creation_date: a.creation_date,
@@ -154,11 +152,25 @@ export default class extends Base {
             let prepared = a.content.prepared || a.content.formatted || a.content
 
             // console.log(prepared)
-            if (!Array.isArray(prepared)){
+            if (!Array.isArray(prepared)) {
                 prepared = [prepared]
             }
 
             assert(Array.isArray(prepared), 'wrong message content data')
+
+            try {
+
+                for (let i = 0; i < prepared.length; i++) {
+                    const p = prepared[i]
+                    if (p.type === 'compile') {
+                        const compiled = parseCompile(p.content)
+                        compiled.forEach(a => prepared.push(a))
+                        delete prepared[i]
+                    }
+                }
+            } catch (e) {
+                console.log(e)
+            }
 
             const ready = [] as any[]
 
@@ -167,8 +179,8 @@ export default class extends Base {
                     item.forEach(subitem => ready.push(subitem))
                 } else {
                     // NOP also can contains data ...
-                    if (item.type == 'nop' && Array.isArray(item.content) && item.content.length){
-                        item.content.forEach((s:any)=>{
+                    if (item.type == 'nop' && Array.isArray(item.content) && item.content.length) {
+                        item.content.forEach((s: any) => {
                             ready.push(s)
                         })
                         // console.log('push', item)
@@ -228,7 +240,7 @@ export default class extends Base {
         })
         filteredMessages.forEach((a: any) => {
 
-            if (!a.sender.userId){ // Fake ID for bots
+            if (!a.sender.userId) { // Fake ID for bots
                 a.sender.userId = '00000000'
             }
 
@@ -259,7 +271,7 @@ export default class extends Base {
 
         const prepared = message.prepared || toTwacode(message.original_str)
 
-        if (!prepared || prepared?.length === 0){
+        if (!prepared || prepared?.length === 0) {
             throw new BadRequest('Unparseable message')
         }
 
@@ -287,7 +299,7 @@ export default class extends Base {
         return x['object']
     }
 
-    async deleteMessage(message: DeleteMessageRequest){
+    async deleteMessage(message: DeleteMessageRequest) {
         assert(message.company_id, 'company_id is required');
         assert(message.workspace_id, 'workspace_id is required');
         assert(message.channel_id, 'channel_id is required');
@@ -300,7 +312,7 @@ export default class extends Base {
                 channel_id: message.channel_id,
                 id: message.message_id,
                 parent_message_id: message.thread_id, // backward compatibility
-                thread_id:  message.thread_id
+                thread_id: message.thread_id
             }
         }
 
@@ -309,14 +321,14 @@ export default class extends Base {
 
     }
 
-    async reactions(req: ReactionsRequest){
+    async reactions(req: ReactionsRequest) {
         const obj = {
             'object': {
                 channel_id: req.channel_id,
                 id: req.message_id,
                 parent_message_id: req.thread_id, // backward compatibility
                 thread_id: req.thread_id,
-                _user_reaction:  req.reaction
+                _user_reaction: req.reaction
             }
         }
         const res = await this.api.post('/ajax/discussion/save', obj)

@@ -19,14 +19,14 @@ export async function fixIt(item: any, previewFunction: (elementId: string) => P
             return null
         }
 
-        if (item.type === 'file' && item.mode === 'preview'){
+        if (item.type === 'file' && item.mode === 'preview') {
 
             try {
                 const url = await previewFunction(item.content)
                 return {"type": "image", "content": url}
-            } catch(e){
+            } catch (e) {
                 console.error(e)
-                return {"type": "unparseable", "content":"File not found"}
+                return {"type": "unparseable", "content": "File not found"}
             }
         }
 
@@ -225,3 +225,38 @@ export function toTwacode(inputString: string | null) {
 }
 
 
+export function parseCompile(str: string) {
+    var re = /(ftp:\/\/|www\.|https?:\/\/){1}[a-zA-Z0-9u00a1-\uffff0-]{2,}\.[a-zA-Z0-9u00a1-\uffff0-]{2,}(\S*)\S/g
+
+    function addText(text: string, res: any[]) {
+        const sp = text.split('\n')
+        if (sp.length == 1 && text.length) {
+            res.push({"type": "text", "content": text})
+        } else {
+            for (var i = 0; i < sp.length; i++) {
+                const item = sp[i]
+                if (item.length) {
+                    res.push({"type": "text", "content": item})
+                }
+                if (i != sp.length - 1) {
+                    res.push({"type": "br"})
+                }
+            }
+        }
+    }
+
+    const res = []
+    let textStart = 0
+    let match = null
+    while ((match = re.exec(str)) != null) {
+        addText(str.substring(textStart, match.index), res)
+        const url = str.substring(match.index, re.lastIndex)
+        res.push({"type": "url", "content": url})
+        textStart = re.lastIndex
+    }
+    if (textStart < str.length) {
+        addText(str.substring(textStart), res)
+    }
+
+    return res
+}
