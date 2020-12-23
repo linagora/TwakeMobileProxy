@@ -31,7 +31,7 @@ export default class extends Base {
                 user_last_access: a._user_last_access,
                 user_is_admin: a._user_is_admin
             } as Workspace
-        })
+        }).sort((a:Workspace, b:Workspace) => a.name.localeCompare(b.name))
 
     }
 
