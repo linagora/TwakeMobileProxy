@@ -6,7 +6,7 @@ import assert, {AssertionError} from "assert";
 
 import Authorization, {ProlongParams} from './controllers/authorization'
 import Users from './controllers/users'
-import Channels from './controllers/channels'
+import Channels, {ChannelsListRequest} from './controllers/channels'
 import Messages, {
     DeleteMessageRequest,
     GetMessagesRequest,
@@ -18,9 +18,14 @@ import AuthParams from "./models/auth_params";
 import UserProfile, {UserProfileMock} from "./models/user_profile";
 import Settings from './controllers/settings'
 import Companies from './controllers/companies'
-import Workspaces from './controllers/workspaces'
+import Workspaces, {WorkspaceListRequest} from './controllers/workspaces'
+import {toTwacode} from "./common/twacode";
 
 const fastify: FastifyInstance = Fastify({logger: false})
+
+
+// const x = toTwacode("hello *my friend* \n> something is here\n")
+// console.log(x);
 
 
 declare module "fastify" {
@@ -80,18 +85,18 @@ fastify.addHook("onRequest", async (request, reply) => {
 //
 
 fastify.get('/', async (request, reply) => ({"ready": true}))
-fastify.post('/authorize', async (request, reply) => await new Authorization(UserProfileMock).auth(request.body as AuthParams))
-fastify.post('/authorization/prolong', async (request, reply) => new Authorization(request.user).prolong(request.body as ProlongParams))
-fastify.get('/user', async (request, reply) => new Users(request.user).getCurrent(request.user.timeZoneOffset))
-fastify.get('/companies', async (request, reply) => new Companies(request.user).list())
-fastify.get('/workspaces', async (request, reply) => new Workspaces(request.user).list())
-fastify.get('/channels', {schema: validQuery(['workspace_id'])}, async (request) => new Channels(request.user).listPublic((request.query as any).workspace_id))
-fastify.get('/messages', {schema: validQuery(['company_id', 'workspace_id', 'channel_id'])}, async (request) => new Messages(request.user).get(request.query as any))
-fastify.post('/messages', {schema: validBody(['company_id', 'workspace_id', 'channel_id', 'original_str'])}, async (request) => new Messages(request.user).upsertMessage(request.body as UpsertMessageRequest))
-fastify.delete('/messages', {schema: validBody(['company_id', 'workspace_id', 'channel_id', 'message_id'])}, async (request) => new Messages(request.user).deleteMessage(request.body as DeleteMessageRequest))
-fastify.post('/reactions', {schema: validBody(['company_id', 'workspace_id', 'channel_id', 'message_id', 'reaction'])}, async (request) => new Messages(request.user).reactions(request.body as ReactionsRequest))
-fastify.get('/direct', {schema: validQuery(['company_id'])}, async (request) => new Channels(request.user).listDirect((request.query as any).company_id))
-fastify.get('/settings/emoji',  async (request) => new Settings(request.user).emoji())
+fastify.post('/authorize', async (request, reply) => await new Authorization(request).auth(request.body as AuthParams))
+fastify.post('/authorization/prolong', async (request, reply) => new Authorization(request).prolong(request.body as ProlongParams))
+fastify.get('/user', async (request, reply) => new Users(request).getCurrent(request.user.timeZoneOffset))
+fastify.get('/companies', async (request, reply) => new Companies(request).list())
+fastify.get('/workspaces', {schema: validQuery(['company_id'])}, async (request, reply) => new Workspaces(request).list(request.query as WorkspaceListRequest))
+fastify.get('/channels', {schema: validQuery(['company_id', 'workspace_id'])}, async (request) => new Channels(request).listPublic(request.query as ChannelsListRequest))
+fastify.get('/messages', {schema: validQuery(['company_id', 'workspace_id', 'channel_id'])}, async (request) => new Messages(request).get(request.query as any))
+fastify.post('/messages', {schema: validBody(['company_id', 'workspace_id', 'channel_id', 'original_str'])}, async (request) => new Messages(request).upsertMessage(request.body as UpsertMessageRequest))
+fastify.delete('/messages', {schema: validBody(['company_id', 'workspace_id', 'channel_id', 'message_id'])}, async (request) => new Messages(request).deleteMessage(request.body as DeleteMessageRequest))
+fastify.post('/reactions', {schema: validBody(['company_id', 'workspace_id', 'channel_id', 'message_id', 'reaction'])}, async (request) => new Messages(request).reactions(request.body as ReactionsRequest))
+fastify.get('/direct', {schema: validQuery(['company_id'])}, async (request) => new Channels(request).listDirect((request.query as any).company_id))
+fastify.get('/settings/emoji',  async (request) => new Settings(request).emoji())
 
 
 // fastify.get('/company/:company_id/workspace/:workspace_id/channels', async (request) => {

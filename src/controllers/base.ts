@@ -1,21 +1,47 @@
 import Api from '../common/twakeapi'
 import User from "../models/user";
 import UserProfile from "../models/user_profile";
-
+import {FastifyRequest} from "fastify";
+import {BadRequest} from "../common/errors";
 
 
 /**
  * The Base controller
  */
 export default class {
-    public readonly userProfile: UserProfile
+    public userProfile: UserProfile
     private _api?: Api
+    public request: FastifyRequest;
+    private version: number[];
 
     /**
-     * @param {object} userProfile
+     * @param request
      */
-    constructor(userProfile: UserProfile) {
-        this.userProfile = userProfile
+    // constructor(userProfile: UserProfile) {
+    //     this.userProfile = userProfile
+    // }
+    constructor(request: FastifyRequest) {
+        this.request = request
+        this.userProfile = request.user
+
+        if (!request.headers['accept-version']) {
+            throw new BadRequest("accept-version header missing")
+        }
+
+        this.version = (this.request.headers['accept-version'] as string).split('.').map(a => +a)
+    }
+
+    versionFrom(version: String) {
+        const exp = this.version
+        const cur = version.split('.').map(a => +a)
+        if (exp[0] > cur[0]) return true
+        if (exp[0] == cur[0]) {
+            if (exp[1] > cur[1]) return true
+            if (exp[1] == cur[1]) {
+                if (exp[2] >= cur[2]) return true
+            }
+        }
+        return false
     }
 
     /**

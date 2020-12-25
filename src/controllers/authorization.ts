@@ -27,6 +27,8 @@ export default class extends Base {
 
     async auth(params: AuthParams) {
 
+        this.userProfile = UserProfileMock;
+
         const types = {'apple': 'apns', 'android': 'fcm'} as any
 
         assert(params.username, 'username is required');
@@ -98,10 +100,11 @@ export default class extends Base {
             delete authCache[this.userProfile.jwtToken]
         }
 
-        const mock = UserProfileMock
-        mock.jwtToken = token
+        const mock = Object.assign({}, UserProfileMock)
 
-        authCache[token] = await new Users(UserProfileMock).getCurrent(timezoneoffset)
+        this.request.user = Object.assign({}, UserProfileMock, {"jwtToken":token})
+
+        authCache[token] = await new Users(this.request).getCurrent(timezoneoffset)
 
         return {
             "token": token,

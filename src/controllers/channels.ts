@@ -5,6 +5,11 @@ import Users from "./users";
 import {arrayToObject} from "../common/helpers";
 
 
+export interface ChannelsListRequest{
+    company_id: string
+    workspace_id: string
+}
+
 export interface Channel {
     id: string
     name: string
@@ -25,18 +30,18 @@ export interface Channel {
 export default class extends Base {
     /**
      * List public channels /workspace/<workspace_id>/channels
-     * @param {string} workspaceId
      * @return {Promise< {private, last_activity, name, direct, description, members_count, id}[] >}
+     * @param request
      */
-    async listPublic(workspaceId: string): Promise<Channel[]> {
-        assert(workspaceId, 'workspace_id in path is required')
+    async listPublic(request: ChannelsListRequest): Promise<Channel[]> {
 
         const j = {
-            'collection_id': `channels/workspace/${workspaceId}`,
+            'collection_id': `channels/workspace/${request.workspace_id}`,
             'options': {
                 'type': 'channels/workspace',
                 'get_options': {
-                    'workspace_id': workspaceId,
+                    'company_id': request.company_id,
+                    'workspace_id': request.workspace_id,
                 },
             },
         }
@@ -46,7 +51,7 @@ export default class extends Base {
         const filterOnlyNamed = data['get'].filter((a: any) => a.name) as any[]
 
 
-        return filterOnlyNamed.map((a: any) => (
+        const channels = filterOnlyNamed.map((a: any) => (
                 {
                     id: a.id,
                     name: a.name,
@@ -54,13 +59,16 @@ export default class extends Base {
                     description: a.description,
                     members_count: a.members.length,
                     private: a.private,
-                    workspace_id: workspaceId,
+                    workspace_id: request.workspace_id,
                     last_activity: a.last_activity,
                     messages_total: a.messages_increment,
                     messages_unread: a.messages_increment - a._user_last_message_increment
                 } as Channel
             )
-        )
+        );
+
+
+        return channels.sort((a: any, b: any) => a.name.localeCompare(b.name))
     }
 
 
@@ -84,12 +92,15 @@ export default class extends Base {
 
         const usersIds = new Set()
 
-        data['get'].forEach((c:any) =>{
-            c.members.forEach((m:string)=>{usersIds.add(m)})
-        })
+        if (this.versionFrom("2.0.0")){
+            // no needed
+        } else {
+            data['get'].forEach((c:any) =>{
+                c.members.forEach((m:string)=>{usersIds.add(m)})
+            })
+        }
 
-
-        const usersCtrl = new Users(this.userProfile)
+        const usersCtrl = new Users(this.request)
         const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => usersCtrl.getUser(user_id as string))), 'userId')
 
         // console.log(usersHash)
@@ -98,7 +109,9 @@ export default class extends Base {
                 {
                     id: a.id,
                     name:a.name,
-                    members: a.members.map( (u:string) =>{
+                    members:
+                        this.versionFrom("1.3.6")? a.members :
+                        a.members.map( (u:string) =>{
                         return usersHash[u]
                     }) as any,
                     icon: a.icon,

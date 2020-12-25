@@ -131,13 +131,14 @@ export default class extends Base {
 
             const r = {
                 id: a.id,
-                parent_message_id: a.thread_id || a.parent_message_id || null, // backward compatibility
+                // parent_message_id: a.thread_id || a.parent_message_id || null, // backward compatibility
                 thread_id: a.thread_id || a.parent_message_id || null,
-                responses_count: a.responses_count,
-                sender: a.sender ? {user_id: a.sender} : {
+                responses_count: a.responses_count || 0,
+                sender: a.sender ? {user_id: a.sender} : this.versionFrom("2.0.0")? {}: {
                     username: 'Bot',
                     img: a.hidden_data.custom_icon,
                 },
+                application_id: a.application_id,
                 creation_date: a.creation_date,
                 content: {
                     original_str: a.content.original_str,
@@ -221,27 +222,46 @@ export default class extends Base {
 
         filteredMessages = await Promise.all(filteredMessages.map((a: any) => formatMessages(a)))
 
-        const usersCtrl = new Users(this.userProfile)
+        const usersCtrl = new Users(this.request)
         const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => usersCtrl.getUser(user_id as string))), 'userId')
         const messagesHash = arrayToObject(filteredMessages, 'id')
         filteredMessages.forEach((a: any) => {
-            if (a.sender.user_id) {
-                const user = usersHash[a.sender.user_id]
-                if (user) {
-                    a.sender = user
-                } else {
-                    console.error('Not found for', a.sender)
+            if (this.versionFrom("2.0.0")) {
+                // not including users anymore
+            } else {
+                if (a.sender.user_id) {
+                    const user = usersHash[a.sender.user_id]
+                    if (user) {
+                        a.sender = user
+                    } else {
+                        console.error('Not found for', a.sender)
+                    }
                 }
             }
-            if (a['thread_id'] && messagesHash[a['thread_id']]) {
-                messagesHash[a['thread_id']].responses.push(a)
-                delete messagesHash[a.id]
+
+            if (this.versionFrom("2.0.0")) {
+                delete a.responses
+                if (a['thread_id'] && messagesHash[a['thread_id']]) {
+                    delete messagesHash[a.id]
+                }
+            } else {
+                if (a['thread_id'] && messagesHash[a['thread_id']]) {
+                    messagesHash[a['thread_id']].responses.push(a)
+                    delete messagesHash[a.id]
+                }
             }
         })
         filteredMessages.forEach((a: any) => {
 
-            if (!a.sender.userId) { // Fake ID for bots
-                a.sender.userId = '00000000'
+            if (this.versionFrom("2.0.0")) {
+                if(!a.sender.user_id){
+                    a.sender.app_id = a.application_id
+                    delete a.application_id
+                }
+            } else {
+                if (!a.sender.userId) { // Fake ID for bots
+                    a.sender.userId = '00000000'
+                }
             }
 
             if (a.responses) {

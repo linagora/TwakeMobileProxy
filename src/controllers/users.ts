@@ -18,7 +18,6 @@ export default class extends Base {
         assert(!isNaN(+timeZoneOffset), 'timezone should be numeric (i.e. -180 for Moscow)')
         const data = await this.api.post('/ajax/users/current/get', {timezone: timeZoneOffset})
 
-
         const user = {
             userId: data.id,
             username: data.username,
