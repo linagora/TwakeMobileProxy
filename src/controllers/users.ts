@@ -59,7 +59,12 @@ export default class extends Base {
         })
     }
 
-    async getUsers(usersIds: string[]){
-        return await Promise.all(usersIds.map(a=>this.getUser(a)))
+    async getUsers(usersIds: string[] | string) {
+
+        if (!Array.isArray(usersIds)){
+            usersIds = [usersIds]
+        }
+
+        return await Promise.all(usersIds.map(a => this.getUser(a)))
     }
 }
