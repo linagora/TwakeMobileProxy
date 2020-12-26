@@ -92,13 +92,10 @@ export default class extends Base {
 
         const usersIds = new Set()
 
-        if (this.versionFrom("2.0.0")){
-            // no needed
-        } else {
-            data['get'].forEach((c:any) =>{
-                c.members.forEach((m:string)=>{usersIds.add(m)})
-            })
-        }
+        // for channel name
+        data['get'].forEach((c:any) =>{
+            c.members.forEach((m:string)=>{usersIds.add(m)})
+        })
 
         const usersCtrl = new Users(this.request)
         const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => usersCtrl.getUser(user_id as string))), 'userId')
@@ -108,9 +105,9 @@ export default class extends Base {
         return data['get'].map((a: any) => (
                 {
                     id: a.id,
-                    name:a.name,
+                    name:a.name || Object.values(usersHash).map((a:any)=>a.firstname + ' ' + a.lastname).join(', '),
                     members:
-                        this.versionFrom("1.3.6")? a.members :
+                        this.versionFrom("2.0.0")? a.members :
                         a.members.map( (u:string) =>{
                         return usersHash[u]
                     }) as any,
