@@ -60,9 +60,6 @@ export default class extends Base {
     }
 
     async getUsers(usersIds: string[]){
-        const allUsers = await Promise.all(usersIds.map(a=>this.getUser(a)))
-        return allUsers
-
-
+        return await Promise.all(usersIds.map(a=>this.getUser(a)))
     }
 }
