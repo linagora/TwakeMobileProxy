@@ -37,8 +37,8 @@ export default class extends Base {
 
     }
 
-    __transform(user: User){
-        if(this.versionFrom("2.0.0")){
+    __transform(user: User) {
+        if (this.versionFrom("2.0.0")) {
             return user
         } else {
             return Object.assign({}, user, {"userId": user.id})
@@ -71,7 +71,7 @@ export default class extends Base {
 
     async getUsers(usersIds: string[] | string) {
 
-        if (!Array.isArray(usersIds)){
+        if (!Array.isArray(usersIds)) {
             usersIds = [usersIds]
         }
 

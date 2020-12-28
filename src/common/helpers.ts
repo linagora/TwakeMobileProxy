@@ -5,10 +5,10 @@ import emojiData from './emoji.json';
  * @param {string} keyField
  * @return {object}
  */
-export function arrayToObject(arr:any[], keyField:string) {
-  return Object.assign({}, ...arr.map((item) => ({[item[keyField]]: item})))
+export function arrayToObject(arr: any[], keyField: string) {
+    return Object.assign({}, ...arr.map((item) => ({[item[keyField]]: item})))
 }
 
-export function emojiGetCode(emojiString: string){
-  return (emojiData as any)[emojiString] || '25A1'
+export function emojiGetCode(emojiString: string) {
+    return (emojiData as any)[emojiString] || '25A1'
 }

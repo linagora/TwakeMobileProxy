@@ -1,5 +1,4 @@
 import Api from '../common/twakeapi'
-import User from "../models/user";
 import UserProfile from "../models/user_profile";
 import {FastifyRequest} from "fastify";
 import {BadRequest} from "../common/errors";

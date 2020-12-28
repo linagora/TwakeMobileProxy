@@ -1,11 +1,9 @@
 import Base from './base'
-import assert from "assert";
-import User from "../models/user";
 import Users from "./users";
 import {arrayToObject} from "../common/helpers";
 
 
-export interface ChannelsListRequest{
+export interface ChannelsListRequest {
     company_id: string
     workspace_id: string
 }
@@ -21,7 +19,7 @@ export interface Channel {
     last_activity: number
     messages_unread: number
     company_id: string
-    members? : any[]
+    members?: any[]
 }
 
 
@@ -95,26 +93,30 @@ export default class extends Base {
         const usersIds = new Set()
 
         // for channel name
-        data['get'].forEach((c:any) =>{
-            c.members.forEach((m:string)=>{usersIds.add(m)})
+        data['get'].forEach((c: any) => {
+            c.members.forEach((m: string) => {
+                usersIds.add(m)
+            })
         })
 
         const usersCtrl = new Users(this.request)
         const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => usersCtrl.getUser(user_id as string))), 'id')
 
+        return data['get'].map((a: any) => {
 
-        return data['get'].map((a: any) => (
-                {
+                a.members = a.members.filter((a: string) => a != this.userProfile.userId)
+
+                return {
                     id: a.id,
-                    name:a.name || a.members.filter((a:string)=>a!=this.userProfile.userId).map((a:string)=>{
+                    name: a.name || a.members.map((a: string) => {
                         const u = usersHash[a]
                         return u.firstname + ' ' + u.lastname
                     }).join(', '),
                     members:
-                        this.versionFrom("2.0.0")? a.members :
-                        a.members.map( (u:string) =>{
-                        return usersHash[u]
-                    }) as any,
+                        this.versionFrom("2.0.0") ? a.members :
+                            a.members.map((u: string) => {
+                                return usersHash[u]
+                            }) as any,
                     icon: a.icon,
                     description: a.description,
                     members_count: a.members.length,
@@ -125,10 +127,9 @@ export default class extends Base {
                     messages_unread: a.messages_increment - a._user_last_message_increment,
                     company_id: companyId
                 } as Channel
-            )
+            }
         )
     }
-
 
     async listPublic2(companyId: string, workspaceId: string) {
         const res = await this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`,
@@ -140,7 +141,6 @@ export default class extends Base {
         console.log(res)
         return res
     }
-
 
     async members(companyId: string, workspaceId: string, channelId: string) {
 

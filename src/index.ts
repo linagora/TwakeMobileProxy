@@ -1,25 +1,18 @@
 import Fastify, {FastifyInstance} from 'fastify'
-
 // import {HandledException} from "./common/helpers";
 import {BadRequest, Forbidden} from './common/errors';
-import assert, {AssertionError} from "assert";
+import {AssertionError} from "assert";
 
 import Authorization, {ProlongParams} from './controllers/authorization'
 import Users from './controllers/users'
 import Channels, {ChannelsListRequest} from './controllers/channels'
-import Messages, {
-    DeleteMessageRequest,
-    GetMessagesRequest,
-    ReactionsRequest,
-    UpsertMessageRequest
-} from './controllers/messages'
+import Messages, {DeleteMessageRequest, ReactionsRequest, UpsertMessageRequest} from './controllers/messages'
 import {authCache} from "./common/simplecache";
 import AuthParams from "./models/auth_params";
-import UserProfile, {UserProfileMock} from "./models/user_profile";
+import UserProfile from "./models/user_profile";
 import Settings from './controllers/settings'
 import Companies from './controllers/companies'
 import Workspaces, {WorkspaceListRequest} from './controllers/workspaces'
-import {toTwacode} from "./common/twacode";
 
 const fastify: FastifyInstance = Fastify({logger: false})
 
@@ -97,7 +90,7 @@ fastify.post('/messages', {schema: validBody(['company_id', 'workspace_id', 'cha
 fastify.delete('/messages', {schema: validBody(['company_id', 'workspace_id', 'channel_id', 'message_id'])}, async (request) => new Messages(request).deleteMessage(request.body as DeleteMessageRequest))
 fastify.post('/reactions', {schema: validBody(['company_id', 'workspace_id', 'channel_id', 'message_id', 'reaction'])}, async (request) => new Messages(request).reactions(request.body as ReactionsRequest))
 fastify.get('/direct', {schema: validQuery(['company_id'])}, async (request) => new Channels(request).listDirect((request.query as any).company_id))
-fastify.get('/settings/emoji',  async (request) => new Settings(request).emoji())
+fastify.get('/settings/emoji', async (request) => new Settings(request).emoji())
 
 
 // fastify.get('/company/:company_id/workspace/:workspace_id/channels', async (request) => {

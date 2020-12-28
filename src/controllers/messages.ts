@@ -1,7 +1,6 @@
 import Base from './base'
 import {arrayToObject} from '../common/helpers'
 import Users from './users'
-import User from "../models/user";
 import assert from "assert";
 import {fixIt, parseCompile, toTwacode} from "../common/twacode"
 import {BadRequest} from "../common/errors";
@@ -134,7 +133,7 @@ export default class extends Base {
                 // parent_message_id: a.thread_id || a.parent_message_id || null, // backward compatibility
                 thread_id: a.thread_id || a.parent_message_id || null,
                 responses_count: a.responses_count || 0,
-                sender: a.sender ? {user_id: a.sender} : this.versionFrom("2.0.0")? {}: {
+                sender: a.sender ? {user_id: a.sender} : this.versionFrom("2.0.0") ? {} : {
                     username: 'Bot',
                     img: a.hidden_data.custom_icon,
                 },
@@ -255,10 +254,10 @@ export default class extends Base {
 
             if (this.versionFrom("2.0.0")) {
 
-                a.user_id =  a.sender.user_id
+                a.user_id = a.sender.user_id
                 delete a.sender
 
-                if(a.application_id){
+                if (a.application_id) {
                     a.app_id = a.application_id
                 }
                 delete a.application_id

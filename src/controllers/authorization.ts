@@ -1,9 +1,7 @@
-import jwt from 'jsonwebtoken'
 import Base from './base'
 import assert from "assert";
 import Users from './users'
-import {authCache, refreshTokenCache, usersCache} from "../common/simplecache";
-import {v4 as uuidv4} from 'uuid';
+import {authCache} from "../common/simplecache";
 import AuthParams from "../models/auth_params";
 import {Forbidden} from '../common/errors';
 import {UserProfileMock} from "../models/user_profile";
@@ -90,19 +88,19 @@ export default class extends Base {
 
     async doAuth(data: any, timezoneoffset: number) {
 
-        if (!data.access_token){
+        if (!data.access_token) {
             throw new Forbidden('Authorization failed')
         }
 
         const token = data.access_token.value;
 
-        if(this.userProfile){
+        if (this.userProfile) {
             delete authCache[this.userProfile.jwtToken]
         }
 
         const mock = Object.assign({}, UserProfileMock)
 
-        this.request.user = Object.assign({}, UserProfileMock, {"jwtToken":token})
+        this.request.user = Object.assign({}, UserProfileMock, {"jwtToken": token})
 
         authCache[token] = await new Users(this.request).getCurrent(timezoneoffset)
 

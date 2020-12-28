@@ -67,13 +67,13 @@ export default class {
         console.log('GET', url, JSON.stringify(params))
 
         try {
-          // console.log(HOST + url)
-          // console.log(headers)
+            // console.log(HOST + url)
+            // console.log(headers)
             const res = await axios.get(HOST + url, {params, headers})
 
-           return res.data as any
+            return res.data as any
         } catch (e) {
-          console.error(e)
+            console.error(e)
             throw new BadRequest(e.response.data.message)
         }
 
