@@ -106,7 +106,10 @@ export default class extends Base {
         return data['get'].map((a: any) => (
                 {
                     id: a.id,
-                    name:a.name || Object.values(usersHash).map((a:any)=>a.firstname + ' ' + a.lastname).join(', '),
+                    name:a.name || a.members.filter((a:string)=>a!=this.userProfile.userId).map((a:string)=>{
+                        const u = usersHash[a]
+                        return u.firstname + ' ' + u.lastname
+                    }).join(', '),
                     members:
                         this.versionFrom("2.0.0")? a.members :
                         a.members.map( (u:string) =>{
