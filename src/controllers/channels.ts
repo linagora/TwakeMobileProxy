@@ -100,9 +100,8 @@ export default class extends Base {
         })
 
         const usersCtrl = new Users(this.request)
-        const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => usersCtrl.getUser(user_id as string))), 'userId')
+        const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => usersCtrl.getUser(user_id as string))), 'id')
 
-        // console.log(usersHash)
 
         return data['get'].map((a: any) => (
                 {

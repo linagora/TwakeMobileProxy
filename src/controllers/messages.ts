@@ -223,7 +223,7 @@ export default class extends Base {
         filteredMessages = await Promise.all(filteredMessages.map((a: any) => formatMessages(a)))
 
         const usersCtrl = new Users(this.request)
-        const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => usersCtrl.getUser(user_id as string))), 'userId')
+        const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => usersCtrl.getUser(user_id as string))), 'id')
         const messagesHash = arrayToObject(filteredMessages, 'id')
         filteredMessages.forEach((a: any) => {
             if (this.versionFrom("2.0.0")) {
