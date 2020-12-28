@@ -71,7 +71,7 @@ fastify.addHook("onRequest", async (request, reply) => {
 
                 request.user = {
                     jwtToken: token,
-                    userId: user.userId,
+                    userId: user.id,
                     timeZoneOffset: user.timeZoneOffset || 0
                 }
 

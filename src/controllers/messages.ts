@@ -254,10 +254,16 @@ export default class extends Base {
         filteredMessages.forEach((a: any) => {
 
             if (this.versionFrom("2.0.0")) {
-                if(!a.sender.user_id){
-                    a.sender.app_id = a.application_id
-                    delete a.application_id
+
+                a.user_id =  a.sender.user_id
+                delete a.sender
+
+                if(a.application_id){
+                    a.app_id = a.application_id
                 }
+                delete a.application_id
+
+
             } else {
                 if (!a.sender.userId) { // Fake ID for bots
                     a.sender.userId = '00000000'

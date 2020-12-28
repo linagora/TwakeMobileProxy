@@ -19,7 +19,7 @@ export default class extends Base {
         const data = await this.api.post('/ajax/users/current/get', {timezone: timeZoneOffset})
 
         const user = {
-            userId: data.id,
+            id: data.id,
             username: data.username,
             firstname: data.firstname,
             lastname: data.lastname,
@@ -27,14 +27,22 @@ export default class extends Base {
             timeZoneOffset: timeZoneOffset
         } as User
 
-        usersCache[user.userId] = user
+        usersCache[user.id] = user
 
         const out = Object.assign({}, user)
 
         out.status = {"icon": data.status_icon[0], "title": data.status_icon[1]}
 
-        return out
+        return this.__transform(out)
 
+    }
+
+    __transform(user: User){
+        if(this.versionFrom("2.0.0")){
+            return user
+        } else {
+            return Object.assign({}, user, {"userId": user.id})
+        }
     }
 
     /**
@@ -44,18 +52,20 @@ export default class extends Base {
      */
     async getUser(userId: string) {
         if (usersCache[userId]) {
-            return Promise.resolve(usersCache[userId])
+            return Promise.resolve(this.__transform(usersCache[userId]))
         }
         return this.api.post('/ajax/users/all/get', {'id': userId}).then((a) => {
             const user = {
-                userId: a.id,
+                id: a.id,
                 username: a.username,
                 firstname: a.firstname,
                 lastname: a.lastname,
                 thumbnail: a.thumbnail
             }
             usersCache[a.id] = user
-            return user
+
+
+            return this.__transform(user)
         })
     }
 

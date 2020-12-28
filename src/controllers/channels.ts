@@ -20,6 +20,7 @@ export interface Channel {
     workspace_id: string | null
     last_activity: number
     messages_unread: number
+    company_id: string
     members? : any[]
 }
 
@@ -62,7 +63,8 @@ export default class extends Base {
                     workspace_id: request.workspace_id,
                     last_activity: a.last_activity,
                     messages_total: a.messages_increment,
-                    messages_unread: a.messages_increment - a._user_last_message_increment
+                    messages_unread: a.messages_increment - a._user_last_message_increment,
+                    company_id: request.company_id
                 } as Channel
             )
         );
@@ -75,9 +77,9 @@ export default class extends Base {
     /**
      * List public channels /company/<company_id>/direct
      * @return {Promise< {private, last_activity, name, direct, description, members_count, id}[] >}
-     * @param user
+     * @param companyId
      */
-    async listDirect(companyId: number): Promise<Channel[]> {
+    async listDirect(companyId: string): Promise<Channel[]> {
 
         const j = {
             "collection_id": `channels/direct_messages/${this.userProfile.userId}`,
@@ -118,7 +120,8 @@ export default class extends Base {
                     workspace_id: null,
                     last_activity: a.last_activity,
                     messages_total: a.messages_increment,
-                    messages_unread: a.messages_increment - a._user_last_message_increment
+                    messages_unread: a.messages_increment - a._user_last_message_increment,
+                    company_id: companyId
                 } as Channel
             )
         )
