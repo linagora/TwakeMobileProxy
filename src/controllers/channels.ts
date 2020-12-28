@@ -104,7 +104,9 @@ export default class extends Base {
 
         return data['get'].map((a: any) => {
 
-                a.members = a.members.filter((a: string) => a != this.userProfile.userId)
+                if (this.versionFrom("2.0.0")){
+                    a.members = a.members.filter((a: string) => a != this.userProfile.userId)
+                }
 
                 return {
                     id: a.id,
