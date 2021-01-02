@@ -211,6 +211,8 @@ export default class extends Base {
                 r.thread_id = a.thread_id
             }
 
+            r.channel_id = req.channel_id
+
             return r
         }
 
