@@ -280,6 +280,9 @@ export default class extends Base {
             }
         })
 
+        if (req.before_message_id){
+            delete messagesHash[req.before_message_id]
+        }
 
         return Object.values(messagesHash).sort((a: any, b: any) => a.creation_date - b.creation_date)
     }

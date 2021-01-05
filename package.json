@@ -22,7 +22,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "start:dev": "nodemon",
+    "dev": "nodemon",
     "start": "npm run build && node build/index.js"
   },
   "repository": {
