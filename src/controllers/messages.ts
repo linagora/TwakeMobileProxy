@@ -323,12 +323,30 @@ export default class extends Base {
 
         const x = await this.api.post('/ajax/discussion/save', obj)
 
-        // return {
-        //     "id": x['object']['id']
-        // }
-        console.log('server response', x)
 
-        return x['object']
+        const id = x['object']['id']
+
+
+        await new Promise(((resolve, reject) => {
+            setTimeout(resolve,500)
+        }))
+
+        const insertedMessage= await this.get({
+            company_id: message.company_id,
+            workspace_id: message.workspace_id,
+            channel_id: message.channel_id,
+            thread_id: message.thread_id,
+            message_id: id,
+            limit: 1
+        } as GetMessagesRequest)
+
+        if (!insertedMessage.length){
+            throw Error("Can't get inserted message")
+        }
+
+        return insertedMessage[0]
+
+
     }
 
     async deleteMessage(message: DeleteMessageRequest) {

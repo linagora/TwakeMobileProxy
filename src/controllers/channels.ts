@@ -32,6 +32,7 @@ export interface ChannelsAddRequest {
     description: string
     channel_group: string,
     visibility: string
+    members: string[]
 }
 
 /**
@@ -44,8 +45,9 @@ export default class extends Base {
         const url = `/internal/services/channels/v1/companies/${request.company_id}/workspaces/${request.workspace_id}/channels`
         assert(['public','private','direct'].includes(request.visibility),"'visibility' should be 'public','private' or 'direct'")
 
-        const data = await this.api.post(url, {
+        const params = {
             //Only to create or locate a direct channel without its id
+            "options": {},
             "resource": {
                 "icon": request.icon,
                 "name": request.name,
@@ -55,7 +57,13 @@ export default class extends Base {
                 "visibility": "public", //Optional for direct channels
                 "default": true
             }
-        })
+        }
+
+        if (request.members){
+            params.options = {"members": request.members}
+        }
+
+        const data = await this.api.post(url, params)
         console.log(data)
         return {"success":true}
     }
