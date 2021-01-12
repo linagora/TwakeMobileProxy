@@ -1,6 +1,7 @@
 import Base from './base'
 import Users from "./users";
 import {arrayToObject} from "../common/helpers";
+import assert from "assert";
 
 
 export interface ChannelsListRequest {
@@ -13,6 +14,7 @@ export interface Channel {
     name: string
     icon: string
     description: string
+    channel_group: string
     members_count: number
     private: boolean
     workspace_id: string | null
@@ -22,17 +24,79 @@ export interface Channel {
     members?: any[]
 }
 
+export interface ChannelsAddRequest {
+    company_id: string
+    workspace_id: string
+    name: string
+    icon: string
+    description: string
+    channel_group: string,
+    visibility: string
+}
 
 /**
  * Channels methods
  */
 export default class extends Base {
-    /**
-     * List public channels /workspace/<workspace_id>/channels
-     * @return {Promise< {private, last_activity, name, direct, description, members_count, id}[] >}
-     * @param request
-     */
-    async listPublic(request: ChannelsListRequest): Promise<Channel[]> {
+
+
+    async addChannel(request: ChannelsAddRequest): Promise<any>{
+        const url = `/internal/services/channels/v1/companies/${request.company_id}/workspaces/${request.workspace_id}/channels`
+        assert(['public','private','direct'].includes(request.visibility),"'visibility' should be 'public','private' or 'direct'")
+
+        const data = await this.api.post(url, {
+            //Only to create or locate a direct channel without its id
+            "resource": {
+                "icon": request.icon,
+                "name": request.name,
+                "description": request.description,
+                "channel_group": request.channel_group,
+                "archived": false,
+                "visibility": "public", //Optional for direct channels
+                "default": true
+            }
+        })
+        console.log(data)
+        return {"success":true}
+    }
+
+
+
+    async listPublicV2(request: ChannelsListRequest): Promise<Channel[]>{
+
+
+        const url = `/internal/services/channels/v1/companies/${request.company_id}/workspaces/${request.workspace_id}/channels`
+        const data = await this.api.get(url, {})
+
+        const channels = data.resources.map((a: any) => (
+                {
+                    id: a.id,
+                    name: a.name,
+                    icon: a.icon,
+                    company_id: a.company_id,
+                    workspace_id: a.workspace_id,
+                    description: a.description,
+                    channel_group: a.channel_group,
+                    // members_count: a.members.length,
+                    members_count: 0,
+                    private: a.visibility == 'private' ,
+                    // last_activity: a.last_activity,
+                    last_activity: 0,
+                    // messages_total: a.messages_increment,
+                    // messages_unread: a.messages_increment - a._user_last_message_increment,
+                    messages_total: 0,
+                    messages_unread: 0,
+                } as Channel
+            )
+        );
+
+
+        return channels.sort((a: any, b: any) => a.name.localeCompare(b.name))
+
+    }
+
+
+    async listPublicV1(request: ChannelsListRequest): Promise<Channel[]> {
 
         const j = {
             'collection_id': `channels/workspace/${request.workspace_id}`,
@@ -57,6 +121,7 @@ export default class extends Base {
                     icon: a.icon,
                     description: a.description,
                     members_count: a.members.length,
+                    channel_group: '',
                     private: a.private,
                     workspace_id: request.workspace_id,
                     last_activity: a.last_activity,
@@ -72,12 +137,25 @@ export default class extends Base {
     }
 
 
+    async listPublic(request: ChannelsListRequest): Promise<Channel[]>{
+        return  this.versionFrom("2.0.0") ? this.listPublicV2(request) : this.listPublicV1(request);
+    }
+
+    async listDirect(companyId: string): Promise<Channel[]>{
+        const request = {
+            company_id: companyId,
+            workspace_id: 'direct'
+        } as ChannelsListRequest
+        return  this.listPublicV2(request)
+    }
+
+
     /**
      * List public channels /company/<company_id>/direct
      * @return {Promise< {private, last_activity, name, direct, description, members_count, id}[] >}
      * @param companyId
      */
-    async listDirect(companyId: string): Promise<Channel[]> {
+    async _listDirect(companyId: string): Promise<Channel[]> {
 
         const j = {
             "collection_id": `channels/direct_messages/${this.userProfile.userId}`,
@@ -120,6 +198,7 @@ export default class extends Base {
                                 return usersHash[u]
                             }) as any,
                     icon: a.icon,
+                    channel_group: '',
                     description: a.description,
                     members_count: a.members.length,
                     private: a.private,

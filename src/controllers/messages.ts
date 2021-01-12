@@ -83,6 +83,8 @@ export default class extends Base {
 
         const params = {
             'options': {
+                company_id: req.company_id,
+                workspace_id: req.workspace_id,
                 channel_id: req.channel_id,
                 limit: req.limit || 50,
                 offset: req.before_message_id,
@@ -347,13 +349,17 @@ export default class extends Base {
         }
 
         // console.log(obj)
-        return await this.api.post('/ajax/discussion/remove', obj)
+        const data =  await this.api.post('/ajax/discussion/remove', obj)
+        console.log('DONE', data)
+        return {"success":true}
 
     }
 
     async reactions(req: ReactionsRequest) {
         const obj = {
             'object': {
+                company_id: req.company_id,
+                workspace_id: req.workspace_id,
                 channel_id: req.channel_id,
                 id: req.message_id,
                 parent_message_id: req.thread_id, // backward compatibility

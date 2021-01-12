@@ -2,7 +2,8 @@ import axios from 'axios'
 import UserProfile from "../models/user_profile";
 import {BadRequest} from "./errors";
 
-const HOST = 'https://devapi.twake.app'
+// const HOST = 'https://devapi.twake.app'
+const HOST = 'https://beta.twake.app'
 /**
  * TwakeApi connector
  */

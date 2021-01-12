@@ -5,7 +5,7 @@ import {AssertionError} from "assert";
 
 import Authorization, {ProlongParams} from './controllers/authorization'
 import Users from './controllers/users'
-import Channels, {ChannelsListRequest} from './controllers/channels'
+import Channels, {ChannelsAddRequest, ChannelsListRequest} from './controllers/channels'
 import Messages, {DeleteMessageRequest, ReactionsRequest, UpsertMessageRequest} from './controllers/messages'
 import {authCache} from "./common/simplecache";
 import AuthParams from "./models/auth_params";
@@ -85,6 +85,7 @@ fastify.get('/users', async (request, reply) => new Users(request).getUsers((req
 fastify.get('/companies', async (request, reply) => new Companies(request).list())
 fastify.get('/workspaces', {schema: validQuery(['company_id'])}, async (request, reply) => new Workspaces(request).list(request.query as WorkspaceListRequest))
 fastify.get('/channels', {schema: validQuery(['company_id', 'workspace_id'])}, async (request) => new Channels(request).listPublic(request.query as ChannelsListRequest))
+fastify.post('/channels', {schema: validBody(['company_id', 'workspace_id', 'name','visibility'])}, async (request) => new Channels(request).addChannel(request.body as ChannelsAddRequest))
 fastify.get('/messages', {schema: validQuery(['company_id', 'workspace_id', 'channel_id'])}, async (request) => new Messages(request).get(request.query as any))
 fastify.post('/messages', {schema: validBody(['company_id', 'workspace_id', 'channel_id', 'original_str'])}, async (request) => new Messages(request).upsertMessage(request.body as UpsertMessageRequest))
 fastify.delete('/messages', {schema: validBody(['company_id', 'workspace_id', 'channel_id', 'message_id'])}, async (request) => new Messages(request).deleteMessage(request.body as DeleteMessageRequest))
