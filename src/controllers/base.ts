@@ -8,7 +8,6 @@ import {BadRequest} from "../common/errors";
  * The Base controller
  */
 export default class {
-    public userProfile: UserProfile
     private _api?: Api
     public request: FastifyRequest;
     private version: number[];
@@ -21,13 +20,18 @@ export default class {
     // }
     constructor(request: FastifyRequest) {
         this.request = request
-        this.userProfile = request.user
 
         if (!request.headers['accept-version']) {
             throw new BadRequest("accept-version header missing")
         }
 
         this.version = (this.request.headers['accept-version'] as string).split('.').map(a => +a)
+    }
+
+    userProfile(){
+        return {
+
+        } as UserProfile
     }
 
     versionFrom(version: String) {
@@ -49,7 +53,7 @@ export default class {
      */
     get api(): Api {
         if (!this._api) {
-            this._api = new Api(this.userProfile)
+            this._api = new Api(this.request.jwtToken)
         }
         return this._api
     }

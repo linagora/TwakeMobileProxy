@@ -48,31 +48,6 @@ export interface ReactionsRequest {
  */
 export default class extends Base {
 
-    async init(channelId: string) {
-        const data = await this.api.post('/ajax/core/collections/init', {
-            multiple: [
-                {
-                    "collection_id": "messages/" + channelId,
-                    "options": {
-                        "type": "messages",
-
-                        //If you let this empty, then you'll retrieve only the websocket information
-                        "get_options": {
-                            "channel_id": channelId,
-                            "limit": 0,
-                            "offset": false,
-                            "thread_id": ""
-                        }
-                    },
-                    "_grouped": true
-                }
-            ]
-        })
-
-        const wsInfo = data[0].data
-
-        return wsInfo
-    }
 
     /**
      * Get messages GET /channels/<channel_id>/messages
@@ -81,22 +56,11 @@ export default class extends Base {
      */
     async get(req: GetMessagesRequest) {
 
-        const params = {
-            'options': {
-                company_id: req.company_id,
-                workspace_id: req.workspace_id,
-                channel_id: req.channel_id,
-                limit: req.limit || 50,
-                offset: req.before_message_id,
-                parent_message_id: req.thread_id, // backward compatibility
-                thread_id: req.thread_id,
-                id: req.message_id
-            },
-        }
+        assert(req.company_id, 'company_id is required');
+        assert(req.workspace_id, 'workspace_id is required');
+        assert(req.channel_id, 'channel_id is required');
 
-        // console.log(JSON.stringify(params))
-
-        let messages = await this.api.post('/ajax/discussion/get', params)
+        let messages = await this.api.getMessages(req.company_id, req.workspace_id, req.channel_id,req.thread_id,req.message_id,req.limit,req.before_message_id)
 
         if (!messages) {
             messages = []
@@ -110,16 +74,8 @@ export default class extends Base {
         // })
 
 
-        const getPreview = async (elementId: string) => {
-            const x = await this.api.post('/ajax/drive/v2/find', {
-                'options': {
-                    'element_id': elementId,
-                    'workspace_id': "ac6c84e0-1dcc-11eb-82c8-0242ac120004",
-                    "public_access_token": null
-                },
-            })
-            return x.preview_link
-        }
+        const getPreview = async (elementId: string) => this.api.getDriveObject(req.company_id, req.workspace_id, elementId).then(a => a.preview_link)
+
 
         const formatMessages = async (a: any) => {
             if (a.sender) {
@@ -282,7 +238,7 @@ export default class extends Base {
             }
         })
 
-        if (req.before_message_id){
+        if (req.before_message_id) {
             delete messagesHash[req.before_message_id]
         }
 
@@ -296,51 +252,37 @@ export default class extends Base {
      * @param {object} message
      * @return {Promise<{object}>}
      */
-    async upsertMessage(message: UpsertMessageRequest) {
+    async upsertMessage(req: UpsertMessageRequest) {
 
+        assert(req.company_id, 'company_id is required');
+        assert(req.workspace_id, 'workspace_id is required');
+        assert(req.channel_id, 'channel_id is required');
+        assert(req.message_id, 'message_id is required');
 
-        assert(message.original_str, 'original_str is missing')
-
-        const prepared = message.prepared || toTwacode(message.original_str)
+        const prepared = req.prepared || toTwacode(req.original_str)
 
         if (!prepared || prepared?.length === 0) {
             throw new BadRequest('Unparseable message')
         }
 
-        const obj = {
-            'object': {
-                company_id: message.company_id,
-                workspace_id: message.workspace_id,
-                channel_id: message.channel_id,
-                parent_message_id: message.thread_id, // backward compatibility
-                thread_id: message.thread_id,
-                content: {
-                    original_str: message.original_str,
-                    prepared: prepared
-                }
-            }
-        }
-
-        const x = await this.api.post('/ajax/discussion/save', obj)
-
+        const x = await this.api.addMessage(req.company_id, req.workspace_id, req.channel_id, req.original_str, prepared ,req.thread_id)
 
         const id = x['object']['id']
 
-
         await new Promise(((resolve, reject) => {
-            setTimeout(resolve,500)
+            setTimeout(resolve, 500)
         }))
 
-        const insertedMessage= await this.get({
-            company_id: message.company_id,
-            workspace_id: message.workspace_id,
-            channel_id: message.channel_id,
-            thread_id: message.thread_id,
+        const insertedMessage = await this.get({
+            company_id: req.company_id,
+            workspace_id: req.workspace_id,
+            channel_id: req.channel_id,
+            thread_id: req.thread_id,
             message_id: id,
             limit: 1
         } as GetMessagesRequest)
 
-        if (!insertedMessage.length){
+        if (!insertedMessage.length) {
             throw Error("Can't get inserted message")
         }
 
@@ -349,43 +291,22 @@ export default class extends Base {
 
     }
 
-    async deleteMessage(message: DeleteMessageRequest) {
-        assert(message.company_id, 'company_id is required');
-        assert(message.workspace_id, 'workspace_id is required');
-        assert(message.channel_id, 'channel_id is required');
-        assert(message.message_id, 'message_id is required');
-
-        const obj = {
-            'object': {
-                company_id: message.company_id,
-                workspace_id: message.workspace_id,
-                channel_id: message.channel_id,
-                id: message.message_id,
-                parent_message_id: message.thread_id, // backward compatibility
-                thread_id: message.thread_id
-            }
-        }
+    async deleteMessage(req: DeleteMessageRequest) {
+        assert(req.company_id, 'company_id is required');
+        assert(req.workspace_id, 'workspace_id is required');
+        assert(req.channel_id, 'channel_id is required');
+        assert(req.message_id, 'message_id is required');
 
         // console.log(obj)
-        const data =  await this.api.post('/ajax/discussion/remove', obj)
+        const data = await this.api.deleteMessage(req.company_id, req.workspace_id, req.channel_id, req.thread_id)
         console.log('DONE', data)
-        return {"success":true}
+        return {"success": true}
 
     }
 
     async reactions(req: ReactionsRequest) {
-        const obj = {
-            'object': {
-                company_id: req.company_id,
-                workspace_id: req.workspace_id,
-                channel_id: req.channel_id,
-                id: req.message_id,
-                parent_message_id: req.thread_id, // backward compatibility
-                thread_id: req.thread_id,
-                _user_reaction: req.reaction
-            }
-        }
-        const res = await this.api.post('/ajax/discussion/save', obj)
+
+        const res = await this.api.addReaction(req.company_id, req.workspace_id, req.channel_id, req.message_id, req.reaction, req.thread_id)
 
         return {
             id: res.object.id,

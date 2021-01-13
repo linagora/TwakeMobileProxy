@@ -3,7 +3,7 @@ import Fastify, {FastifyInstance} from 'fastify'
 import {BadRequest, Forbidden} from './common/errors';
 import {AssertionError} from "assert";
 
-import Authorization, {ProlongParams} from './controllers/authorization'
+import Authorization, {InitParams, ProlongParams} from './controllers/authorization'
 import Users from './controllers/users'
 import Channels, {ChannelsAddRequest, ChannelsListRequest} from './controllers/channels'
 import Messages, {DeleteMessageRequest, ReactionsRequest, UpsertMessageRequest} from './controllers/messages'
@@ -23,8 +23,8 @@ const fastify: FastifyInstance = Fastify({logger: false})
 
 declare module "fastify" {
     export interface FastifyRequest {
-        jwtVerify: any,
-        user: UserProfile,
+        // user: UserProfile,
+        jwtToken: string
     }
 }
 
@@ -52,21 +52,21 @@ fastify.addHook("onRequest", async (request, reply) => {
         if (request.routerPath !== '/' && request.routerPath !== '/authorize' && request.routerPath !== '/authorization/prolong') {
 
             if (request.headers.authorization && request.headers.authorization.toLowerCase().indexOf('bearer') > -1) {
-                const token = request.headers.authorization.substring(7).trim()
+                request.jwtToken = request.headers.authorization.substring(7).trim()
 
-                if (!authCache[token]) {
-                    return reply
-                        .code(401)
-                        .header('Content-Type', 'application/json; charset=utf-8')
-                        .send({"error": "Wrong token"})
-                }
-                const user = authCache[token]
-
-                request.user = {
-                    jwtToken: token,
-                    userId: user.id,
-                    timeZoneOffset: user.timeZoneOffset || 0
-                }
+                // if (!authCache[token]) {
+                //     return reply
+                //         .code(401)
+                //         .header('Content-Type', 'application/json; charset=utf-8')
+                //         .send({"error": "Wrong token"})
+                // }
+                // const user = authCache[token]
+                //
+                // request.user = {
+                //     jwtToken: token,
+                //     userId: user.id,
+                //     timeZoneOffset: user.timeZoneOffset || 0
+                // }
 
                 // console.log(request.user)
             }
@@ -78,9 +78,10 @@ fastify.addHook("onRequest", async (request, reply) => {
 //
 
 fastify.get('/', async (request, reply) => ({"ready": true}))
-fastify.post('/authorize', async (request, reply) => await new Authorization(request).auth(request.body as AuthParams))
+// fastify.post('/authorize', async (request, reply) => await new Authorization(request).auth(request.body as AuthParams))
+fastify.post('/init', {schema: validBody(['timezoneoffset', 'fcm_token'])}, async (request, reply) => new Authorization(request).init(request.body as InitParams))
 fastify.post('/authorization/prolong', async (request, reply) => new Authorization(request).prolong(request.body as ProlongParams))
-fastify.get('/user', async (request, reply) => new Users(request).getCurrent(request.user.timeZoneOffset))
+fastify.get('/user', async (request, reply) => new Users(request).getCurrent((request.query as any).timezoneoffset))
 fastify.get('/users', async (request, reply) => new Users(request).getUsers((request.query as any).id))
 fastify.get('/companies', async (request, reply) => new Companies(request).list())
 fastify.get('/workspaces', {schema: validQuery(['company_id'])}, async (request, reply) => new Workspaces(request).list(request.query as WorkspaceListRequest))

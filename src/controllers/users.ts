@@ -10,21 +10,19 @@ import assert from "assert";
 export default class extends Base {
     /**
      * Get current user /users/current/get
-     * @param {int} timeZoneOffset
      * @return {Promise<{firstname: string, thumbnail: string, companies: [], user_id: string, username: string, lastname: string}>}
+     * @param timeZoneOffset
      */
-    async getCurrent(timeZoneOffset: number): Promise<User> {
-        assert(timeZoneOffset, 'timezoneoffset is required')
-        assert(!isNaN(+timeZoneOffset), 'timezone should be numeric (i.e. -180 for Moscow)')
-        const data = await this.api.post('/ajax/users/current/get', {timezone: timeZoneOffset})
+    async getCurrent(timeZoneOffset?: string): Promise<User> {
+
+        const data = await this.api.getCurrentUser(timeZoneOffset)
 
         const user = {
             id: data.id,
             username: data.username,
             firstname: data.firstname,
             lastname: data.lastname,
-            thumbnail: data.thumbnail,
-            timeZoneOffset: timeZoneOffset
+            thumbnail: data.thumbnail
         } as User
 
         usersCache[user.id] = user
@@ -54,7 +52,7 @@ export default class extends Base {
         if (usersCache[userId]) {
             return Promise.resolve(this.__transform(usersCache[userId]))
         }
-        return this.api.post('/ajax/users/all/get', {'id': userId}).then((a) => {
+        return this.api.getUserById(userId).then((a) => {
             const user = {
                 id: a.id,
                 username: a.username,

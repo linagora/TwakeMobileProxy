@@ -21,7 +21,7 @@ interface Workspace {
 export default class extends Base {
     async list(request: WorkspaceListRequest): Promise<Workspace[]> {
 
-        const data = await this.api.post('/ajax/users/current/get', {timezone: this.userProfile.timeZoneOffset})
+        const data = await this.api.getCurrentUser()
 
         return data.workspaces
             .filter((a: any) => a.group.id == request.company_id)

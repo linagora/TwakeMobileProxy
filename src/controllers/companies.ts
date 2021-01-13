@@ -10,7 +10,7 @@ interface Company {
 
 export default class extends Base {
     async list(): Promise<Company[]> {
-        const data = await this.api.post('/ajax/users/current/get', {timezone: this.userProfile.timeZoneOffset})
+        const data = await this.api.getCurrentUser()
 
         const companiesHash = {} as any
         data.workspaces.forEach((ws: any) => {
