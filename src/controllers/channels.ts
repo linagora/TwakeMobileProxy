@@ -1,5 +1,7 @@
 import Base from './base'
-
+import Users from './users'
+import {arrayToObject} from "../common/helpers";
+import {authCache, usersCache} from "../common/simplecache";
 
 export interface ChannelsListRequest {
     company_id: string
@@ -18,7 +20,7 @@ export interface Channel {
     last_activity: number
     messages_unread: number
     company_id: string
-    members?: any[]
+    members: any[]
 }
 
 export interface ChannelsAddRequest {
@@ -53,7 +55,7 @@ export default class extends Base {
                     workspace_id: a.workspace_id,
                     description: a.description,
                     channel_group: a.channel_group,
-                    members: includeMembers ? a.members : null,
+                    members: includeMembers ? a.members : [],
                     // members_count: a.members.length,
                     members_count: a.members ? a.members.length : 0,
                     // private: a.visibility == 'private',
@@ -117,7 +119,30 @@ export default class extends Base {
 
     async listDirect(companyId: string): Promise<Channel[]> {
         const data = await this.api.getDirects(companyId)
-        return this.__channelFormat(data, true)
+        const res = this.__channelFormat(data, true).filter(a=>a.members.length > 1)
+        const usersIds = new Set()
+
+        res.forEach((c: any) => {
+                    c.members.forEach((m: string) => {
+                        usersIds.add(m)
+                    })
+                })
+        const usersCtrl = new Users(this.request)
+        const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => usersCtrl.getUser(user_id as string))), 'id')
+
+        const currentUserToken = authCache[this.request.jwtToken] ? authCache[this.request.jwtToken]['id'] : ""
+
+        return res.map((a: Channel) => {
+            if (a.members){
+                a.name = a.members.filter((a: string) => a != currentUserToken).map((a: string) => {
+                    const u = usersHash[a]
+                    return u.firstname + ' ' + u.lastname
+                }).join(', ')
+
+            }
+
+            return a
+        })
     }
 
 

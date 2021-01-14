@@ -95,7 +95,7 @@ export default class {
         return await axios.post(HOST + url, params, {headers})
     }
 
-    async getCurrentUser(timeZoneOffset?: string) {
+    async getCurrentUser(timeZoneOffset?: number) {
         const params = {} as any
         if (timeZoneOffset) {
             assert(!isNaN(+timeZoneOffset), 'timezone should be numeric (i.e. -180 for Moscow)')

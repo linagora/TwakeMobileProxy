@@ -1,5 +1,5 @@
 import Base from './base'
-import {usersCache} from '../common/simplecache'
+import {authCache, usersCache} from '../common/simplecache'
 import User from "../models/user";
 import assert from "assert";
 
@@ -13,7 +13,7 @@ export default class extends Base {
      * @return {Promise<{firstname: string, thumbnail: string, companies: [], user_id: string, username: string, lastname: string}>}
      * @param timeZoneOffset
      */
-    async getCurrent(timeZoneOffset?: string): Promise<User> {
+    async getCurrent(timeZoneOffset?: number): Promise<User> {
 
         const data = await this.api.getCurrentUser(timeZoneOffset)
 
@@ -55,9 +55,9 @@ export default class extends Base {
         return this.api.getUserById(userId).then((a) => {
             const user = {
                 id: a.id,
-                username: a.username,
-                firstname: a.firstname,
-                lastname: a.lastname,
+                username: a.username.trim(),
+                firstname: (a.firstname || "").trim(),
+                lastname: (a.lastname ||"").trim(),
                 thumbnail: a.thumbnail
             }
             usersCache[a.id] = user

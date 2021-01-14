@@ -39,6 +39,8 @@ export default class extends Base {
 
         const res = await this.api.postDirect('/ajax/users/login', loginObject, {"Authorization": "Bearer " + this.request.jwtToken})
 
+        authCache[this.request.jwtToken] = await new Users(this.request).getCurrent(params.timezoneoffset);
+
         return {"success": res.data.data.status == 'connected'}
     }
 
@@ -115,8 +117,6 @@ export default class extends Base {
         if (this.request.jwtToken) {
             delete authCache[this.request.jwtToken]
         }
-
-        const mock = Object.assign({}, UserProfileMock)
 
         authCache[token] = await new Users(this.request).getCurrent()
 
