@@ -13,7 +13,7 @@ export interface Channel {
     description: string
     channel_group: string
     members_count: number
-    private: boolean
+    // private: boolean
     workspace_id: string | null
     last_activity: number
     messages_unread: number
@@ -43,8 +43,8 @@ export default class extends Base {
         return {"success": true}
     }
 
-    __channelFormat(source: any): Channel[] {
-        const channels = source.resources.map((a: any) => (
+    __channelFormat = (source: any, includeMembers: boolean = false): Channel[] =>
+        source.resources.map((a: any) => (
                 {
                     id: a.id,
                     name: a.name,
@@ -53,11 +53,12 @@ export default class extends Base {
                     workspace_id: a.workspace_id,
                     description: a.description,
                     channel_group: a.channel_group,
+                    members: includeMembers ? a.members : null,
                     // members_count: a.members.length,
-                    members_count: 0,
-                    private: a.visibility == 'private',
+                    members_count: a.members ? a.members.length : 0,
+                    // private: a.visibility == 'private',
                     // last_activity: a.last_activity,
-                    last_activity: 0,
+                    last_activity: a.last_activity,
                     // messages_total: a.messages_increment,
                     // messages_unread: a.messages_increment - a._user_last_message_increment,
                     messages_total: 0,
@@ -65,10 +66,6 @@ export default class extends Base {
                 } as Channel
             )
         );
-
-
-        return channels
-    }
 
 
     async listPublic(request: ChannelsListRequest): Promise<Channel[]> {
@@ -120,7 +117,7 @@ export default class extends Base {
 
     async listDirect(companyId: string): Promise<Channel[]> {
         const data = await this.api.getDirects(companyId)
-        return this.__channelFormat(data)
+        return this.__channelFormat(data, true)
     }
 
 
