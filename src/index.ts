@@ -77,6 +77,7 @@ fastify.addHook("onRequest", async (request, reply) => {
 })
 //
 
+
 fastify.get('/', async (request, reply) => ({"ready": true}))
 // fastify.post('/authorize', async (request, reply) => await new Authorization(request).auth(request.body as AuthParams))
 fastify.post('/init', {schema: validBody(['timezoneoffset', 'fcm_token'])}, async (request, reply) => new Authorization(request).init(request.body as InitParams))

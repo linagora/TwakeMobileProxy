@@ -1,5 +1,5 @@
 import axios from 'axios'
-import {BadRequest} from "./errors";
+import {BadRequest, Forbidden} from "./errors";
 import assert from "assert";
 import {required} from "./helpers";
 
@@ -37,11 +37,13 @@ export default class {
         // }
         // // console.log(cookies)
 
-        console.log('POST', url, JSON.stringify(params))
+        console.log('POST', url, JSON.stringify(params,null,2))
 
         const res = await axios.post(HOST + url, params, {headers})
 
-        console.log(res.data)
+        if (res.data.errors && res.data.errors.includes('user_not_connected')){
+            throw new Forbidden('Wrong token')
+        }
 
         if (res.data.status && res.data.status === 'error') {
             console.log(HOST + url, params)
@@ -226,7 +228,7 @@ export default class {
     }
 
 
-    async deleteMessage(companyId: string, workspaceId: string, channelId: string, messageId: string, threadId?: string) {
+    async deleteMessage(companyId: string, workspaceId: string, channelId: string, messageId: string, threadId: string) {
         assert(companyId)
         assert(workspaceId)
         assert(channelId)

@@ -43,10 +43,8 @@ export default class extends Base {
         return {"success": true}
     }
 
-    async listPublic(request: ChannelsListRequest): Promise<Channel[]> {
-        const data = await this.api.getChannels(request.company_id, request.workspace_id)
-
-        const channels = data.resources.map((a: any) => (
+    __channelFormat(source: any): Channel[] {
+        const channels = source.resources.map((a: any) => (
                 {
                     id: a.id,
                     name: a.name,
@@ -69,8 +67,13 @@ export default class extends Base {
         );
 
 
-        return channels.sort((a: any, b: any) => a.name.localeCompare(b.name))
+        return channels
+    }
 
+
+    async listPublic(request: ChannelsListRequest): Promise<Channel[]> {
+        const data = await this.api.getChannels(request.company_id, request.workspace_id)
+        return this.__channelFormat(data).sort((a: any, b: any) => a.name.localeCompare(b.name))
     }
 
 
@@ -116,7 +119,8 @@ export default class extends Base {
 
 
     async listDirect(companyId: string): Promise<Channel[]> {
-        return this.api.getDirects(companyId)
+        const data = await this.api.getDirects(companyId)
+        return this.__channelFormat(data)
     }
 
 

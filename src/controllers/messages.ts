@@ -248,16 +248,14 @@ export default class extends Base {
 
     /**
      * Update message POST /channels/<channel_id>/messages
-     * @param {string} channelId
-     * @param {object} message
      * @return {Promise<{object}>}
+     * @param req
      */
     async upsertMessage(req: UpsertMessageRequest) {
 
         assert(req.company_id, 'company_id is required');
         assert(req.workspace_id, 'workspace_id is required');
         assert(req.channel_id, 'channel_id is required');
-        assert(req.message_id, 'message_id is required');
 
         const prepared = req.prepared || toTwacode(req.original_str)
 
@@ -278,7 +276,6 @@ export default class extends Base {
             workspace_id: req.workspace_id,
             channel_id: req.channel_id,
             thread_id: req.thread_id,
-            message_id: id,
             limit: 1
         } as GetMessagesRequest)
 
@@ -297,9 +294,18 @@ export default class extends Base {
         assert(req.channel_id, 'channel_id is required');
         assert(req.message_id, 'message_id is required');
 
-        // console.log(obj)
-        const data = await this.api.deleteMessage(req.company_id, req.workspace_id, req.channel_id, req.thread_id)
-        console.log('DONE', data)
+        try{
+            const data = await this.api.deleteMessage(req.company_id, req.workspace_id, req.channel_id, req.message_id, req.thread_id)
+            console.log('DONE', data)
+        } catch(e){
+        //
+            console.log('\n\n-----------\nError deleting message')
+            const res = await this.api.getMessages(req.company_id, req.workspace_id, req.channel_id, req.thread_id, req.message_id)
+            console.log(res)
+            console.log('GOT:', e)
+            assert(false,'Something went wrong')
+        }
+
         return {"success": true}
 
     }
