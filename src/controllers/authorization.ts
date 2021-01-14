@@ -16,6 +16,7 @@ export interface ProlongParams {
 export interface InitParams {
     timezoneoffset: number
     fcm_token: string
+    username: string
 }
 
 /**
@@ -30,6 +31,9 @@ export default class extends Base {
     async init(params: InitParams): Promise<any> {
 
         const loginObject = {
+            _username: params.username,
+            _token: this.request.jwtToken,
+            _remember_me: true,
             'device': {
                 'type': "fcm",
                 'value': params.fcm_token,

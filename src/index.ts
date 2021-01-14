@@ -80,10 +80,10 @@ fastify.addHook("onRequest", async (request, reply) => {
 const initSchema = {
     tags: ['User related'],
     summary: 'Initial method',
-    body:  {type: 'object', "required": ["fcm_token", "timezoneoffset",],
-            "properties": {"fcm_token": {"type": "string"}, "timezoneoffset": {"type": "integer"}}},
+    body:  {type: 'object', "required": ["fcm_token", "timezoneoffset","username"],
+            "properties": {"fcm_token": {"type": "string"}, "timezoneoffset": {"type": "integer"}, "username": {type:"string"}}},
     response: {
-        201: {
+        200: {
             description: 'Successful response',
             type: 'object',
             properties: {
@@ -102,7 +102,7 @@ const prolongSchema = {
     tags: ['User related'],
     summary: 'Prolong security token',
     body:  {type: 'object', "required": ["fcm_token", "timezoneoffset","refresh_token"],
-        "properties": {"fcm_token": {"type": "string"}, "timezoneoffset": {"type": "integer"},"refresh_token": {"type": "integer"}}}
+        "properties": {"fcm_token": {"type": "string"}, "timezoneoffset": {"type": "integer"},"refresh_token": {"type": "string"}}}
 }
 
 
