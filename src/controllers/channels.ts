@@ -60,7 +60,7 @@ export default class extends Base {
                     members_count: a.members ? a.members.length : 0,
                     // private: a.visibility == 'private',
                     // last_activity: a.last_activity,
-                    last_activity: a.last_activity,
+                    last_activity: +a.last_activity,
                     // messages_total: a.messages_increment,
                     // messages_unread: a.messages_increment - a._user_last_message_increment,
                     messages_total: 0,

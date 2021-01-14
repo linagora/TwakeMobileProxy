@@ -69,7 +69,9 @@ const initSchema = {
     tags: ['User related'],
     summary: 'Initial method',
     body: {
-        type: 'object', "required": ["fcm_token", "timezoneoffset", "username", "token"],
+        type: 'object', "required": ["fcm_token", "timezoneoffset",
+            // "username", "token"
+        ],
         "properties": {
             "fcm_token": {"type": "string"},
             "timezoneoffset": {"type": "integer"},
