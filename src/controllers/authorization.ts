@@ -14,6 +14,7 @@ export interface ProlongParams {
 }
 
 export interface InitParams {
+    token: string,
     timezoneoffset: number
     fcm_token: string
     username: string
@@ -32,7 +33,7 @@ export default class extends Base {
 
         const loginObject = {
             _username: params.username,
-            _token: this.request.jwtToken,
+            _token: params.token,
             _remember_me: true,
             'device': {
                 'type': "fcm",
@@ -41,11 +42,14 @@ export default class extends Base {
             },
         }
 
-        const res = await this.api.postDirect('/ajax/users/login', loginObject, {"Authorization": "Bearer " + this.request.jwtToken})
+        // const res = await this.api.postDirect('/ajax/users/login', loginObject, {"Authorization": "Bearer " + this.request.jwtToken})
+        const res = await this.api.postDirect('/ajax/users/login', loginObject)
 
-        authCache[this.request.jwtToken] = await new Users(this.request).getCurrent(params.timezoneoffset);
+        if (res.data.data.status != "connected"){
+            throw new Forbidden('Wrong credentials')
+        }
 
-        return {"success": res.data.data.status == 'connected'}
+        return res.data
     }
 
 
@@ -93,8 +97,8 @@ export default class extends Base {
 
     async prolong(params: ProlongParams) {
 
-        assert(params.refresh_token, 'refresh_token is required')
-        assert(params.timezoneoffset, 'timezoneoffset is required')
+        // assert(params.refresh_token, 'refresh_token is required')
+        // assert(params.timezoneoffset, 'timezoneoffset is required')
         // assert(params.fcm_token, 'fcm_token is required')
 
         const loginObject = {

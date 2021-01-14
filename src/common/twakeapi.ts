@@ -92,7 +92,7 @@ export default class {
      * @return {Promise<AxiosResponse<T>>}
      */
     async postDirect(url: string, params: any, headers: any = undefined) {
-        return await axios.post(HOST + url, params, {headers})
+        return axios.post(HOST + url, params, {headers})
     }
 
     async getCurrentUser(timeZoneOffset?: number) {
