@@ -1,7 +1,7 @@
 import Base from './base'
 import Users from './users'
 import {arrayToObject} from "../common/helpers";
-import {authCache, usersCache} from "../common/simplecache";
+import {authCache} from "../common/simplecache";
 
 export interface ChannelsListRequest {
     company_id: string
@@ -70,12 +70,10 @@ export default class extends Base {
         );
 
 
-    async listPublic(request: ChannelsListRequest): Promise<Channel[]> {
-        const data = await this.api.getChannels(request.company_id, request.workspace_id)
-        const res = this.__channelFormat(data)
-        console.log(res)
-        return res.sort((a: any, b: any) => a.name.localeCompare(b.name))
-    }
+    listPublic = (request: ChannelsListRequest): Promise<Channel[]> =>
+        this.api.getChannels(request.company_id, request.workspace_id)
+            .then(data => this.__channelFormat(data)
+                .sort((a: any, b: any) => a.name.localeCompare(b.name)))
 
 
     // async listPublicV1(request: ChannelsListRequest): Promise<Channel[]> {
