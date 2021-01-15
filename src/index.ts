@@ -28,7 +28,7 @@ declare module "fastify" {
 
 fastify.addHook("onRequest", async (request, reply) => {
     try {
-        if (request.routerPath !== '/' && request.routerPath !== '/authorize' && request.routerPath !== '/authorization/prolong' && request.routerPath !== '/documentation/json' && request.routerPath !== '/init') {
+        if (request.routerPath !== '/' && request.routerPath !== '/authorize' && request.routerPath !== '/authorization/prolong' && request.routerPath !== '/documentation/json') {
 
             if (request.headers.authorization && request.headers.authorization.toLowerCase().indexOf('bearer') > -1) {
                 request.jwtToken = request.headers.authorization.substring(7).trim()
