@@ -47,6 +47,7 @@ export default class extends Base {
             throw new Forbidden('Token is not provided')
         }
 
+
         const res =
             this.request.jwtToken ?
                 await this.api.postDirect('/ajax/users/login', loginObject, {"Authorization": "Bearer " + this.request.jwtToken})
@@ -56,7 +57,7 @@ export default class extends Base {
             throw new Forbidden('Wrong credentials')
         }
 
-        return res.data
+        return this.doAuth(res.data, params.timezoneoffset)
     }
 
 
@@ -127,13 +128,17 @@ export default class extends Base {
             throw new Forbidden('Authorization failed')
         }
 
+
+
         const token = data.access_token.value;
 
         if (this.request.jwtToken) {
             delete authCache[this.request.jwtToken]
         }
 
-        authCache[token] = await new Users(this.request).getCurrent()
+        this.request.jwtToken = token
+
+        authCache[token] = await new Users(this.request).getCurrent(timezoneoffset)
 
         return {
             "token": token,

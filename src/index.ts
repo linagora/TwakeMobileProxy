@@ -56,14 +56,6 @@ fastify.addHook("onRequest", async (request, reply) => {
 })
 //
 
-fastify.addSchema({
-    $id: 'commonSchema',
-    type: 'object',
-    properties: {
-        'accept-version': {type: 'string', default: '2.0.0', value: '2'}
-    }
-})
-
 
 const initSchema = {
     tags: ['User related'],
@@ -84,7 +76,10 @@ const initSchema = {
             description: 'Successful response',
             type: 'object',
             properties: {
-                success: {type: 'boolean'}
+                token: {type: 'string'},
+                expiration: {type: 'integer'},
+                refresh_token: {type: 'string'},
+                refresh_expiration: {type: 'integer'}
             }
         }
     }
