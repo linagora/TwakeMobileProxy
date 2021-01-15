@@ -1,10 +1,8 @@
 import Base from './base'
-import assert from "assert";
 import Users from './users'
 import {authCache} from "../common/simplecache";
 import AuthParams from "../models/auth_params";
 import {Forbidden} from '../common/errors';
-import {UserProfileMock} from "../models/user_profile";
 
 
 export interface ProlongParams {
@@ -32,20 +30,30 @@ export default class extends Base {
     async init(params: InitParams): Promise<any> {
 
         const loginObject = {
-            _username: params.username,
-            _token: params.token,
+            // _username: params.username,
+            // _token: params.token,
             _remember_me: true,
             'device': {
                 'type': "fcm",
                 'value': params.fcm_token,
                 'version': '2020.Q3.107',
             },
+        } as any
+
+        if(params.username){
+            loginObject._username = params.username
         }
 
-        // const res = await this.api.postDirect('/ajax/users/login', loginObject, {"Authorization": "Bearer " + this.request.jwtToken})
-        const res = await this.api.postDirect('/ajax/users/login', loginObject)
+        if(params.token){
+            loginObject._token = params.token
+        }
 
-        if (res.data.data.status != "connected"){
+        const res =
+            this.request.jwtToken ?
+                await this.api.postDirect('/ajax/users/login', loginObject, {"Authorization": "Bearer " + this.request.jwtToken})
+                : await this.api.postDirect('/ajax/users/login', loginObject)
+
+        if (res.data.data.status != "connected") {
             throw new Forbidden('Wrong credentials')
         }
 
