@@ -4,6 +4,11 @@ import User from "../models/user";
 import assert from "assert";
 
 
+export interface UsersSearchRequest{
+    "company_id": string
+    "name" : string
+}
+
 /**
  * Users methods
  */
@@ -74,5 +79,17 @@ export default class extends Base {
         }
 
         return await Promise.all(usersIds.map(a => this.getUser(a)))
+    }
+
+    async searchUsers(req: UsersSearchRequest){
+        return this.api.searchUsers(req.company_id, req.name).then(a=>a.users.map((a: any)=>{
+            const user = a[0]
+            return {
+                id: user.id,
+                name: user.username,
+                firstname: user.firstname,
+                lastname: user.lastname
+            }
+        }))
     }
 }

@@ -271,4 +271,15 @@ export default class {
         return this.__post('/ajax/discussion/save', params)
     }
 
+    searchUsers(companyId: string, name: string) {
+
+        const params = {
+            "options": {
+                "scope": "company",
+                "name": name,
+                "company_id": companyId
+            }
+        }
+        return this.__post('/ajax/users/all/search', params).then(a=>a)
+    }
 }

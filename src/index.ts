@@ -4,7 +4,7 @@ import {BadRequest, Forbidden} from './common/errors';
 import {AssertionError} from "assert";
 
 import Authorization, {InitParams, ProlongParams} from './controllers/authorization'
-import Users from './controllers/users'
+import Users, {UsersSearchRequest} from './controllers/users'
 import Channels, {ChannelsAddRequest, ChannelsListRequest} from './controllers/channels'
 import Messages, {DeleteMessageRequest, ReactionsRequest, UpsertMessageRequest} from './controllers/messages'
 import Settings from './controllers/settings'
@@ -111,6 +111,17 @@ const usersSchema = {
     tags: ['References'],
     summary: 'Get users by id',
     querystring: {type: 'object', "required": ["id"], "properties": {"id": {"type": "string"}}}
+}
+
+const usersSearchSchema = {
+    tags: ['References'],
+    summary: 'Get users by name',
+    querystring: {type: 'object', "required": ["company_id","name"], "properties":
+            {
+                "company_id": {"type": "string"},
+                "name": {"type": "string"},
+            }
+    }
 }
 
 const companiesSchema = {
@@ -310,6 +321,7 @@ fastify.post('/init', {schema: initSchema}, async (request, reply) => new Author
 fastify.post('/authorization/prolong', {schema: prolongSchema}, async (request, reply) => new Authorization(request).prolong(request.body as ProlongParams))
 fastify.get('/user', {schema: userSchema}, async (request, reply) => new Users(request).getCurrent((request.query as any).timezoneoffset))
 fastify.get('/users', {schema: usersSchema}, async (request, reply) => new Users(request).getUsers((request.query as any).id))
+fastify.get('/users/search', {schema: usersSearchSchema}, async (request, reply) => new Users(request).searchUsers(request.query as UsersSearchRequest))
 fastify.get('/companies', {schema: companiesSchema}, async (request, reply) => new Companies(request).list())
 fastify.get('/workspaces', {schema: workspacesSchema}, async (request, reply) => new Workspaces(request).list(request.query as WorkspaceListRequest))
 fastify.get('/direct', {schema: directGetSchema}, async (request) => new Channels(request).listDirect((request.query as any).company_id))
