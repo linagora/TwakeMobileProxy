@@ -72,7 +72,9 @@ export default class extends Base {
 
     async listPublic(request: ChannelsListRequest): Promise<Channel[]> {
         const data = await this.api.getChannels(request.company_id, request.workspace_id)
-        return this.__channelFormat(data).sort((a: any, b: any) => a.name.localeCompare(b.name))
+        const res = this.__channelFormat(data)
+        console.log(res)
+        return res.sort((a: any, b: any) => a.name.localeCompare(b.name))
     }
 
 

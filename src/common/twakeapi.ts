@@ -145,7 +145,7 @@ export default class {
     async getChannels(companyId: string, workspaceId: string) {
         assert(companyId)
         assert(workspaceId)
-        return this.__get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`, {})
+        return this.__get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`, {"mine":true})
     }
 
     async getDirects(companyId: string) {
