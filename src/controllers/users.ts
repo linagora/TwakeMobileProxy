@@ -86,7 +86,7 @@ export default class extends Base {
             const user = a[0]
             return {
                 id: user.id,
-                name: user.username,
+                username: user.username,
                 firstname: user.firstname,
                 lastname: user.lastname
             }
