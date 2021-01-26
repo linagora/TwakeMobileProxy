@@ -82,7 +82,6 @@ export default class extends Base {
 
     async listDirect(companyId: string): Promise<Channel[]> {
         const data = await this.api.getDirects(companyId)
-        console.log(data.resources)
         const res = this.__channelFormat(data, true).filter(a=>a.members.length > 0)
         const usersIds = new Set()
 
