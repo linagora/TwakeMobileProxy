@@ -1,4 +1,4 @@
-GET {{host}}/messages?company_id={{company_id}}&workspace_id={{workspace_id}}&channel_id={{channel_id}}
+GET {{host}}/messages?company_id={{company_id}}&workspace_id={{workspace_id}}&channel_id={{channel_id}}&message_id=9b0e736a-5fd6-11eb-91a1-0242ac120004
 Authorization: Bearer {{token}}
 Content-Type: application/json
 Accept-version: 2.0.0

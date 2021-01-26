@@ -97,13 +97,12 @@ export default class extends Base {
 
         return res.map((a: Channel) => {
             if (a.members){
-                a.name = a.members.filter((a: string) => a != currentUserToken).map((a: string) => {
+                const members = (a.members.length>1) ? a.members.filter((a: string) => a != currentUserToken) : a.members
+                a.name = members.map((a: string) => {
                     const u = usersHash[a]
                     return u.firstname + ' ' + u.lastname
                 }).join(', ')
-
             }
-
             return a
         })
     }

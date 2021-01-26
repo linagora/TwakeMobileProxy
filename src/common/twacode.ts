@@ -150,13 +150,10 @@ export function toTwacode(inputString: string | null) {
 
     function process(inputString: string): string | null {
 
-
-
-        const pattern = /^>|\n|\*\*|\*|~~```/
+        const pattern = /^>|\n|\*\*|\*|~~|```/
         const found = pattern.exec(inputString)
 
         if (found) {
-
             let type = found[0]
             const idx = found.index
 

@@ -277,6 +277,7 @@ export default class extends Base {
             workspace_id: req.workspace_id,
             channel_id: req.channel_id,
             thread_id: req.thread_id,
+            message_id: id,
             limit: 1
         } as GetMessagesRequest)
 
