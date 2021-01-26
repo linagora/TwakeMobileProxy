@@ -22,7 +22,6 @@ export default class extends Base {
     async list(request: WorkspaceListRequest): Promise<Workspace[]> {
 
         const data = await this.api.getCurrentUser()
-
         return data.workspaces
             .filter((a: any) => a.group.id == request.company_id)
             .map((a: any) => {

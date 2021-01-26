@@ -61,9 +61,7 @@ const initSchema = {
     tags: ['User related'],
     summary: 'Initial method',
     body: {
-        type: 'object', "required": ["fcm_token", "timezoneoffset",
-            // "username", "token"
-        ],
+        type: 'object', "required": ["fcm_token", "timezoneoffset"],
         "properties": {
             "fcm_token": {"type": "string"},
             "timezoneoffset": {"type": "integer"},
@@ -157,7 +155,7 @@ const channelsPostSchema = {
     tags: ['Channels'],
     summary: 'Add new channel',
     body: {
-        type: 'object', "required": ['company_id', 'workspace_id', 'name', 'visibility'],
+        type: 'object', "required": ['company_id', 'workspace_id', 'visibility'],
         properties: {
             "company_id": {"type": "string"},
             "workspace_id": {"type": "string"},

@@ -5,6 +5,7 @@ import {required} from "./helpers";
 
 // const HOST = 'https://devapi.twake.app'
 const HOST = 'https://beta.twake.app'
+// const HOST = 'http://localhost:8000'
 /**
  * TwakeApi connector
  */
@@ -114,10 +115,17 @@ export default class {
     async addChannel(companyId: string, workspaceId: string, name: string, visibility: string, members?: string[], channelGroup?: string, description?: string, icon?: string) {
 
         assert(companyId)
-        assert(workspaceId)
         assert(visibility)
 
         assert(['public', 'private', 'direct'].includes(visibility), "'visibility' should be 'public','private' or 'direct'")
+
+        if(visibility == 'direct') {
+            name = ''
+            workspaceId = 'direct'
+        } else {
+            assert(workspaceId)
+            assert(name, 'name is required for non-direct channels')
+        }
 
         const url = `/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`
 
@@ -130,8 +138,8 @@ export default class {
                 "description": description,
                 "channel_group": channelGroup,
                 "archived": false,
-                "visibility": "public", //Optional for direct channels
-                "default": true
+                "visibility": visibility,
+                // "default": true
             }
         }
 
