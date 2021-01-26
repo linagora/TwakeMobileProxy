@@ -6,7 +6,12 @@ import {AssertionError} from "assert";
 import Authorization, {InitParams, ProlongParams} from './controllers/authorization'
 import Users, {UsersSearchRequest} from './controllers/users'
 import Channels, {ChannelsAddRequest, ChannelsListRequest} from './controllers/channels'
-import Messages, {DeleteMessageRequest, ReactionsRequest, UpsertMessageRequest} from './controllers/messages'
+import Messages, {
+    DeleteMessageRequest,
+    ReactionsRequest,
+    InsertMessageRequest,
+    UpdateMessageRequest
+} from './controllers/messages'
 import Settings from './controllers/settings'
 import Companies from './controllers/companies'
 import Workspaces, {WorkspaceListRequest} from './controllers/workspaces'
@@ -326,8 +331,8 @@ fastify.get('/direct', {schema: directGetSchema}, async (request) => new Channel
 fastify.get('/channels', {schema: channelsGetSchema}, async (request) => new Channels(request).listPublic(request.query as ChannelsListRequest))
 fastify.post('/channels', {schema: channelsPostSchema}, async (request) => new Channels(request).addChannel(request.body as ChannelsAddRequest))
 fastify.get('/messages', {schema: messagesGetSchema}, async (request) => new Messages(request).get(request.query as any))
-fastify.post('/messages', {schema: messagesPostSchema}, async (request) => new Messages(request).upsertMessage(request.body as UpsertMessageRequest))
-fastify.put('/messages', {schema: messagesPutSchema}, async (request) => new Messages(request).upsertMessage(request.body as UpsertMessageRequest))
+fastify.post('/messages', {schema: messagesPostSchema}, async (request) => new Messages(request).insertMessage(request.body as InsertMessageRequest))
+fastify.put('/messages', {schema: messagesPutSchema}, async (request) => new Messages(request).updateMessage(request.body as UpdateMessageRequest))
 fastify.delete('/messages', {schema: messagesDeleteSchema}, async (request) => new Messages(request).deleteMessage(request.body as DeleteMessageRequest))
 fastify.post('/reactions', {schema: reactionsSchema}, async (request) => new Messages(request).reactions(request.body as ReactionsRequest))
 fastify.get('/settings/emoji', {schema: emojiSchema}, async (request) => new Settings(request).emoji())

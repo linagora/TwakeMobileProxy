@@ -140,7 +140,7 @@ export async function fixIt(item: any, previewFunction: (elementId: string) => P
 }
 
 
-export function toTwacode(inputString: string | null) {
+export function toTwacode(inputString: string | null) : Object[] | null {
 
     if (!inputString) {
         return null

@@ -35,6 +35,31 @@ Accept-version: 2.0.0
 %}
 
 
+### Update the message
+
+PUT {{host}}/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "{{company_id}}",
+  "workspace_id": "{{workspace_id}}",
+  "channel_id": "{{channel_id}}",
+  "message_id": "{{last_message_id}}",
+  "original_str": "this is just a simple text after **update**"
+}
+
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.body['id'] === client.global.get('last_message_id'))
+        client.assert(response.body['content']['original_str'] === "this is just a simple text after **update**")
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+
 ### Delete last inserted message
 
 DELETE {{host}}/messages

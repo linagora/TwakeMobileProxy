@@ -6,7 +6,16 @@ import {fixIt, parseCompile, toTwacode} from "../common/twacode"
 import {BadRequest} from "../common/errors";
 
 
-export interface UpsertMessageRequest {
+export interface InsertMessageRequest {
+    company_id: string,
+    workspace_id: string,
+    channel_id: string,
+    thread_id: string
+    original_str: string
+    prepared: Array<Object>
+}
+
+export interface UpdateMessageRequest {
     company_id: string,
     workspace_id: string,
     channel_id: string,
@@ -15,6 +24,7 @@ export interface UpsertMessageRequest {
     original_str: string
     prepared: Array<Object>
 }
+
 
 export interface GetMessagesRequest {
     company_id: string,
@@ -60,7 +70,7 @@ export default class extends Base {
         assert(req.workspace_id, 'workspace_id is required');
         assert(req.channel_id, 'channel_id is required');
 
-        let messages = await this.api.getMessages(req.company_id, req.workspace_id, req.channel_id,req.thread_id,req.message_id,req.limit,req.before_message_id)
+        let messages = await this.api.getMessages(req.company_id, req.workspace_id, req.channel_id, req.thread_id, req.message_id, req.limit, req.before_message_id)
 
         if (!messages) {
             messages = []
@@ -252,7 +262,7 @@ export default class extends Base {
      * @return {Promise<{object}>}
      * @param req
      */
-    async upsertMessage(req: UpsertMessageRequest) {
+    async insertMessage(req: InsertMessageRequest) {
 
         assert(req.company_id, 'company_id is required');
         assert(req.workspace_id, 'workspace_id is required');
@@ -264,7 +274,7 @@ export default class extends Base {
             throw new BadRequest('Unparseable message')
         }
 
-        const x = await this.api.addMessage(req.company_id, req.workspace_id, req.channel_id, req.original_str, prepared ,req.thread_id)
+        const x = await this.api.addMessage(req.company_id, req.workspace_id, req.channel_id, req.original_str, prepared, req.thread_id)
 
         const id = x['object']['id']
 
@@ -290,22 +300,28 @@ export default class extends Base {
 
     }
 
+    async updateMessage(req: UpdateMessageRequest) {
+
+        return this.api.updateMessage(req.company_id, req.workspace_id, req.channel_id, req.message_id, req.thread_id, req.original_str, toTwacode)
+
+    }
+
     async deleteMessage(req: DeleteMessageRequest) {
         assert(req.company_id, 'company_id is required');
         assert(req.workspace_id, 'workspace_id is required');
         assert(req.channel_id, 'channel_id is required');
         assert(req.message_id, 'message_id is required');
 
-        try{
+        try {
             const data = await this.api.deleteMessage(req.company_id, req.workspace_id, req.channel_id, req.message_id, req.thread_id)
             console.log('DONE', data)
-        } catch(e){
-        //
+        } catch (e) {
+            //
             console.log('\n\n-----------\nError deleting message')
             const res = await this.api.getMessages(req.company_id, req.workspace_id, req.channel_id, req.thread_id, req.message_id, 1)
             console.log(res)
             console.log('GOT:', e)
-            assert(false,'Something went wrong')
+            assert(false, 'Something went wrong')
         }
 
         return {"success": true}

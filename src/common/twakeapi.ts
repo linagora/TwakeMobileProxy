@@ -38,11 +38,11 @@ export default class {
         // }
         // // console.log(cookies)
 
-        console.log('POST', url, JSON.stringify(params,null,2))
+        console.log('POST', url, JSON.stringify(params, null, 2))
 
         const res = await axios.post(HOST + url, params, {headers})
 
-        if (res.data.errors && res.data.errors.includes('user_not_connected')){
+        if (res.data.errors && res.data.errors.includes('user_not_connected')) {
             throw new Forbidden('Wrong token')
         }
 
@@ -119,7 +119,7 @@ export default class {
 
         assert(['public', 'private', 'direct'].includes(visibility), "'visibility' should be 'public','private' or 'direct'")
 
-        if(visibility == 'direct') {
+        if (visibility == 'direct') {
             name = ''
             workspaceId = 'direct'
         } else {
@@ -153,7 +153,7 @@ export default class {
     async getChannels(companyId: string, workspaceId: string) {
         assert(companyId)
         assert(workspaceId)
-        return this.__get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`, {"mine":true})
+        return this.__get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`, {"mine": true})
     }
 
     async getDirects(companyId: string) {
@@ -235,6 +235,22 @@ export default class {
         return this.__post('/ajax/discussion/save', params)
     }
 
+    async updateMessage(companyId: string, workspaceId: string, channelId: string, messageId: string, threadId: string, original_str: string, toTwacode: (str: string) => Object[] | null) {
+
+        const messages = await this.getMessages(companyId, workspaceId, channelId, threadId, messageId)
+
+        const message = messages[0]
+
+        message.content.original_str = original_str
+        message.content.prepared = toTwacode(original_str)
+
+        const params = {
+            object: message
+        }
+        return await this.__post('/ajax/discussion/save', params).then(a => a.object)
+
+    }
+
 
     async deleteMessage(companyId: string, workspaceId: string, channelId: string, messageId: string, threadId: string) {
         assert(companyId)
@@ -288,6 +304,7 @@ export default class {
                 "company_id": companyId
             }
         }
-        return this.__post('/ajax/users/all/search', params).then(a=>a)
+        return this.__post('/ajax/users/all/search', params).then(a => a)
     }
+
 }
