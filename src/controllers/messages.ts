@@ -301,7 +301,7 @@ export default class extends Base {
         } catch(e){
         //
             console.log('\n\n-----------\nError deleting message')
-            const res = await this.api.getMessages(req.company_id, req.workspace_id, req.channel_id, req.thread_id, req.message_id)
+            const res = await this.api.getMessages(req.company_id, req.workspace_id, req.channel_id, req.thread_id, req.message_id, 1)
             console.log(res)
             console.log('GOT:', e)
             assert(false,'Something went wrong')

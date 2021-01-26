@@ -1,0 +1,61 @@
+GET {{host}}/user
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+GET {{host}}/companies
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.global.set('company_id', response.body[0]['id'])
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+
+GET {{host}}/workspaces?company_id={{company_id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.global.set('workspace_id', response.body[0]['id'])
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+
+GET {{host}}/channels?company_id={{company_id}}&workspace_id={{workspace_id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+
+

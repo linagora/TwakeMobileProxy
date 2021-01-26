@@ -1,0 +1,11 @@
+POST {{host}}/channels
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "{{company_id}}",
+  "visibility": "direct"
+}
+
+###

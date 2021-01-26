@@ -1,0 +1,17 @@
+POST {{host}}/init
+#Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{"fcm_token": "123", "timezoneoffset": -180, "username": "senjertomat@yandex.ru",
+  "token":  "{{auth_token}}" }
+
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.global.set("token", response.body.token);
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###

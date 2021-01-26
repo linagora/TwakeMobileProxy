@@ -247,7 +247,7 @@ export default class {
                 company_id: companyId,
                 workspace_id: workspaceId,
                 channel_id: channelId,
-                message_id: messageId,
+                id: messageId,
                 thread_id: threadId,
                 parent_message_id: threadId, // backward compatibility
             }

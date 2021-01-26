@@ -1,0 +1,57 @@
+### Send message
+
+POST {{host}}/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "{{company_id}}",
+  "workspace_id": "{{workspace_id}}",
+  "channel_id": "{{channel_id}}",
+  "_original_str": "test {{$randomInt}}",
+  "original_str": "> this is single quote message\nand something else"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.global.set('last_message_id', response.body['id'])
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### Get list of messages
+
+GET {{host}}/messages?company_id={{company_id}}&workspace_id={{workspace_id}}&channel_id={{channel_id}}&limit=1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.body[0]['id'] === client.global.get('last_message_id'))
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+
+### Delete last inserted message
+
+DELETE {{host}}/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "{{company_id}}",
+  "workspace_id": "{{workspace_id}}",
+  "channel_id": "{{channel_id}}",
+  "message_id": "{{last_message_id}}"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}

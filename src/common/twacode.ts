@@ -150,7 +150,9 @@ export function toTwacode(inputString: string | null) {
 
     function process(inputString: string): string | null {
 
-        const pattern = /\n|\*\*|\*|~~|```/
+
+
+        const pattern = /^>|\n|\*\*|\*|~~```/
         const found = pattern.exec(inputString)
 
         if (found) {
@@ -181,12 +183,17 @@ export function toTwacode(inputString: string | null) {
 
             if (type === '\n') {
                 closeIndex = -1
+            } else if (type === '>'){
+                const newLine = restString.indexOf('\n')
+                closeIndex = newLine > -1 ? newLine : restString.length
             } else {
                 const closeFound = currentPattern.exec(restString)
                 if (closeFound) {
                     closeIndex = closeFound.index
                 }
             }
+
+
 
             if (closeIndex !== null) {
                 if (type === '*') {
@@ -199,6 +206,8 @@ export function toTwacode(inputString: string | null) {
                     result.push({"type": "mcode", "content": restString.substring(2, closeIndex)})
                 } else if (type === '\n') {
                     result.push({"type": "br"})
+                } else if (type === '>') {
+                    result.push({"type": "quote", "content": restString.substring(0, closeIndex).trim()})
                 }
 
 

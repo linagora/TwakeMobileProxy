@@ -155,7 +155,7 @@ const channelsPostSchema = {
     tags: ['Channels'],
     summary: 'Add new channel',
     body: {
-        type: 'object', "required": ['company_id', 'workspace_id', 'visibility'],
+        type: 'object', "required": ['company_id', 'visibility'],
         properties: {
             "company_id": {"type": "string"},
             "workspace_id": {"type": "string"},
