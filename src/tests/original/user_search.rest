@@ -1,0 +1,24 @@
+### All users
+
+POST https://beta.twake.app/ajax/users/all/search
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTA3MjE4NjcsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE2MTA3MTc2NjcsIm5iZiI6MTYxMDcxNzY2Nywic3ViIjoiMzFhNGE2YTQtNTRmMi0xMWViLWEzODItMDI0MmFjMTIwMDA0Iiwib3JnIjpbXX0.IszHWzEiKLEL4PjItlKin4etS75IFwXheH6e4IsA77k
+Content-Type: application/json
+
+{
+ "options":{
+   "scope": "company",
+   "name":"pa",
+   "workspace_id":"0e9337d6-54eb-11eb-9e45-0242ac120004"
+ }
+}
+
+> {%
+
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+%}
+
+
+###
