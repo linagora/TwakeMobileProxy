@@ -110,7 +110,7 @@ export default class extends Base {
                     img: a.hidden_data.custom_icon,
                 },
                 application_id: a.application_id,
-                creation_date: a.creation_date < 1611830724 ? a.creation_date * 1000: a.creation_date,
+                creation_date: a.creation_date < 1611830724000 ? a.creation_date * 1000: a.creation_date,
                 content: {
                     original_str: a.content.original_str,
                     prepared: null
