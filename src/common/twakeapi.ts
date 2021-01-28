@@ -307,4 +307,7 @@ export default class {
         return this.__post('/ajax/users/all/search', params).then(a => a)
     }
 
+    whatsNew(companyId: string) {
+        return this.__get(`/internal/services/notifications/v1/badges`, {"company_id": companyId})
+    }
 }

@@ -318,6 +318,15 @@ fastify.register(require('fastify-swagger'), {
 })
 
 
+const whatsNewSchema = {
+    tags: ['Messages'],
+    summary: 'List of unretrieved messages',
+    querystring: {
+        type: 'object', "required": ['company_id'],
+        properties: {"company_id": {type: "string"}}
+    }
+}
+
 fastify.get('/', {schema: {hide: true} as any}, async (request, reply) => ({"ready": true}))
 // fastify.post('/authorize', async (request, reply) => await new Authorization(request).auth(request.body as AuthParams))
 fastify.post('/init', {schema: initSchema}, async (request, reply) => new Authorization(request).init(request.body as InitParams))
@@ -336,7 +345,7 @@ fastify.put('/messages', {schema: messagesPutSchema}, async (request) => new Mes
 fastify.delete('/messages', {schema: messagesDeleteSchema}, async (request) => new Messages(request).deleteMessage(request.body as DeleteMessageRequest))
 fastify.post('/reactions', {schema: reactionsSchema}, async (request) => new Messages(request).reactions(request.body as ReactionsRequest))
 fastify.get('/settings/emoji', {schema: emojiSchema}, async (request) => new Settings(request).emoji())
-
+fastify.get('/messages/whatsnew', {schema: whatsNewSchema}, async (request) => new Messages(request).whatsNew(request.query as UpdateMessageRequest))
 
 // fastify.get('/company/:company_id/workspace/:workspace_id/channels', async (request) => {
 //     const company_id = (request.params as any).company_id

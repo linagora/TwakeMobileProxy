@@ -53,6 +53,10 @@ export interface ReactionsRequest {
     reaction: string
 }
 
+export interface WhatsNewRequest{
+    "company_id": string
+}
+
 /**
  * Messages methods
  */
@@ -106,7 +110,7 @@ export default class extends Base {
                     img: a.hidden_data.custom_icon,
                 },
                 application_id: a.application_id,
-                creation_date: a.creation_date,
+                creation_date: a.creation_date < 1611830724 ? a.creation_date * 1000: a.creation_date,
                 content: {
                     original_str: a.content.original_str,
                     prepared: null
@@ -337,5 +341,9 @@ export default class extends Base {
             reactions: res.object.reactions
         }
 
+    }
+
+    async whatsNew(req: WhatsNewRequest){
+        return this.api.whatsNew(req.company_id).then(a=>a.resources)
     }
 }
