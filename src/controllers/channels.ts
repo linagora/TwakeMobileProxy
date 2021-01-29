@@ -51,7 +51,7 @@ export default class extends Base {
         source.resources.map((a: any) => (
                 {
                     id: a.id,
-                    name: a.name,
+                    name: a.name ? a.name.charAt(0).toUpperCase() + a.name.slice(1) : a.name,
                     icon: a.icon,
                     company_id: a.company_id,
                     workspace_id: a.workspace_id,
