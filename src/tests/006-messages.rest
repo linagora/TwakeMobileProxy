@@ -26,3 +26,16 @@ Accept-version: 2.0.0
 %}
 
 ###
+
+
+GET {{host}}/messages?company_id=0e9337d6-54eb-11eb-9e45-0242ac120004&workspace_id=c173dca0-54f2-11eb-94b1-0242ac120004&channel_id=b498557e-49d7-44f3-85b8-614017b8cc26&thread_id=deefd1e8-6227-11eb-91aa-0242ac120004&message_id=1d1a5a2a-bd21-475c-b5ec-71dfb6403056
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}

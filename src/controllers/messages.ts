@@ -200,7 +200,12 @@ export default class extends Base {
         const messagesHash = arrayToObject(filteredMessages, 'id')
         filteredMessages.forEach((a: any) => {
             if (this.versionFrom("2.0.0")) {
-                // not including users anymore
+                const user = usersHash[a.sender.user_id]
+                // a.username = user.username
+                // a.firstname = user.firstname
+                // a.lastname = user.lastname
+                a.sender_thumbnail = user.thumbnail
+                a.sender_name = user.firstname + ' ' + user.lastname
             } else {
                 if (a.sender.user_id) {
                     const user = usersHash[a.sender.user_id]
