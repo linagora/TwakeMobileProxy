@@ -123,7 +123,7 @@ export default class {
             name = ''
             workspaceId = 'direct'
         } else {
-            assert(workspaceId)
+            assert(workspaceId, 'workspace_id is required')
             assert(name, 'name is required for non-direct channels')
         }
 

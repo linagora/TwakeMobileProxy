@@ -5,7 +5,23 @@ Accept-version: 2.0.0
 
 {
   "company_id": "{{company_id}}",
-  "visibility": "direct"
+  "workspace_id": "{{workspace_id}}",
+  "visibility": "public",
+  "name": "testChannel2"
+}
+
+###
+
+
+POST {{host}}/channels
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "{{company_id}}",
+  "visibility": "direct",
+  "members": ["291dae34-54ef-11eb-8031-0242ac120004"]
 }
 
 ###
