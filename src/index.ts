@@ -111,14 +111,13 @@ const prolongSchema = {
 const userSchema = {
     tags: ['User related'],
     summary: 'Get current user',
-
     querystring: {type: 'object', "required": [], "properties": {"timezoneoffset": {"type": "integer"}}}
 }
 
 const usersSchema = {
     tags: ['References'],
     summary: 'Get users by id',
-    querystring: {type: 'object', "required": ["id"], "properties": {"id": {"type": "string"}}}
+    querystring: {type: 'object', "required": ["id"], "properties": {"id": {"type": "array", "items": {"type": "string"}}}}
 }
 
 const usersSearchSchema = {
