@@ -2,6 +2,7 @@ import axios from 'axios'
 import {BadRequest, Forbidden} from "./errors";
 import assert from "assert";
 import {required} from "./helpers";
+import workspaces from "../controllers/workspaces";
 
 // const HOST = 'https://devapi.twake.app'
 const HOST = 'https://beta.twake.app'
@@ -311,15 +312,41 @@ export default class {
         return this.__get(`/internal/services/notifications/v1/badges`, {"company_id": companyId})
     }
 
-    addWorkspace(company_id: string, name: string) {
-        assert(company_id, 'company_id is required')
+    async addWorkspace(companyId: string, name: string, members: string[]) {
+        assert(companyId, 'company_id is required')
         assert(name, 'name id is required')
-        return this.__post('/ajax/workspace/create', {"name": name, "groupId": company_id, "channels": []})
+        const ws= await this.__post('/ajax/workspace/create', {"name": name, "groupId": companyId, "channels": []})
+        if (members && members.length){
+            await this.addWorkspaceMember(companyId, ws['id'], members)
+        }
+        return ws
     }
 
-    async deleteWorkspace(company_id: string, workspace_id: string) {
-        assert(company_id, 'company_id is required')
-        assert(workspace_id, 'workspace_id is required')
-        return this.__post('/ajax/workspace/delete', {"workspaceId": workspace_id})
+    deleteWorkspace(companyId: string, workspaceId: string) {
+        assert(companyId, 'company id is required')
+        assert(workspaceId, 'workspace id is required')
+        return this.__post('/ajax/workspace/delete', {"workspaceId": workspaceId})
+    }
+
+
+    listWorkspaceMembers(companyId: string, workspaceId: string){
+        assert(companyId, 'company id is required')
+        return this.__post('/ajax/workspace/members/list', {"limit":1000, workspaceId})
+    }
+
+    async addWorkspaceMember(companyId: string, workspaceId: string, usersIds: string[]) {
+        assert(companyId, 'company id is required')
+        assert(workspaceId, 'workspace id is required')
+        assert(usersIds, 'users ids are required')
+        const users = await Promise.all(usersIds.map(id=>this.getUserById(id)))
+        return Promise.all(users.map(u=>this.__post('/ajax/workspace/members/addlist', {"list": u.email, "workspaceId": workspaceId})))
+    }
+
+    deleteWorkspaceMember(companyId: string, workspaceId: string, usersIds: string[]) {
+        assert(companyId, 'company id is required')
+        assert(workspaceId, 'workspace id is required')
+        assert(usersIds, 'users ids are required')
+        return this.__post('/ajax/workspace/members/remove', {"ids": usersIds, "workspaceId": workspaceId}
+        )
     }
 }

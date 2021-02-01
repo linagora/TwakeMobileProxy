@@ -14,7 +14,12 @@ import Messages, {
 } from './controllers/messages'
 import Settings from './controllers/settings'
 import Companies from './controllers/companies'
-import Workspaces, {WorkspaceDeleteRequest, WorkspaceListRequest, WorkspacePostRequest} from './controllers/workspaces'
+import Workspaces, {
+    WorkspaceDeleteRequest,
+    WorkspaceListRequest,
+    WorkspaceMembersGetRequest, WorkspaceMembersPostRequest,
+    WorkspacePostRequest
+} from './controllers/workspaces'
 
 const fastify: FastifyInstance = Fastify({logger: false})
 
@@ -149,6 +154,34 @@ const workspacesPostSchema = {
         "properties": {"company_id": {"type": "string"}, "name": {type: "string"}}
     }
 }
+
+const workspaceMembersGetSchema = {
+    tags: ['Workspaces'],
+    summary: 'List of workspaces members',
+    querystring: {type: 'object', "required": ['company_id', 'workspace_id'], "properties": {"company_id": {"type": "string"},  "workspace_id": {type: "string"}}}
+}
+
+const workspaceMembersPostSchema = {
+    tags: ['Workspaces'],
+    summary: 'Add workspace members',
+    body: {
+        type: 'object',
+        "required": ['company_id', 'workspace_id', 'members'],
+        "properties": {"company_id": {"type": "string"}, "workspace_id": {type: "string"},  "members": {"type": "array", "items": {"type": "string"}}}
+    }
+}
+
+const workspaceMembersDeleteSchema = {
+    tags: ['Workspaces'],
+    summary: 'Delete workspace members',
+    body: {
+        type: 'object',
+        "required": ['company_id', 'workspace_id', 'members'],
+        "properties": {"company_id": {"type": "string"}, "workspace_id": {type: "string"},  "members": {"type": "array", "items": {"type": "string"}}}
+    }
+}
+
+
 
 const workspacesDeleteSchema = {
     tags: ['Workspaces'],
@@ -360,6 +393,11 @@ fastify.get('/companies', {schema: companiesSchema}, async (request, reply) => n
 fastify.get('/workspaces', {schema: workspacesSchema}, async (request, reply) => new Workspaces(request).list(request.query as WorkspaceListRequest))
 fastify.post('/workspaces', {schema: workspacesPostSchema}, async (request, reply) => new Workspaces(request).add(request.body as WorkspacePostRequest))
 fastify.delete('/workspaces', {schema: workspacesDeleteSchema}, async (request, reply) => new Workspaces(request).delete(request.body as WorkspaceDeleteRequest))
+
+fastify.get('/workspaces/members', {schema: workspaceMembersGetSchema}, async (request, reply) => new Workspaces(request).listMembers(request.query as WorkspaceMembersGetRequest))
+fastify.post('/workspaces/members', {schema: workspaceMembersPostSchema}, async (request, reply) => new Workspaces(request).addMembers(request.body as WorkspaceMembersPostRequest))
+fastify.delete('/workspaces/members', {schema: workspaceMembersDeleteSchema}, async (request, reply) => new Workspaces(request).removeMembers(request.body as WorkspaceMembersPostRequest))
+
 fastify.get('/direct', {schema: directGetSchema}, async (request) => new Channels(request).listDirect((request.query as any).company_id))
 fastify.get('/channels', {schema: channelsGetSchema}, async (request) => new Channels(request).listPublic(request.query as ChannelsListRequest))
 fastify.post('/channels', {schema: channelsPostSchema}, async (request) => new Channels(request).addChannel(request.body as ChannelsAddRequest))

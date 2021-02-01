@@ -1,4 +1,5 @@
 import Base from './base'
+import {BadRequest} from "../common/errors";
 
 export interface WorkspaceListRequest {
     company_id: string
@@ -7,9 +8,21 @@ export interface WorkspaceListRequest {
 export interface WorkspacePostRequest {
     company_id: string
     name: string
+    members: string[]
 }
 
 export interface WorkspaceDeleteRequest {
+    company_id: string
+    workspace_id: string
+}
+
+export interface WorkspaceMembersPostRequest {
+    company_id: string
+    workspace_id: string
+    members: string[]
+}
+
+export interface WorkspaceMembersGetRequest {
     company_id: string
     workspace_id: string
 }
@@ -53,7 +66,7 @@ export default class extends Base {
     }
 
     async add(request: WorkspacePostRequest): Promise<Workspace> {
-        return this.api.addWorkspace(request.company_id, request.name).then(a => a.workspace || {})
+        return this.api.addWorkspace(request.company_id, request.name, request.members || []).then(a => a.workspace || {})
     }
 
     async delete(request: WorkspaceDeleteRequest): Promise<any> {
@@ -61,5 +74,27 @@ export default class extends Base {
         return {"success": true}
     }
 
+    async listMembers(request: WorkspaceMembersGetRequest) {
+        return this.api.listWorkspaceMembers(request.company_id, request.workspace_id)
+            .then(a => a?a.list: [])
+            .then(a => Object.values(a))
+            .then(a => a.map((u: any) => u.user))
+            .then((u: any) => u.map(({id, username, firstname, lastname}: any) => ({
+                id,
+                username,
+                firstname,
+                lastname
+            })))
+    }
+
+    async addMembers(request: WorkspaceMembersPostRequest): Promise<any> {
+        await this.api.addWorkspaceMember(request.company_id, request.workspace_id, request.members)
+        return {"success": true}
+    }
+
+    async removeMembers(request: WorkspaceMembersPostRequest): Promise<any> {
+        await this.api.deleteWorkspaceMember(request.company_id, request.workspace_id, request.members)
+        return {"success": true}
+    }
 
 }
