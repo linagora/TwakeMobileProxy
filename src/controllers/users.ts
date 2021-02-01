@@ -4,9 +4,9 @@ import User from "../models/user";
 import assert from "assert";
 
 
-export interface UsersSearchRequest{
+export interface UsersSearchRequest {
     "company_id": string
-    "name" : string
+    "name": string
 }
 
 /**
@@ -58,17 +58,18 @@ export default class extends Base {
             return Promise.resolve(this.__transform(usersCache[userId]))
         }
         return this.api.getUserById(userId).then((a) => {
-            const user = {
-                id: a.id,
-                username: a.username.trim(),
-                firstname: (a.firstname || "").trim(),
-                lastname: (a.lastname ||"").trim(),
-                thumbnail: a.thumbnail
-            }
-            usersCache[a.id] = user
 
-
-            return this.__transform(user)
+            if (!Array.isArray(a)) {
+                const user = {
+                    id: a.id,
+                    username: a.username.trim(),
+                    firstname: (a.firstname || "").trim(),
+                    lastname: (a.lastname || "").trim(),
+                    thumbnail: a.thumbnail
+                }
+                usersCache[a.id] = user
+                return this.__transform(user)
+            } else return null
         })
     }
 
@@ -78,11 +79,11 @@ export default class extends Base {
             usersIds = [usersIds]
         }
 
-        return await Promise.all(usersIds.map(a => this.getUser(a)))
+        return (await Promise.all(usersIds.map(a => this.getUser(a)))).filter(a=>a)
     }
 
-    async searchUsers(req: UsersSearchRequest){
-        return this.api.searchUsers(req.company_id, req.name).then(a=>a.users.map((a: any)=>{
+    async searchUsers(req: UsersSearchRequest) {
+        return this.api.searchUsers(req.company_id, req.name).then(a => a.users.map((a: any) => {
             const user = a[0]
             return {
                 id: user.id,
