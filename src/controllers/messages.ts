@@ -117,7 +117,7 @@ export default class extends Base {
                     // files: a.files
                 },
                 reactions: Object.keys(a.reactions).length ? a.reactions : null,
-                user_reaction: a._user_reaction
+                // user_reaction: a._user_reaction
 
             } as any
 
