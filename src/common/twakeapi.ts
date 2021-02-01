@@ -310,4 +310,16 @@ export default class {
     whatsNew(companyId: string) {
         return this.__get(`/internal/services/notifications/v1/badges`, {"company_id": companyId})
     }
+
+    addWorkspace(company_id: string, name: string) {
+        assert(company_id, 'company_id is required')
+        assert(name, 'name id is required')
+        return this.__post('/ajax/workspace/create', {"name": name, "groupId": company_id, "channels": []})
+    }
+
+    async deleteWorkspace(company_id: string, workspace_id: string) {
+        assert(company_id, 'company_id is required')
+        assert(workspace_id, 'workspace_id is required')
+        return this.__post('/ajax/workspace/delete', {"workspaceId": workspace_id})
+    }
 }

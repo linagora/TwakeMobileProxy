@@ -14,7 +14,7 @@ import Messages, {
 } from './controllers/messages'
 import Settings from './controllers/settings'
 import Companies from './controllers/companies'
-import Workspaces, {WorkspaceListRequest} from './controllers/workspaces'
+import Workspaces, {WorkspaceDeleteRequest, WorkspaceListRequest, WorkspacePostRequest} from './controllers/workspaces'
 
 const fastify: FastifyInstance = Fastify({logger: false})
 
@@ -119,7 +119,8 @@ const usersSchema = {
 const usersSearchSchema = {
     tags: ['References'],
     summary: 'Get users by name',
-    querystring: {type: 'object', "required": ["company_id","name"], "properties":
+    querystring: {
+        type: 'object', "required": ["company_id", "name"], "properties":
             {
                 "company_id": {"type": "string"},
                 "name": {"type": "string"},
@@ -138,6 +139,27 @@ const workspacesSchema = {
     summary: 'List of company workspaces',
     querystring: {type: 'object', "required": ['company_id'], "properties": {"company_id": {"type": "string"}}}
 }
+
+const workspacesPostSchema = {
+    tags: ['Companies / workspaces'],
+    summary: 'Create a workspace',
+    body: {
+        type: 'object',
+        "required": ['company_id', 'name'],
+        "properties": {"company_id": {"type": "string"}, "name": {type: "string"}}
+    }
+}
+
+const workspacesDeleteSchema = {
+    tags: ['Companies / workspaces'],
+    summary: 'Delete a workspace',
+    body: {
+        type: 'object',
+        "required": ['company_id', 'workspace_id'],
+        "properties": {"company_id": {"type": "string"}, "workspace_id": {type: "string"}}
+    }
+}
+
 
 const channelsGetSchema = {
     tags: ['Channels'],
@@ -336,6 +358,8 @@ fastify.get('/users', {schema: usersSchema}, async (request, reply) => new Users
 fastify.get('/users/search', {schema: usersSearchSchema}, async (request, reply) => new Users(request).searchUsers(request.query as UsersSearchRequest))
 fastify.get('/companies', {schema: companiesSchema}, async (request, reply) => new Companies(request).list())
 fastify.get('/workspaces', {schema: workspacesSchema}, async (request, reply) => new Workspaces(request).list(request.query as WorkspaceListRequest))
+fastify.post('/workspaces', {schema: workspacesPostSchema}, async (request, reply) => new Workspaces(request).add(request.body as WorkspacePostRequest))
+fastify.delete('/workspaces', {schema: workspacesDeleteSchema}, async (request, reply) => new Workspaces(request).delete(request.body as WorkspaceDeleteRequest))
 fastify.get('/direct', {schema: directGetSchema}, async (request) => new Channels(request).listDirect((request.query as any).company_id))
 fastify.get('/channels', {schema: channelsGetSchema}, async (request) => new Channels(request).listPublic(request.query as ChannelsListRequest))
 fastify.post('/channels', {schema: channelsPostSchema}, async (request) => new Channels(request).addChannel(request.body as ChannelsAddRequest))

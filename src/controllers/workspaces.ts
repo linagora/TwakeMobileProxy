@@ -4,6 +4,17 @@ export interface WorkspaceListRequest {
     company_id: string
 }
 
+export interface WorkspacePostRequest {
+    company_id: string
+    name: string
+}
+
+export interface WorkspaceDeleteRequest {
+    company_id: string
+    workspace_id: string
+}
+
+
 interface Workspace {
     id: string
     private: boolean
@@ -39,6 +50,15 @@ export default class extends Base {
                 } as Workspace
             }).sort((a: Workspace, b: Workspace) => a.name.localeCompare(b.name)) as Workspace[]
 
+    }
+
+    async add(request: WorkspacePostRequest): Promise<Workspace> {
+        return this.api.addWorkspace(request.company_id, request.name).then(a => a.workspace || {})
+    }
+
+    async delete(request: WorkspaceDeleteRequest): Promise<any> {
+        await this.api.deleteWorkspace(request.company_id, request.workspace_id)
+        return {"success": true}
     }
 
 

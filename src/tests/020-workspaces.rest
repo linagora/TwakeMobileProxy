@@ -1,0 +1,94 @@
+### Create workspace
+
+POST {{host}}/workspaces
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "{{company_id}}",
+  "name": "testWorkspace"
+}
+
+
+> {%
+   client.test("Request executed successfully", function() {
+       // client.global.set('last_created_workspace_id', response.body['id'])
+       client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+
+### List workspaces
+
+GET {{host}}/workspaces?company_id={{company_id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+
+> {%
+    client.test("Request executed successfully", function() {
+
+        var id = client.global.get('last_created_workspace_id')
+        var found = false;
+
+        for(var i=0; i<response.body.length; i++){
+            if (response.body[i].id === id) {
+                found = true
+                break
+            }
+        }
+        client.assert(found,'created workspace not found in returned list')
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+
+### Delete workspace
+
+DELETE {{host}}/workspaces
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "{{company_id}}",
+  "workspace_id": "{{last_created_workspace_id}}"
+}
+
+
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+
+### Check if worksapce were deleted
+
+GET {{host}}/workspaces?company_id={{company_id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+
+> {%
+    client.test("Request executed successfully", function() {
+
+        var id = client.global.get('last_created_workspace_id')
+        var found = false;
+
+        for(var i=0; i<response.body.length; i++){
+            if (response.body[i].id === id) {
+                found = true
+                break
+            }
+        }
+        client.assert(!found,'created workspace is still present in returned list')
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
