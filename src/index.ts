@@ -151,7 +151,7 @@ const workspacesPostSchema = {
     body: {
         type: 'object',
         "required": ['company_id', 'name'],
-        "properties": {"company_id": {"type": "string"}, "name": {type: "string"}}
+        "properties": {"company_id": {"type": "string"}, "name": {type: "string"}, "members": {"type": "array", "items": {"type": "string"}}}
     }
 }
 
