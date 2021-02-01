@@ -64,50 +64,50 @@ export default class extends Base {
     async addChannel(request: ChannelsAddRequest): Promise<any> {
         let channel = await this.__findChannel(request.company_id, request.workspace_id || 'direct', request.visibility, request.name, request.members)
         if (channel) {
-            if (request.visibility == 'direct')
-                throw new BadRequest("Same members direct channel already exists")
-            else
-                throw new BadRequest("Same channel already exists")
+            return this.__channelFormat(channel, true)
         }
         await this.api.addChannel(request.company_id, request.workspace_id, request.name, request.visibility, request.members, request.channel_group, request.description, request.icon)
         channel = await this.__findChannel(request.company_id, request.workspace_id || 'direct', request.visibility, request.name, request.members)
-        return channel || {}
+        return this.__channelFormat(channel, true)
     }
 
-    __channelFormat = (source: any, includeMembers: boolean = false): Channel[] =>
-        source.resources.map((a: any) => (
-                {
-                    id: a.id,
-                    name: a.name ? a.name.charAt(0).toUpperCase() + a.name.slice(1) : a.name,
-                    icon: a.icon,
-                    company_id: a.company_id,
-                    workspace_id: a.workspace_id,
-                    description: a.description,
-                    channel_group: a.channel_group,
-                    members: includeMembers ? a.members : [],
-                    // members_count: a.members.length,
-                    members_count: a.members ? a.members.length : 0,
-                    // private: a.visibility == 'private',
-                    // last_activity: a.last_activity,
-                    last_activity: +a.last_activity,
-                    // messages_total: a.messages_increment,
-                    // messages_unread: a.messages_increment - a._user_last_message_increment,
-                    messages_total: 0,
-                    messages_unread: 0,
-                } as Channel
-            )
-        );
+    __channelFormat(a: any, includeMembers: boolean): Channel{
+        return {
+            id: a.id,
+                name: a.name ? a.name.charAt(0).toUpperCase() + a.name.slice(1) : a.name,
+            icon: a.icon,
+            company_id: a.company_id,
+            workspace_id: a.workspace_id,
+            description: a.description,
+            channel_group: a.channel_group,
+            members: includeMembers ? a.members : [],
+            // members_count: a.members.length,
+            members_count: a.members ? a.members.length : 0,
+            // private: a.visibility == 'private',
+            // last_activity: a.last_activity,
+            last_activity: +a.last_activity,
+            // messages_total: a.messages_increment,
+            // messages_unread: a.messages_increment - a._user_last_message_increment,
+            messages_total: 0,
+            messages_unread: 0,
+        } as Channel
+    }
+
+    __channelsFormat = (source: any, includeMembers: boolean = false): Channel[] =>
+        source.resources.map((a: any) => {
+            return this.__channelFormat(a, includeMembers)
+        })
 
 
     listPublic = (request: ChannelsListRequest): Promise<Channel[]> =>
         this.api.getChannels(request.company_id, request.workspace_id)
-            .then(data => this.__channelFormat(data)
+            .then(data => this.__channelsFormat(data)
                 .sort((a: any, b: any) => a.name.localeCompare(b.name)))
 
 
     async listDirect(companyId: string): Promise<Channel[]> {
         const data = await this.api.getDirects(companyId)
-        const res = this.__channelFormat(data, true).filter(a => a.members.length > 0)
+        const res = this.__channelsFormat(data, true).filter(a => a.members.length > 0)
         const usersIds = new Set()
 
         res.forEach((c: any) => {

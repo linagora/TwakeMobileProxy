@@ -7,7 +7,7 @@ Accept-version: 2.0.0
   "company_id": "{{company_id}}",
   "workspace_id": "{{workspace_id}}",
   "visibility": "public",
-  "name": "testChannel2"
+  "name": "Coding"
 }
 
 ###
