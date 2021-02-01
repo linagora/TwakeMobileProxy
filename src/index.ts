@@ -117,7 +117,17 @@ const userSchema = {
 const usersSchema = {
     tags: ['References'],
     summary: 'Get users by id',
-    querystring: {type: 'object', "required": ["id"], "properties": {"id": {"type": "array", "items": {"type": "string"}}}}
+    querystring: {
+        type: 'object', "required": ["id"], "properties": {
+            "id":
+                {
+                    "anyOf": [
+                        {"type": "string"},
+                        {"type": "array", "items": {"type": "string"}}
+                    ]
+                }
+        }
+    }
 }
 
 const usersSearchSchema = {
@@ -150,14 +160,22 @@ const workspacesPostSchema = {
     body: {
         type: 'object',
         "required": ['company_id', 'name'],
-        "properties": {"company_id": {"type": "string"}, "name": {type: "string"}, "members": {"type": "array", "items": {"type": "string"}}}
+        "properties": {
+            "company_id": {"type": "string"},
+            "name": {type: "string"},
+            "members": {"type": "array", "items": {"type": "string"}}
+        }
     }
 }
 
 const workspaceMembersGetSchema = {
     tags: ['Workspaces'],
     summary: 'List of workspaces members',
-    querystring: {type: 'object', "required": ['company_id', 'workspace_id'], "properties": {"company_id": {"type": "string"},  "workspace_id": {type: "string"}}}
+    querystring: {
+        type: 'object',
+        "required": ['company_id', 'workspace_id'],
+        "properties": {"company_id": {"type": "string"}, "workspace_id": {type: "string"}}
+    }
 }
 
 const workspaceMembersPostSchema = {
@@ -166,7 +184,11 @@ const workspaceMembersPostSchema = {
     body: {
         type: 'object',
         "required": ['company_id', 'workspace_id', 'members'],
-        "properties": {"company_id": {"type": "string"}, "workspace_id": {type: "string"},  "members": {"type": "array", "items": {"type": "string"}}}
+        "properties": {
+            "company_id": {"type": "string"},
+            "workspace_id": {type: "string"},
+            "members": {"type": "array", "items": {"type": "string"}}
+        }
     }
 }
 
@@ -176,10 +198,13 @@ const workspaceMembersDeleteSchema = {
     body: {
         type: 'object',
         "required": ['company_id', 'workspace_id', 'members'],
-        "properties": {"company_id": {"type": "string"}, "workspace_id": {type: "string"},  "members": {"type": "array", "items": {"type": "string"}}}
+        "properties": {
+            "company_id": {"type": "string"},
+            "workspace_id": {type: "string"},
+            "members": {"type": "array", "items": {"type": "string"}}
+        }
     }
 }
-
 
 
 const workspacesDeleteSchema = {
