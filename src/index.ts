@@ -129,19 +129,19 @@ const usersSearchSchema = {
 }
 
 const companiesSchema = {
-    tags: ['Companies / workspaces'],
+    tags: ['Companies'],
     summary: "List of user's companies",
     querystring: {type: 'object', required: [], "properties": {}}
 }
 
 const workspacesSchema = {
-    tags: ['Companies / workspaces'],
+    tags: ['Workspaces'],
     summary: 'List of company workspaces',
     querystring: {type: 'object', "required": ['company_id'], "properties": {"company_id": {"type": "string"}}}
 }
 
 const workspacesPostSchema = {
-    tags: ['Companies / workspaces'],
+    tags: ['Workspaces'],
     summary: 'Create a workspace',
     body: {
         type: 'object',
@@ -151,7 +151,7 @@ const workspacesPostSchema = {
 }
 
 const workspacesDeleteSchema = {
-    tags: ['Companies / workspaces'],
+    tags: ['Workspaces'],
     summary: 'Delete a workspace',
     body: {
         type: 'object',
