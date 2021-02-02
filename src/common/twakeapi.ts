@@ -136,16 +136,25 @@ export default class {
             "resource": {
                 "icon": icon,
                 "name": name,
+                "company_id": companyId,
+                "workspace_id": workspaceId,
                 "description": description,
                 "channel_group": channelGroup,
                 "archived": false,
                 "visibility": visibility,
+
                 // "default": true
             }
         }
 
+
         if (members) {
             params.options = {"members": members}
+
+            if (visibility === 'direct') {
+                (params.resource as any).direct_channel_members = members
+            }
+
         }
 
         return this.__post(url, params)
@@ -315,8 +324,8 @@ export default class {
     async addWorkspace(companyId: string, name: string, members: string[]) {
         assert(companyId, 'company_id is required')
         assert(name, 'name id is required')
-        const ws= await this.__post('/ajax/workspace/create', {"name": name, "groupId": companyId, "channels": []})
-        if (members && members.length){
+        const ws = await this.__post('/ajax/workspace/create', {"name": name, "groupId": companyId, "channels": []})
+        if (members && members.length) {
             await this.addWorkspaceMember(companyId, ws['id'], members)
         }
         return ws
@@ -329,17 +338,20 @@ export default class {
     }
 
 
-    listWorkspaceMembers(companyId: string, workspaceId: string){
+    listWorkspaceMembers(companyId: string, workspaceId: string) {
         assert(companyId, 'company id is required')
-        return this.__post('/ajax/workspace/members/list', {"limit":1000, workspaceId})
+        return this.__post('/ajax/workspace/members/list', {"limit": 1000, workspaceId})
     }
 
     async addWorkspaceMember(companyId: string, workspaceId: string, usersIds: string[]) {
         assert(companyId, 'company id is required')
         assert(workspaceId, 'workspace id is required')
         assert(usersIds, 'users ids are required')
-        const users = await Promise.all(usersIds.map(id=>this.getUserById(id)))
-        return Promise.all(users.map(u=>this.__post('/ajax/workspace/members/addlist', {"list": u.email, "workspaceId": workspaceId})))
+        const users = await Promise.all(usersIds.map(id => this.getUserById(id)))
+        return Promise.all(users.map(u => this.__post('/ajax/workspace/members/addlist', {
+            "list": u.email,
+            "workspaceId": workspaceId
+        })))
     }
 
     deleteWorkspaceMember(companyId: string, workspaceId: string, usersIds: string[]) {
@@ -351,8 +363,8 @@ export default class {
     }
 
     serverInfo() {
-        return this.__get('/ajax/core/version',{}).then(a=>a.data).then(a=>{
-            if(a.auth && a.auth.console){
+        return this.__get('/ajax/core/version', {}).then(a => a.data).then(a => {
+            if (a.auth && a.auth.console) {
                 a.auth.console.mobile_endpoint_url = "https://beta.twake.app/ajax/users/console/openid?mobile=1"
             }
             return a
