@@ -25,3 +25,20 @@ Accept-version: 2.0.0
 }
 
 ###
+
+
+
+POST {{host}}/channels
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTIyODcyOTQsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE2MTIyODMwOTQsIm5iZiI6MTYxMjI4MzA5NCwic3ViIjoiMjkxZGFlMzQtNTRlZi0xMWViLTgwMzEtMDI0MmFjMTIwMDA0Iiwib3JnIjpbXX0.uK3XCTU4zQeCGlrUJg5LE5IvPJ3uznoVlvrbzGO5vrg
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "0e9337d6-54eb-11eb-9e45-0242ac120004",
+  "workspace_id": "direct",
+  "visibility": "direct",
+  "default": true,
+  "members": ["31a4a6a4-54f2-11eb-a382-0242ac120004", "291dae34-54ef-11eb-8031-0242ac120004"]
+}
+
+###
