@@ -349,4 +349,13 @@ export default class {
         return this.__post('/ajax/workspace/members/remove', {"ids": usersIds, "workspaceId": workspaceId}
         )
     }
+
+    serverInfo() {
+        return this.__get('/ajax/core/version',{}).then(a=>a.data).then(a=>{
+            if(a.auth && a.auth.console){
+                a.auth.console.mobile_endpoint_url = "https://beta.twake.app/ajax/users/console/openid?mobile=1"
+            }
+            return a
+        })
+    }
 }

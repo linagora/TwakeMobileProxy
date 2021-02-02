@@ -21,6 +21,8 @@ import Workspaces, {
     WorkspacePostRequest
 } from './controllers/workspaces'
 
+import Info from './controllers/info'
+
 const fastify: FastifyInstance = Fastify({logger: false})
 
 
@@ -406,7 +408,7 @@ const whatsNewSchema = {
     }
 }
 
-fastify.get('/', {schema: {hide: true} as any}, async (request, reply) => ({"ready": true}))
+fastify.get('/', {schema: {hide: true} as any}, async (request, reply) => new Info(request).info())
 // fastify.post('/authorize', async (request, reply) => await new Authorization(request).auth(request.body as AuthParams))
 fastify.post('/init', {schema: initSchema}, async (request, reply) => new Authorization(request).init(request.body as InitParams))
 fastify.post('/authorization/prolong', {schema: prolongSchema}, async (request, reply) => new Authorization(request).prolong(request.body as ProlongParams))
