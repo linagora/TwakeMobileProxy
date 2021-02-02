@@ -5,6 +5,7 @@ import {authCache} from "../common/simplecache";
 import assert from 'assert';
 import {BadRequest} from "../common/errors";
 
+
 export interface ChannelsListRequest {
     company_id: string
     workspace_id: string
@@ -43,38 +44,51 @@ export default class extends Base {
 
     async __findChannel(company_id: string, workspace_id: string, visibility: string, name?: string, members?: string[]) {
 
-        function eqSet(as: Set<string>, bs: Set<string>) {
-            if (as.size !== bs.size) return false;
-            // @ts-ignore
-            for (let a of as) if (!bs.has(a)) return false;
+        function eqArrays(as: string[], bs: string[]) {
+            if (as.length !== bs.length) return false;
+            const bsSet = new Set(bs)
+            for (let a of as) if (!bsSet.has(a)) return false;
             return true;
         }
 
         return await this.api.getChannels(company_id, workspace_id)
-            .then(data => data['resources']
-                .filter((a: any) => a.visibility == visibility)
-                .find((a: any) =>
-                    (name && a.name.toLocaleLowerCase() == name.toLocaleLowerCase())
-                    || (a.members && eqSet(new Set(members), new Set(a.members)))
-                ))
+            .then(data => {
+                return data['resources']
+                    .filter((a: any) => a.visibility == visibility)
+                    .find((a: any) => {
+                            return (name && a.name.toLocaleLowerCase() == name.toLocaleLowerCase())
+                                || (a.members && eqArrays(members || [], a.members))
+
+                        }
+                    )
+            })
 
     }
 
 
     async addChannel(request: ChannelsAddRequest): Promise<any> {
-        let channel = await this.__findChannel(request.company_id, request.workspace_id || 'direct', request.visibility, request.name, request.members)
+
+        if (!request.members) request.members = []
+        if (!request.workspace_id) request.workspace_id = 'direct'
+        if (request.workspace_id === 'direct')  {
+            const user = await new Users(this.request).getCurrent()
+            request.members.push(user.id)
+        }
+
+        let channel = await this.__findChannel(request.company_id, request.workspace_id, request.visibility, request.name, request.members)
         if (channel) {
             return this.__channelFormat(channel, true)
         }
+
         await this.api.addChannel(request.company_id, request.workspace_id, request.name, request.visibility, request.members, request.channel_group, request.description, request.icon)
-        channel = await this.__findChannel(request.company_id, request.workspace_id || 'direct', request.visibility, request.name, request.members)
+        channel = await this.__findChannel(request.company_id, request.workspace_id, request.visibility, request.name, request.members)
         return this.__channelFormat(channel, true)
     }
 
-    __channelFormat(a: any, includeMembers: boolean): Channel{
+    __channelFormat(a: any, includeMembers: boolean): Channel {
         return {
             id: a.id,
-                name: a.name ? a.name.charAt(0).toUpperCase() + a.name.slice(1) : a.name,
+            name: a.name ? a.name.charAt(0).toUpperCase() + a.name.slice(1) : a.name,
             icon: a.icon,
             company_id: a.company_id,
             workspace_id: a.workspace_id,
