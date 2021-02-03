@@ -274,7 +274,6 @@ const channelsDeleteSchema = {
             "company_id": {"type": "string"},
             "workspace_id": {"type": "string"},
             "channel_id": {"type": "string"},
-            "members": {"type": "array", "items": {"type": "string"}}
         }
     }
 }
@@ -284,11 +283,12 @@ const channelsMembersPostSchema = {
     tags: ['Channels'],
     summary: 'Add members to a channel',
     body: {
-        type: 'object', "required": ['company_id', 'workspace_id', "channel_id", "mebers"],
+        type: 'object', "required": ['company_id', 'workspace_id', "channel_id", "members"],
         properties: {
             "company_id": {"type": "string"},
             "workspace_id": {"type": "string"},
             "channel_id": {"type": "string"},
+            "members": {"type": "array", "items": {"type": "string"}}
         }
     }
 }
