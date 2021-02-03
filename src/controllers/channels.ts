@@ -103,6 +103,7 @@ export default class extends Base {
             last_activity: +a.last_activity,
             // messages_total: a.messages_increment,
             // messages_unread: a.messages_increment - a._user_last_message_increment,
+            has_unread: +a.last_activity > + a.user_member.last_access,
             messages_total: 0,
             messages_unread: 0,
         } as Channel

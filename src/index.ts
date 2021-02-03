@@ -455,6 +455,10 @@ fastify.get('/messages/whatsnew', {schema: whatsNewSchema}, async (request) => n
 // })
 
 
+// import InfoService from './services/info'
+// InfoService(fastify,{prefix:""})
+
+
 fastify.setErrorHandler(function (error: Error, request, reply) {
     // if (error instanceof HandledException) {
     //     reply.status(400).send({"error": (error as HandledException).message})
