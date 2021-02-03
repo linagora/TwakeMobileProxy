@@ -261,9 +261,7 @@ export default class extends Base {
             delete messagesHash[req.before_message_id]
         }
 
-        console.log(Object.values(messagesHash).map((a:any)=>a.content.original_str))
-
-        console.log('returning messages:', Object.values(messagesHash).length)
+        // console.log('returning messages:', Object.values(messagesHash).length)
         return Object.values(messagesHash).sort((a: any, b: any) => a.creation_date - b.creation_date)
     }
 

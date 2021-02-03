@@ -7,7 +7,21 @@ Accept-version: 2.0.0
   "company_id": "{{company_id}}",
   "workspace_id": "{{workspace_id}}",
   "visibility": "public",
-  "name": "Coding"
+  "name": "testChannel",
+
+
+###
+
+
+DELETE {{host}}/channels
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "{{company_id}}",
+  "workspace_id": "{{workspace_id}}",
+  "channel_id": "42427912-1de0-4678-8963-5bb16554f499"
 }
 
 ###

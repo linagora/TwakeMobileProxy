@@ -20,6 +20,7 @@ export default class {
         this.token = token
     }
 
+
     /** POST to Twake API
      * @param {string} url
      * @param {object} params
@@ -85,6 +86,37 @@ export default class {
 
 
     }
+
+    private async __delete(url: string, params: any): Promise<any> {
+        let headers = {}
+
+        // console.log('token: "' + this.userProfile.jwtToken + '"')
+
+        if (this.token) {
+            headers = {"Authorization": "Bearer " + this.token}
+        }
+
+        // if (this.userProfile) {
+        //   headers = {Cookie: `SESSID=${this.userProfile['SESSID']}; REMEMBERME=${this.userProfile['REMEMBERME']};`}
+        // }
+        // // console.log(cookies)
+
+        console.log('DELETE', url, JSON.stringify(params, null, 2))
+
+        const res = await axios.post(HOST + url, params, {headers})
+
+        if (res.data.errors && res.data.errors.includes('user_not_connected')) {
+            throw new Forbidden('Wrong token')
+        }
+
+        if (res.data.status && res.data.status === 'error') {
+            console.log(HOST + url, params)
+            console.error(res.data)
+            throw new Error('Unknown error')
+        }
+        return res.data.data as any
+    }
+
 
     /**
      * Direct post (no data unwrapping)
@@ -160,6 +192,12 @@ export default class {
         return this.__post(url, params)
     }
 
+    async addChannelMember(companyId: string, workspaceId: string, channelId: string, members: string[]){
+        return await Promise.all(members.map(user_id => this.__post(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}/members`,
+            {"resource": {"user_id": user_id, "type": "member"}, "options": {}}
+        ))) || {"success":true}
+    }
+
     async getChannels(companyId: string, workspaceId: string) {
         assert(companyId)
         assert(workspaceId)
@@ -206,20 +244,20 @@ export default class {
 
         // if (id || threadId) {
 
-            const params = {
-                'options': {
-                    company_id: companyId,
-                    workspace_id: workspaceId,
-                    channel_id: channelId,
-                    limit: limit || 50,
-                    offset: offset,
-                    thread_id: threadId,
-                    parent_message_id: threadId, // backward compatibility
-                    id: id
-                },
-            }
+        const params = {
+            'options': {
+                company_id: companyId,
+                workspace_id: workspaceId,
+                channel_id: channelId,
+                limit: limit || 50,
+                offset: offset,
+                thread_id: threadId,
+                parent_message_id: threadId, // backward compatibility
+                id: id
+            },
+        }
 
-            return this.__post('/ajax/discussion/get', params)
+        return this.__post('/ajax/discussion/get', params)
 
         // } else { // all messages for channel
         //
@@ -399,5 +437,9 @@ export default class {
             }
             return a
         })
+    }
+
+    deleteChannel(companyId: string, workspaceId: string, channelId: string) {
+        return this.__delete(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}`, {})
     }
 }

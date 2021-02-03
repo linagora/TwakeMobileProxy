@@ -37,6 +37,19 @@ export interface ChannelsAddRequest {
     members: string[]
 }
 
+export interface ChannelsDeleteRequest {
+    company_id: string
+    workspace_id: string
+    channel_id: string
+}
+
+export interface ChannelMemberAddRequest {
+    company_id: string
+    workspace_id: string
+    channel_id: string
+    members: string[]
+}
+
 /**
  * Channels methods
  */
@@ -66,7 +79,7 @@ export default class extends Base {
     }
 
 
-    async addChannel(request: ChannelsAddRequest): Promise<any> {
+    async add(request: ChannelsAddRequest): Promise<any> {
 
         if (!request.members) request.members = []
         if (!request.workspace_id) request.workspace_id = 'direct'
@@ -84,6 +97,14 @@ export default class extends Base {
         await this.api.addChannel(request.company_id, request.workspace_id, request.name, request.visibility, request.members, request.channel_group, request.description, request.icon)
         channel = await this.__findChannel(request.company_id, request.workspace_id, request.visibility, request.name, request.members)
         return this.__channelFormat(channel, true)
+    }
+
+    async addChannelMember(request: ChannelMemberAddRequest): Promise<any>{
+        return this.api.addChannelMember(request.company_id, request.workspace_id, request.channel_id, request.members)
+    }
+
+    async delete(request: ChannelsDeleteRequest): Promise<any>{
+        return this.api.deleteChannel(request.company_id, request.workspace_id, request.channel_id)
     }
 
     __channelFormat(a: any, includeMembers: boolean): Channel {
