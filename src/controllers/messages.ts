@@ -219,9 +219,9 @@ export default class extends Base {
 
             if (this.versionFrom("2.0.0")) {
                 delete a.responses
-                if (a['thread_id'] && messagesHash[a['thread_id']]) {
-                    delete messagesHash[a.id]
-                }
+                // if (a['thread_id'] && messagesHash[a['thread_id']]) {
+                //     delete messagesHash[a.id]
+                // }
             } else {
                 if (a['thread_id'] && messagesHash[a['thread_id']]) {
                     messagesHash[a['thread_id']].responses.push(a)
@@ -260,6 +260,8 @@ export default class extends Base {
         if (req.before_message_id) {
             delete messagesHash[req.before_message_id]
         }
+
+        console.log(Object.values(messagesHash).map((a:any)=>a.content.original_str))
 
         console.log('returning messages:', Object.values(messagesHash).length)
         return Object.values(messagesHash).sort((a: any, b: any) => a.creation_date - b.creation_date)

@@ -204,20 +204,50 @@ export default class {
         required(workspaceId, 'string')
         required(channelId, 'string')
 
-        const params = {
-            'options': {
-                company_id: companyId,
-                workspace_id: workspaceId,
-                channel_id: channelId,
-                limit: limit || 50,
-                offset: offset,
-                thread_id: threadId,
-                parent_message_id: threadId, // backward compatibility
-                id: id
-            },
-        }
+        // if (id || threadId) {
 
-        return this.__post('/ajax/discussion/get', params)
+            const params = {
+                'options': {
+                    company_id: companyId,
+                    workspace_id: workspaceId,
+                    channel_id: channelId,
+                    limit: limit || 50,
+                    offset: offset,
+                    thread_id: threadId,
+                    parent_message_id: threadId, // backward compatibility
+                    id: id
+                },
+            }
+
+            return this.__post('/ajax/discussion/get', params)
+
+        // } else { // all messages for channel
+        //
+        //
+        //     const x= await this.__post('/ajax/core/collections/init',
+        //         {
+        //
+        //             "collection_id": "messages/da671045-83d0-4b06-9e7e-984e8efafb35",
+        //             "options": {
+        //                 "type": "messages",
+        //                 "get_options": {
+        //                     "channel_id": "da671045-83d0-4b06-9e7e-984e8efafb35",
+        //                     "company_id": "0e9337d6-54eb-11eb-9e45-0242ac120004",
+        //                     "workspace_id": "c173dca0-54f2-11eb-94b1-0242ac120004",
+        //                     "parent_message_id": "",
+        //                     "limit": limit || 50,
+        //                     "offset": false
+        //                 }
+        //             },
+        //
+        //
+        //         }
+        //     ).then(a=>a.get)
+        //     console.log(x)
+        //     return x
+        //
+        // }
+
     }
 
     async addMessage(companyId: string, workspaceId: string, channelId: string, originalString: string, prepared: any, threadId?: string) {
