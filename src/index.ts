@@ -288,7 +288,12 @@ const channelsMembersPostSchema = {
             "company_id": {"type": "string"},
             "workspace_id": {"type": "string"},
             "channel_id": {"type": "string"},
-            "members": {"type": "array", "items": {"type": "string"}}
+            "members": {
+                "anyOf": [
+                    {"type": "string"},
+                    {"type": "array", "items": {"type": "string"}}
+                ]
+            }
         }
     }
 }
