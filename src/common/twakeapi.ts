@@ -53,7 +53,12 @@ export default class {
             console.error(res.data)
             throw new Error('Unknown error')
         }
-        return res.data.data as any
+
+        if(res.data.data){
+            return res.data.data as any
+        } else {
+            return res.data as any
+        }
     }
 
 
@@ -189,12 +194,12 @@ export default class {
 
         }
 
-        return this.__post(url, params)
+        return this.__post(url, params).then(a=>a.resource)
     }
 
     async addChannelMember(companyId: string, workspaceId: string, channelId: string, members: string[]){
         return Promise.all(members.map(user_id => this.__post(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}/members`,
-            {"resource": {"user_id": user_id, "type": "member"}, "options": {}}
+            {"resource": {"user_id": user_id, "type": "member"}}
         )))
     }
 
@@ -397,11 +402,11 @@ export default class {
     async addWorkspace(companyId: string, name: string, members: string[]) {
         assert(companyId, 'company_id is required')
         assert(name, 'name id is required')
-        const ws = await this.__post('/ajax/workspace/create', {"name": name, "groupId": companyId, "channels": []})
+        const ws = await this.__post('/ajax/workspace/create', {"name": name, "groupId": companyId, "channels": []}).then(a=>a.workspace)
+        console.log(ws)
         if (members && members.length) {
             await this.addWorkspaceMember(companyId, ws['id'], members)
         }
-        console.log(ws)
         return ws
     }
 

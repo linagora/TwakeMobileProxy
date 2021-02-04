@@ -66,7 +66,7 @@ export default class extends Base {
     }
 
     async add(request: WorkspacePostRequest): Promise<Workspace> {
-        return this.api.addWorkspace(request.company_id, request.name, request.members || []).then(a => a.workspace || {})
+        return this.api.addWorkspace(request.company_id, request.name, request.members || []) 
     }
 
     async delete(request: WorkspaceDeleteRequest): Promise<any> {

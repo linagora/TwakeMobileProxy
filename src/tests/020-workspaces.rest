@@ -7,7 +7,8 @@ Accept-version: 2.0.0
 
 {
   "company_id": "{{company_id}}",
-  "name": "autoTestWorkspace"
+  "name": "autoTestWorkspace",
+  "members": ["senjertomat@yandex.ru"]
 }
 
 

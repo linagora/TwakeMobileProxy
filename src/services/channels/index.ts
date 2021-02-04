@@ -56,8 +56,7 @@ export default class extends Base {
             return this.__channelFormat(channel)
         }
 
-        await this.api.addChannel(request.company_id, request.workspace_id, request.name, request.visibility, request.members, request.channel_group, request.description, request.icon)
-        channel = await this.__findChannel(request.company_id, request.workspace_id, request.visibility, request.name, request.members)
+        channel = await this.api.addChannel(request.company_id, request.workspace_id, request.name, request.visibility, request.members, request.channel_group, request.description, request.icon)
         return this.__channelFormat(channel)
     }
 
