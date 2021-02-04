@@ -1,4 +1,4 @@
-import Base from './base'
+import Base from '../common/base'
 import {arrayToObject} from '../common/helpers'
 import Users from './users'
 import assert from "assert";

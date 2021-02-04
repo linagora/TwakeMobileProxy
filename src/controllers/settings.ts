@@ -1,4 +1,4 @@
-import Base from "./base";
+import Base from "../common/base";
 
 import emojiData from '../common/emoji.json';
 

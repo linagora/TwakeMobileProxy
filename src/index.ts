@@ -5,12 +5,8 @@ import {AssertionError} from "assert";
 
 import Authorization, {InitParams, ProlongParams} from './controllers/authorization'
 import Users, {UsersSearchRequest} from './controllers/users'
-import Channels, {
-    ChannelMemberAddRequest,
-    ChannelsAddRequest,
-    ChannelsDeleteRequest,
-    ChannelsListRequest
-} from './controllers/channels'
+
+
 import Messages, {
     DeleteMessageRequest,
     ReactionsRequest,
@@ -170,12 +166,7 @@ const workspacesPostSchema = {
         "properties": {
             "company_id": {"type": "string"},
             "name": {type: "string"},
-            "members": {
-                "anyOf": [
-                    {"type": "string"},
-                    {"type": "array", "items": {"type": "string"}}
-                ]
-            }
+            "members": {"type": "array", "items": {"type": "string"}}
         }
     }
 }
@@ -230,73 +221,11 @@ const workspacesDeleteSchema = {
 }
 
 
-const channelsGetSchema = {
-    tags: ['Channels'],
-    summary: 'List of public/private channels',
-    querystring: {
-        type: 'object',
-        "required": ['company_id', 'workspace_id'],
-        "properties": {"company_id": {"type": "string"}, "workspace_id": {"type": "string"}}
-    }
-}
-
-const directGetSchema = {
-    tags: ['Channels'],
-    summary: 'List of direct channels',
-    querystring: {type: 'object', "required": ['company_id'], "properties": {"company_id": {"type": "string"}}}
-}
 
 
-const channelsPostSchema = {
-    tags: ['Channels'],
-    summary: 'Add new channel',
-    body: {
-        type: 'object', "required": ['company_id', 'visibility'],
-        properties: {
-            "company_id": {"type": "string"},
-            "workspace_id": {"type": "string"},
-            "name": {"type": "string"},
-            "visibility": {"type": "string", "enum": ["public", "private", "direct"]},
-            "icon": {"type": "string"},
-            "description": {"type": "string"},
-            "channel_group": {"type": "string"},
-            "members": {"type": "array", "items": {"type": "string"}}
-        }
-    }
-}
-
-const channelsDeleteSchema = {
-    tags: ['Channels'],
-    summary: 'Delete a channel',
-    body: {
-        type: 'object', "required": ['company_id', 'workspace_id', "channel_id"],
-        properties: {
-            "company_id": {"type": "string"},
-            "workspace_id": {"type": "string"},
-            "channel_id": {"type": "string"},
-        }
-    }
-}
 
 
-const channelsMembersPostSchema = {
-    tags: ['Channels'],
-    summary: 'Add members to a channel',
-    body: {
-        type: 'object', "required": ['company_id', 'workspace_id', "channel_id", "members"],
-        properties: {
-            "company_id": {"type": "string"},
-            "workspace_id": {"type": "string"},
-            "channel_id": {"type": "string"},
-            "members": {
-                "anyOf": [
-                    {"type": "string"},
-                    {"type": "array", "items": {"type": "string"}}
-                ]
-            }
-        }
-    }
-}
+
 
 
 const messagesGetSchema = {
@@ -467,12 +396,7 @@ fastify.get('/workspaces/members', {schema: workspaceMembersGetSchema}, async (r
 fastify.post('/workspaces/members', {schema: workspaceMembersPostSchema}, async (request, reply) => new Workspaces(request).addMembers(request.body as WorkspaceMembersPostRequest))
 fastify.delete('/workspaces/members', {schema: workspaceMembersDeleteSchema}, async (request, reply) => new Workspaces(request).removeMembers(request.body as WorkspaceMembersPostRequest))
 
-fastify.get('/direct', {schema: directGetSchema}, async (request) => new Channels(request).listDirect((request.query as any).company_id))
-fastify.get('/channels', {schema: channelsGetSchema}, async (request) => new Channels(request).listPublic(request.query as ChannelsListRequest))
-fastify.post('/channels', {schema: channelsPostSchema}, async (request) => new Channels(request).add(request.body as ChannelsAddRequest))
-fastify.delete('/channels', {schema: channelsDeleteSchema}, async (request) => new Channels(request).delete(request.body as ChannelsDeleteRequest))
 
-fastify.post('/channels/members', {schema: channelsMembersPostSchema}, async (request) => new Channels(request).addChannelMember(request.body as ChannelMemberAddRequest))
 
 fastify.get('/messages', {schema: messagesGetSchema}, async (request) => new Messages(request).get(request.query as any))
 fastify.post('/messages', {schema: messagesPostSchema}, async (request) => new Messages(request).insertMessage(request.body as InsertMessageRequest))
@@ -481,6 +405,10 @@ fastify.delete('/messages', {schema: messagesDeleteSchema}, async (request) => n
 fastify.post('/reactions', {schema: reactionsSchema}, async (request) => new Messages(request).reactions(request.body as ReactionsRequest))
 fastify.get('/settings/emoji', {schema: emojiSchema}, async (request) => new Settings(request).emoji())
 fastify.get('/messages/whatsnew', {schema: whatsNewSchema}, async (request) => new Messages(request).whatsNew(request.query as UpdateMessageRequest))
+
+
+import channelsServiceRoutes from './services/channels/routes'
+channelsServiceRoutes(fastify)
 
 // fastify.get('/company/:company_id/workspace/:workspace_id/channels', async (request) => {
 //     const company_id = (request.params as any).company_id

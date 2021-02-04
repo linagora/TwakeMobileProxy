@@ -1,4 +1,4 @@
-import Base from './base'
+import Base from '../common/base'
 import {BadRequest} from "../common/errors";
 
 export interface WorkspaceListRequest {
@@ -19,7 +19,7 @@ export interface WorkspaceDeleteRequest {
 export interface WorkspaceMembersPostRequest {
     company_id: string
     workspace_id: string
-    members: string[]
+    members: string[] // тут email'ы
 }
 
 export interface WorkspaceMembersGetRequest {

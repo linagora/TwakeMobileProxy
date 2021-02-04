@@ -1,4 +1,4 @@
-import Base from './base'
+import Base from '../common/base'
 import {authCache, usersCache} from '../common/simplecache'
 import User from "../models/user";
 import assert from "assert";

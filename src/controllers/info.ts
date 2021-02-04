@@ -1,4 +1,4 @@
-import Base from "./base";
+import Base from "../common/base";
 
 export default class extends Base {
 

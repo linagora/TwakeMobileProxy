@@ -201,12 +201,17 @@ export default class {
     async getChannels(companyId: string, workspaceId: string) {
         assert(companyId)
         assert(workspaceId)
-        return this.__get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`, {"mine": true})
+        let x=  this.__get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`, {"mine": true}).then(a=>a['resources'].filter(((a:any)=>
+        a.visibility!=='direct')))
+        console.log((await x).filter((a:any)=>a.visibility=='direct'))
+        return x
     }
 
     async getDirects(companyId: string) {
         assert(companyId)
-        return this.__get(`/internal/services/channels/v1/companies/${companyId}/workspaces/direct/channels`, {})
+        const x=  this.__get(`/internal/services/channels/v1/companies/${companyId}/workspaces/direct/channels`, {}).then(a=>a['resources'])
+        console.log((await x))
+        return x
     }
 
     async getDriveObject(companyId: string, workspaceId: string, elementId: string) {
@@ -411,13 +416,11 @@ export default class {
         return this.__post('/ajax/workspace/members/list', {"limit": 1000, workspaceId})
     }
 
-    async addWorkspaceMember(companyId: string, workspaceId: string, usersIds: string[]) {
+    async addWorkspaceMember(companyId: string, workspaceId: string, emails: string[]) {
         assert(companyId, 'company id is required')
         assert(workspaceId, 'workspace id is required')
-        assert(usersIds, 'users ids are required')
-        const users = await Promise.all(usersIds.map(id => this.getUserById(id)))
-        return Promise.all(users.map(u => this.__post('/ajax/workspace/members/addlist', {
-            "list": u.email,
+        return Promise.all(emails.map(email => this.__post('/ajax/workspace/members/addlist', {
+            "list": email,
             "workspaceId": workspaceId
         })))
     }
@@ -442,4 +445,6 @@ export default class {
     deleteChannel(companyId: string, workspaceId: string, channelId: string) {
         return this.__delete(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}`, {})
     }
+
+
 }
