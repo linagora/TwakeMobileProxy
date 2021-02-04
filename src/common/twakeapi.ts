@@ -401,6 +401,7 @@ export default class {
         if (members && members.length) {
             await this.addWorkspaceMember(companyId, ws['id'], members)
         }
+        console.log(ws)
         return ws
     }
 

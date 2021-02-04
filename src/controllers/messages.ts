@@ -53,7 +53,7 @@ export interface ReactionsRequest {
     reaction: string
 }
 
-export interface WhatsNewRequest{
+export interface WhatsNewRequest {
     "company_id": string
     "workspace_id": string
 }
@@ -111,7 +111,7 @@ export default class extends Base {
                     img: a.hidden_data.custom_icon,
                 },
                 application_id: a.application_id,
-                creation_date: a.creation_date < 1611830724000 ? a.creation_date * 1000: a.creation_date,
+                creation_date: a.creation_date < 1611830724000 ? a.creation_date * 1000 : a.creation_date,
                 content: {
                     original_str: a.content.original_str,
                     prepared: null
@@ -349,8 +349,15 @@ export default class extends Base {
 
     }
 
-    async whatsNew(req: WhatsNewRequest){
-        return this.api.whatsNew(req.company_id).then(a=>a.resources)
-        // return this.api.getChannels(req.company_id)
+    async whatsNew(req: WhatsNewRequest) {
+        if (req.workspace_id) {
+            let channels = await this.api.getChannels(req.company_id, req.workspace_id)
+            channels = channels.filter((channel: any) => +channel.last_activity > +channel.user_member.last_access)
+                .map(({company_id, workspace_id, id}: any) => ({company_id, workspace_id, channel_id: id}))
+            const messages = await this.api.whatsNew(req.company_id).then(a => a.resources)
+            return [...channels, ...messages]
+        } else
+            return this.api.whatsNew(req.company_id).then(a => a.resources)
+
     }
 }

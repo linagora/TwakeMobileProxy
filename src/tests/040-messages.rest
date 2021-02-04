@@ -13,7 +13,7 @@ Accept-version: 2.0.0
 ###
 
 
-GET {{host}}/messages/whatsnew?company_id={{company_id}}
+GET {{host}}/messages/whatsnew?company_id={{company_id}}&workspace_id={{workspace_id}}
 Authorization: Bearer {{token}}
 Content-Type: application/json
 Accept-version: 2.0.0
