@@ -100,7 +100,8 @@ export default class extends Base {
     }
 
     async addChannelMember(request: ChannelMemberAddRequest): Promise<any>{
-        return this.api.addChannelMember(request.company_id, request.workspace_id, request.channel_id, request.members)
+        await this.api.addChannelMember(request.company_id, request.workspace_id, request.channel_id, request.members)
+        return {"success":true}
     }
 
     async delete(request: ChannelsDeleteRequest): Promise<any>{

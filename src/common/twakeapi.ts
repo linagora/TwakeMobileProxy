@@ -193,9 +193,9 @@ export default class {
     }
 
     async addChannelMember(companyId: string, workspaceId: string, channelId: string, members: string[]){
-        return await Promise.all(members.map(user_id => this.__post(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}/members`,
+        return Promise.all(members.map(user_id => this.__post(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}/members`,
             {"resource": {"user_id": user_id, "type": "member"}, "options": {}}
-        ))) || {"success":true}
+        )))
     }
 
     async getChannels(companyId: string, workspaceId: string) {
