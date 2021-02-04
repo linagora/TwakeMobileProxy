@@ -349,6 +349,7 @@ export default class extends Base {
     }
 
     async whatsNew(req: WhatsNewRequest){
-        return this.api.whatsNew(req.company_id).then(a=>a.resources)
+        // return this.api.whatsNew(req.company_id).then(a=>a.resources)
+        return this.api.getChannels(req.company_id)
     }
 }

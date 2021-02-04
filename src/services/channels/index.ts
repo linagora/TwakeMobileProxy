@@ -82,6 +82,8 @@ export default class extends Base {
             direct_channel_members: a.direct_channel_members,  // используются в директах
             last_activity: +a.last_activity,
             has_unread: +a.last_activity > + a.user_member.last_access,
+            members: [],        // TODO: remove
+            members_count: 0,   // TODO: remove
             messages_total: 0,
             messages_unread: 0,
         } as ChannelsTypes.Channel

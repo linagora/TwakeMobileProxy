@@ -23,6 +23,8 @@ export declare namespace ChannelsTypes {
         messages_unread: number
         company_id: string
         direct_channel_members: any[]
+        members:[],// TODO: remove
+        members_count: 0 // TODO: remove
     }
 
     export interface ListRequest {
