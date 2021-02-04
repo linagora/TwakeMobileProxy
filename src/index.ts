@@ -376,7 +376,8 @@ const whatsNewSchema = {
     summary: 'List of unretrieved messages',
     querystring: {
         type: 'object', "required": ['company_id'],
-        properties: {"company_id": {type: "string"}}
+        properties:
+            {"company_id": {type: "string"}, "workspace_id": {type: "string"}},
     }
 }
 

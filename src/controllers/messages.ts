@@ -55,6 +55,7 @@ export interface ReactionsRequest {
 
 export interface WhatsNewRequest{
     "company_id": string
+    "workspace_id": string
 }
 
 /**
