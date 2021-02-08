@@ -94,3 +94,20 @@ Accept-version: 2.0.0
 
 
 ###
+
+
+
+GET {{host}}/channels?company_id=0e9337d6-54eb-11eb-9e45-0242ac120004&workspace_id=c173dca0-54f2-11eb-94b1-0242ac120004
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTI1MTYxMjAsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE2MTI1MTE5MjAsIm5iZiI6MTYxMjUxMTkyMCwic3ViIjoiMGU3YTE5MDQtNTRlYi0xMWViLTlmMDMtMDI0MmFjMTIwMDA0Iiwib3JnIjpbXX0.vi6fDHIBm_gsD014MYHRiVDzM7LYDL-cWUaftIfrx7c
+Content-Type: application/json
+Accept-version: 2.0.0
+
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.global.set('channel_id', response.body[0]['id'])
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###

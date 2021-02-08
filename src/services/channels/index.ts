@@ -70,6 +70,7 @@ export default class extends Base {
     }
 
     __channelFormat(a: any): ChannelsTypes.Channel {
+        console.log(a)
         return {
             id: a.id,
             name: a.name ? a.name.charAt(0).toUpperCase() + a.name.slice(1) : a.name,
@@ -81,10 +82,9 @@ export default class extends Base {
             direct_channel_members: a.direct_channel_members,  // используются в директах
             last_activity: +a.last_activity,
             has_unread: +a.last_activity > + a.user_member.last_access,
-            members: [],        // TODO: remove
-            members_count: 0,   // TODO: remove
-            messages_total: 0,
-            messages_unread: 0,
+            members:  a.direct_channel_members,
+            members_count: a.direct_channel_members ? a.direct_channel_members.length : 0,
+            visibility: a.visibility
         } as ChannelsTypes.Channel
     }
 

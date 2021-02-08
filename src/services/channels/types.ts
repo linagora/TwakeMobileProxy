@@ -20,11 +20,11 @@ export declare namespace ChannelsTypes {
         channel_group: string
         workspace_id: string | null
         last_activity: number
-        messages_unread: number
         company_id: string
         direct_channel_members: any[]
-        members:[],// TODO: remove
-        members_count: 0 // TODO: remove
+        visibility: string,
+        members:[],
+        members_count: number
     }
 
     export interface ListRequest {

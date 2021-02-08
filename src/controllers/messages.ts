@@ -352,8 +352,21 @@ export default class extends Base {
     async whatsNew(req: WhatsNewRequest) {
         if (req.workspace_id) {
             let channels = await this.api.getChannels(req.company_id, req.workspace_id)
+
+            console.log('channel_name\tlast_channel_activity\tlast_user_access')
+
+            const stat = [] as any[]
+
+            channels.forEach((channel:any)=>{
+                stat.push({'name':channel.name, last_channel_activity: +channel.last_activity, last_user_access: +channel.user_member.last_access, greater: +channel.last_activity > +channel.user_member.last_access})
+            })
+
+            console.table(stat)
+
             channels = channels.filter((channel: any) => +channel.last_activity > +channel.user_member.last_access)
                 .map(({company_id, workspace_id, id}: any) => ({company_id, workspace_id, channel_id: id}))
+
+
             const messages = await this.api.whatsNew(req.company_id).then(a => a.resources)
             return [...channels, ...messages]
         } else

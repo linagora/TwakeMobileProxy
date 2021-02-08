@@ -208,7 +208,7 @@ export default class {
         assert(workspaceId)
         let x=  this.__get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`, {"mine": true}).then(a=>a['resources'].filter(((a:any)=>
         a.visibility!=='direct')))
-        console.log((await x).filter((a:any)=>a.visibility=='direct'))
+        // console.log('GET CHANNELS:', (await x))
         return x
     }
 
@@ -403,7 +403,6 @@ export default class {
         assert(companyId, 'company_id is required')
         assert(name, 'name id is required')
         const ws = await this.__post('/ajax/workspace/create', {"name": name, "groupId": companyId, "channels": []}).then(a=>a.workspace)
-        console.log(ws)
         if (members && members.length) {
             await this.addWorkspaceMember(companyId, ws['id'], members)
         }
