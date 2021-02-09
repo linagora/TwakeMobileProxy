@@ -70,7 +70,6 @@ export default class extends Base {
     }
 
     __channelFormat(a: any): ChannelsTypes.Channel {
-        console.log(a)
         return {
             id: a.id,
             name: a.name ? a.name.charAt(0).toUpperCase() + a.name.slice(1) : a.name,

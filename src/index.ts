@@ -27,6 +27,11 @@ import Info from './controllers/info'
 const fastify: FastifyInstance = Fastify({logger: false})
 
 
+fastify.register(require('fastify-socket.io'), {
+    // put your options here
+})
+
+
 // const x = toTwacode("hello *my friend* \n> something is here\n")
 // console.log(x);
 
@@ -459,10 +464,22 @@ fastify.setErrorHandler(function (error: Error, request, reply) {
 const start = async () => {
     try {
         await fastify.listen(3123, '::')
+
+        // @ts-ignore
+        fastify.io.on('connect', (socket) => {
+            socket.send('hello')
+            setInterval(()=>{
+                socket.send(`PING ${new Date().toISOString()}`)
+                // fastify.io.sockets.emit('hi', 'everyone');
+            },5000)
+        })
+
     } catch (err) {
         fastify.log.error(err)
         process.exit(1)
     }
 }
+
+
 
 start()

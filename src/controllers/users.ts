@@ -7,6 +7,7 @@ import assert from "assert";
 export interface UsersSearchRequest {
     "company_id": string
     "name": string
+
 }
 
 /**
@@ -21,7 +22,6 @@ export default class extends Base {
     async getCurrent(timeZoneOffset?: number): Promise<User> {
 
         const data = await this.api.getCurrentUser(timeZoneOffset)
-
         const user = {
             id: data.id,
             username: data.username,
