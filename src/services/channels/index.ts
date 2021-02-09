@@ -11,6 +11,8 @@ import MemberGetRequest = ChannelsTypes.MemberGetRequest;
 import Api from '../../common/twakeapi'
 import ApiType from '../../common/types/api'
 import ChannelsService from "./service";
+import UpdateRequest = ChannelsTypes.UpdateRequest;
+import DeleteRequest = ChannelsTypes.DeleteRequest;
 
 
 /**
@@ -135,5 +137,14 @@ export class Test{
 
     getChannelMembers( request: FastifyRequest<{  Querystring: MemberGetRequest}>) {
         return this.service.getMembers(request.jwtToken, request.query)
+    }
+
+
+    edit(request: FastifyRequest<{ Body: UpdateRequest }>) {
+        return this.service.update(request.jwtToken, request.body)
+    }
+
+    delete(request: FastifyRequest<{ Body: DeleteRequest }>){
+        return this.service.delete(request.jwtToken, request.body)
     }
 }

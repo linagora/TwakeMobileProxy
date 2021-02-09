@@ -3,7 +3,7 @@ POST {{host}}/init
 Content-Type: application/json
 Accept-version: 2.0.0
 
-{"fcm_token": "123", "timezoneoffset": -180, "username": "senjertomat@yandex.ru",
+{"fcm_token": "123", "timezoneoffset": -180, "username": "romanbykovsky",
   "token":  "{{auth_token}}" }
 
 

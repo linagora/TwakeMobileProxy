@@ -5,7 +5,7 @@ import {required} from "./helpers";
 import workspaces from "../controllers/workspaces";
 
 // const HOST = 'https://devapi.twake.app'
-const HOST = 'https://beta.twake.app'
+const HOST = 'https://web.qa.twake.app'
 // const HOST = 'http://localhost:8000'
 /**
  * TwakeApi connector

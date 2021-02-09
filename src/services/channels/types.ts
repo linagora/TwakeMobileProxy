@@ -23,19 +23,15 @@ export declare namespace ChannelsTypes {
         company_id: string
         direct_channel_members: any[]
         visibility: string,
-        members:[],
+        members: [],
         members_count: number
     }
 
-    export interface ListRequest {
-        company_id: string
-        workspace_id: string
+    export interface ListRequest extends BaseChannelsParameters {
     }
 
 
-    export interface AddRequest {
-        company_id: string
-        workspace_id: string
+    export interface AddRequest extends BaseChannelsParameters {
         name: string
         icon: string
         description: string
@@ -44,22 +40,23 @@ export declare namespace ChannelsTypes {
         members: string[] // direct channels only
     }
 
-    export interface DeleteRequest {
-        company_id: string
-        workspace_id: string
+    export interface DeleteRequest extends BaseChannelsParameters {
         channel_id: string
     }
 
-    export interface MemberAddRequest {
-        company_id: string
-        workspace_id: string
+    export interface MemberAddRequest extends BaseChannelsParameters {
         channel_id: string
         members: string[]
     }
 
-    export interface MemberGetRequest {
-        company_id: string
-        workspace_id: string
+    export interface MemberGetRequest extends BaseChannelsParameters {
         channel_id: string
+    }
+
+    export interface UpdateRequest extends BaseChannelsParameters {
+        channel_id: string
+        name: string,
+        description: string,
+        icon: string
     }
 }

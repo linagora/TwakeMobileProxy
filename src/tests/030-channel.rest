@@ -45,8 +45,31 @@ Accept-version: 2.0.0
 }
 
 
+> {%
+    client.test("Request executed successfully", function() {
+        client.global.set('last_inserted_channel_id', response.body['id'])
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+
 ###
 
+PUT {{host}}/channels
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "{{company_id}}",
+  "workspace_id": "{{workspace_id}}",
+  "channel_id": "{{last_inserted_channel_id}}",
+  "name": "TestChannel2-rename",
+  "description": "the description",
+  "icon" : "thumbsup"
+}
+
+###
 
 DELETE {{host}}/channels
 Authorization: Bearer {{token}}
@@ -56,58 +79,45 @@ Accept-version: 2.0.0
 {
   "company_id": "{{company_id}}",
   "workspace_id": "{{workspace_id}}",
-  "channel_id": "42427912-1de0-4678-8963-5bb16554f499"
+  "channel_id": "{{last_inserted_channel_id}}"
 }
 
 ###
 
 
-POST {{host}}/channels
-Authorization: Bearer {{token}}
-Content-Type: application/json
-Accept-version: 2.0.0
-
-{
-  "company_id": "{{company_id}}",
-  "visibility": "direct",
-  "members": ["291dae34-54ef-11eb-8031-0242ac120004"]
-}
-
-###
-
-
-
-POST {{host}}/channels/members
-Authorization: Bearer {{token}}
-Content-Type: application/json
-Accept-version: 2.0.0
-
-{
-  "company_id": "0e9337d6-54eb-11eb-9e45-0242ac120004",
-  "workspace_id": "42b8bb1e-66b4-11eb-87df-0242ac120004",
-  "channel_id": "61b73c44-7095-4678-8667-0308619d9bc4",
-  "members": [
-    "f3daa636-6548-11eb-a304-0242ac120004",
-    "72ab8454-65bb-11eb-a040-0242ac120004"
-  ]
-}
-
-
-###
-
-
-
-GET {{host}}/channels?company_id=0e9337d6-54eb-11eb-9e45-0242ac120004&workspace_id=c173dca0-54f2-11eb-94b1-0242ac120004
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTI1MTYxMjAsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE2MTI1MTE5MjAsIm5iZiI6MTYxMjUxMTkyMCwic3ViIjoiMGU3YTE5MDQtNTRlYi0xMWViLTlmMDMtMDI0MmFjMTIwMDA0Iiwib3JnIjpbXX0.vi6fDHIBm_gsD014MYHRiVDzM7LYDL-cWUaftIfrx7c
-Content-Type: application/json
-Accept-version: 2.0.0
-
-
-> {%
-    client.test("Request executed successfully", function() {
-        client.global.set('channel_id', response.body[0]['id'])
-        client.assert(response.status === 200, "Response status is not 200");
-    });
-%}
-
-###
+#
+#
+#POST {{host}}/channels/members
+#Authorization: Bearer {{token}}
+#Content-Type: application/json
+#Accept-version: 2.0.0
+#
+#{
+#  "company_id": "0e9337d6-54eb-11eb-9e45-0242ac120004",
+#  "workspace_id": "42b8bb1e-66b4-11eb-87df-0242ac120004",
+#  "channel_id": "61b73c44-7095-4678-8667-0308619d9bc4",
+#  "members": [
+#    "f3daa636-6548-11eb-a304-0242ac120004",
+#    "72ab8454-65bb-11eb-a040-0242ac120004"
+#  ]
+#}
+#
+#
+####
+#
+#
+#
+#GET {{host}}/channels?company_id=0e9337d6-54eb-11eb-9e45-0242ac120004&workspace_id=c173dca0-54f2-11eb-94b1-0242ac120004
+#Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTI1MTYxMjAsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE2MTI1MTE5MjAsIm5iZiI6MTYxMjUxMTkyMCwic3ViIjoiMGU3YTE5MDQtNTRlYi0xMWViLTlmMDMtMDI0MmFjMTIwMDA0Iiwib3JnIjpbXX0.vi6fDHIBm_gsD014MYHRiVDzM7LYDL-cWUaftIfrx7c
+#Content-Type: application/json
+#Accept-version: 2.0.0
+#
+#
+#> {%
+#    client.test("Request executed successfully", function() {
+#        client.global.set('channel_id', response.body[0]['id'])
+#        client.assert(response.status === 200, "Response status is not 200");
+#    });
+#%}
+#
+####

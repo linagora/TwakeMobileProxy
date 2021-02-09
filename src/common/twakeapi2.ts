@@ -3,14 +3,16 @@ import {BadRequest, Forbidden} from "./errors";
 import assert from "assert";
 import {required} from "./helpers";
 
-const HOST = 'https://beta.twake.app'
+const HOST = 'https://web.qa.twake.app'
 
 import ApiType from "./types/api";
 
 export default class Api implements ApiType {
 
     token: string = ""
-    constructor() {}
+
+    constructor() {
+    }
 
 
     private async __action(method: string, url: string, params: any): Promise<any> {
@@ -21,7 +23,15 @@ export default class Api implements ApiType {
             headers = {"Authorization": "Bearer " + this.token}
         }
 
-        console.log(method, url, JSON.stringify(params))
+        // console.log(`CURL -x ${method} '${url}' -d ${JSON.stringify(params)}`)
+
+        let log = `curl '${HOST}${url}' -X '${method}' -H 'authorization: Bearer ${this.token}' -H 'content-type: application/json'`
+
+        if (method == 'POST') {
+            log += `-d ${JSON.stringify(params)}}`
+        }
+
+        console.log(log)
 
         let res = null
 
@@ -30,13 +40,15 @@ export default class Api implements ApiType {
                 res = await axios.get(HOST + url, {params, headers})
             else if (method == 'POST')
                 res = await axios.post(HOST + url, params, {headers})
-            else if (method == 'DELETE')
-                res = await axios.delete(HOST + url, {headers})
-            else
+            else if (method == 'DELETE') {
+                // TODO: solve the problem with unanswered
+                axios.delete(HOST + url, {headers})
+                res = {"success": true}
+            } else
                 throw new Error('wrong api method type')
 
         } catch (e) {
-            if (e.response && e.response.status === 401){
+            if (e.response && e.response.status === 401) {
                 throw new Forbidden('Wrong token')
             }
 
@@ -47,20 +59,21 @@ export default class Api implements ApiType {
         if (res.data.errors && res.data.errors.includes('user_not_connected')) {
             throw new Forbidden('Wrong token')
         }
-        return res.data as any
+        console.log('aki', res.data)
+        return res.data as any || {}
 
     }
 
     async get(url: string, params: any): Promise<any> {
-        return this.__action('GET', url,params)
+        return this.__action('GET', url, params)
     }
 
     async post(url: string, params: any): Promise<any> {
-        return this.__action('POST', url,params)
+        return this.__action('POST', url, params)
     }
 
-    async delete(url: string, params: any): Promise<any> {
-        return this.__action('DELETE', url,params)
+    async delete(url: string): Promise<any> {
+        return this.__action('DELETE', url, null)
     }
 
     withToken(token: string): Api {

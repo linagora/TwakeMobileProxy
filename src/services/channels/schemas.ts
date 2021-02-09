@@ -13,7 +13,7 @@ export const channelsPostSchema = {
     tags: ['Channels'],
     summary: 'Add new channel',
     body: {
-        type: 'object', "required": ['company_id', 'visibility'],
+        type: 'object', "required": ['company_id', 'workspace_id', 'visibility'],
         properties: {
             "company_id": {"type": "string"},
             "workspace_id": {"type": "string"},
@@ -23,6 +23,21 @@ export const channelsPostSchema = {
             "description": {"type": "string"},
             "channel_group": {"type": "string"},
             "members": {"type": "array", "items": {"type": "string"}}
+        }
+    }
+}
+
+export const channelsPutSchema = {
+    tags: ['Channels'],
+    summary: 'Update a channel',
+    body: {
+        type: 'object', "required": ['company_id', 'workspace_id', 'name'],
+        properties: {
+            "company_id": {"type": "string"},
+            "workspace_id": {"type": "string"},
+            "name": {"type": "string"},
+            "icon": {"type": "string"},
+            "description": {"type": "string"}
         }
     }
 }
@@ -55,6 +70,9 @@ export const channelsMembersPostSchema = {
         }
     }
 }
+
+
+
 
 export const directGetSchema = {
     tags: ['Channels'],
