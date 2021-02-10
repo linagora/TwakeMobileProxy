@@ -27,11 +27,6 @@ import Info from './controllers/info'
 const fastify: FastifyInstance = Fastify({logger: false})
 
 
-fastify.register(require('fastify-socket.io'), {
-    // put your options here
-})
-
-
 // const x = toTwacode("hello *my friend* \n> something is here\n")
 // console.log(x);
 
@@ -226,13 +221,6 @@ const workspacesDeleteSchema = {
 }
 
 
-
-
-
-
-
-
-
 const messagesGetSchema = {
     // description: 'Get list of messages',
     tags: ['Messages'],
@@ -403,7 +391,6 @@ fastify.post('/workspaces/members', {schema: workspaceMembersPostSchema}, async 
 fastify.delete('/workspaces/members', {schema: workspaceMembersDeleteSchema}, async (request, reply) => new Workspaces(request).removeMembers(request.body as WorkspaceMembersPostRequest))
 
 
-
 fastify.get('/messages', {schema: messagesGetSchema}, async (request) => new Messages(request).get(request.query as any))
 fastify.post('/messages', {schema: messagesPostSchema}, async (request) => new Messages(request).insertMessage(request.body as InsertMessageRequest))
 fastify.put('/messages', {schema: messagesPutSchema}, async (request) => new Messages(request).updateMessage(request.body as UpdateMessageRequest))
@@ -414,6 +401,7 @@ fastify.get('/messages/whatsnew', {schema: whatsNewSchema}, async (request) => n
 
 
 import channelsServiceRoutes from './services/channels/routes'
+
 channelsServiceRoutes(fastify)
 
 // fastify.get('/company/:company_id/workspace/:workspace_id/channels', async (request) => {
@@ -461,25 +449,35 @@ fastify.setErrorHandler(function (error: Error, request, reply) {
 })
 
 
+const io = require('socket.io')(fastify.server);
+
+// @ts-ignore
+io.on('connection', function (socket) {
+    console.log('on connection')
+    socket.send('HELLO!')
+    setInterval(()=>{
+        socket.send('PING ' + new Date().toISOString() )
+    },5000)
+    socket.on('message', function () {
+        console.log('on message')
+    });
+    socket.on('disconnect', function () {
+        console.log('on disconnect')
+    });
+})
+
+
 const start = async () => {
     try {
         await fastify.listen(3123, '::')
 
-        // @ts-ignore
-        fastify.io.on('connect', (socket) => {
-            socket.send('hello')
-            setInterval(()=>{
-                socket.send(`PING ${new Date().toISOString()}`)
-                // fastify.io.sockets.emit('hi', 'everyone');
-            },5000)
-        })
 
     } catch (err) {
-        fastify.log.error(err)
+        console.error(err)
+        // fastify.log.error(err)
         process.exit(1)
     }
 }
-
 
 
 start()
