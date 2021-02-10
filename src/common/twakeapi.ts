@@ -385,13 +385,7 @@ export default class {
 
     searchUsers(companyId: string, name: string) {
 
-        const params = {
-            "options": {
-                "scope": "company",
-                "name": name,
-                "company_id": companyId
-            }
-        }
+        const params = {"options":{"scope":"group","name":name,"group_id":companyId,"language_preference":"en"}}
         return this.__post('/ajax/users/all/search', params).then(a => a)
     }
 
