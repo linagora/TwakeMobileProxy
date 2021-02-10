@@ -7,4 +7,5 @@ export default interface User {
     companies?: any[]
     timeZoneOffset?: number
     status?: { "icon": string, "title": string },
+    notification_rooms?: string[]
 }

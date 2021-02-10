@@ -2,17 +2,10 @@ import Base from '../../common/base'
 import Users from '../../controllers/users'
 import {arrayToObject} from "../../common/helpers";
 import {authCache} from "../../common/simplecache";
-import assert from 'assert';
 // import {BadRequest} from "../common/errors";
 import {ChannelsTypes} from "./types";
-import { FastifyReply, FastifyRequest } from "fastify";
-import ChannelParameters = ChannelsTypes.ChannelParameters;
-import MemberGetRequest = ChannelsTypes.MemberGetRequest;
-import Api from '../../common/twakeapi'
-import ApiType from '../../common/types/api'
+import {FastifyRequest} from "fastify";
 import ChannelsService from "./service";
-import UpdateRequest = ChannelsTypes.UpdateRequest;
-import DeleteRequest = ChannelsTypes.DeleteRequest;
 
 
 /**
@@ -67,7 +60,7 @@ export default class extends Base {
         return {"success":true}
     }
 
-    async delete(request: ChannelsTypes.DeleteRequest): Promise<any>{
+    async delete(request: ChannelsTypes.ChannelParameters): Promise<any>{
         return this.api.deleteChannel(request.company_id, request.workspace_id, request.channel_id)
     }
 
@@ -93,7 +86,7 @@ export default class extends Base {
         source.map((a: any) => {return this.__channelFormat(a)})
 
 
-    listPublic = (request: ChannelsTypes.ListRequest): Promise<ChannelsTypes.Channel[]> =>
+    listPublic = (request: ChannelsTypes.BaseChannelsParameters): Promise<ChannelsTypes.Channel[]> =>
         this.api.getChannels(request.company_id, request.workspace_id)
             .then(data => this.__channelsFormat(data)
                 .sort((a: any, b: any) => a.name.localeCompare(b.name)))
@@ -135,16 +128,20 @@ export class Test{
 
     constructor(protected service: ChannelsService) {}
 
-    getChannelMembers( request: FastifyRequest<{  Querystring: MemberGetRequest}>) {
+    getChannelMembers( request: FastifyRequest<{  Querystring: ChannelsTypes.ChannelParameters}>) {
         return this.service.getMembers(request.jwtToken, request.query)
     }
 
 
-    edit(request: FastifyRequest<{ Body: UpdateRequest }>) {
+    edit(request: FastifyRequest<{ Body: ChannelsTypes.UpdateRequest }>) {
         return this.service.update(request.jwtToken, request.body)
     }
 
-    delete(request: FastifyRequest<{ Body: DeleteRequest }>){
+    delete(request: FastifyRequest<{ Body: ChannelsTypes.ChannelParameters }>){
         return this.service.delete(request.jwtToken, request.body)
+    }
+
+    init( request: FastifyRequest<{  Querystring: ChannelsTypes.ChannelParameters}>) {
+        return this.service.init(request.jwtToken, request.query)
     }
 }

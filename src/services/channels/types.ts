@@ -7,10 +7,10 @@ export declare namespace ChannelsTypes {
         workspace_id: string | DirectChannel;
     }
 
-    export interface ChannelParameters extends BaseChannelsParameters {
-        /** the channel id */
-        id: string;
+    export interface ChannelParameters extends BaseChannelsParameters{
+        channel_id: string
     }
+
 
     export interface Channel {
         id: string
@@ -27,9 +27,6 @@ export declare namespace ChannelsTypes {
         members_count: number
     }
 
-    export interface ListRequest extends BaseChannelsParameters {
-    }
-
 
     export interface AddRequest extends BaseChannelsParameters {
         name: string
@@ -40,21 +37,12 @@ export declare namespace ChannelsTypes {
         members: string[] // direct channels only
     }
 
-    export interface DeleteRequest extends BaseChannelsParameters {
-        channel_id: string
-    }
 
-    export interface MemberAddRequest extends BaseChannelsParameters {
-        channel_id: string
+    export interface MemberAddRequest extends ChannelParameters {
         members: string[]
     }
 
-    export interface MemberGetRequest extends BaseChannelsParameters {
-        channel_id: string
-    }
-
-    export interface UpdateRequest extends BaseChannelsParameters {
-        channel_id: string
+    export interface UpdateRequest extends ChannelParameters {
         name: string,
         description: string,
         icon: string

@@ -20,7 +20,10 @@ export default class extends Base {
                     name: ws.group.name.trim(),
                     // unique_name: ws.group.unique_name,
                     logo: ws.group.logo,
-                    total_members: +ws.group.total_members
+                    total_members: +ws.group.total_members,
+                    notification_rooms: [
+                        `previous:group/${ws.group.id}`
+                        ]
                 } as Company
             }
         })

@@ -35,6 +35,7 @@ export default class extends Base {
         const out = Object.assign({}, user)
 
         out.status = {"icon": data.status_icon[0], "title": data.status_icon[1]}
+        out.notification_rooms  = ['previous:users/' + data.id]
 
         return this.__transform(out)
 

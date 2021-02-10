@@ -25,13 +25,15 @@ export default class Api implements ApiType {
 
         // console.log(`CURL -x ${method} '${url}' -d ${JSON.stringify(params)}`)
 
-        let log = `curl '${HOST}${url}' -X '${method}' -H 'authorization: Bearer ${this.token}' -H 'content-type: application/json'`
+        // let log = `curl '${HOST}${url}' -X '${method}' -H 'authorization: Bearer ${this.token}' -H 'content-type: application/json'`
+        //
+        // if (method == 'POST') {
+        //     log += `-d ${JSON.stringify(params)}}`
+        // }
+        //
+        // console.log(log)
 
-        if (method == 'POST') {
-            log += `-d ${JSON.stringify(params)}}`
-        }
-
-        console.log(log)
+        console.log(method, url, JSON.stringify(params, null, 2))
 
         let res = null
 
@@ -59,7 +61,6 @@ export default class Api implements ApiType {
         if (res.data.errors && res.data.errors.includes('user_not_connected')) {
             throw new Forbidden('Wrong token')
         }
-        console.log('aki', res.data)
         return res.data as any || {}
 
     }

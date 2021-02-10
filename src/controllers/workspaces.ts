@@ -59,7 +59,14 @@ export default class extends Base {
                     total_members: a.total_members,
                     is_archived: a.is_archived,
                     user_last_access: a._user_last_access,
-                    user_is_admin: a._user_is_admin
+                    user_is_admin: a._user_is_admin,
+                    notification_rooms: [
+                        `/companies/${request.company_id}/workspaces/${a.id}/channels?type=public`,
+                        `/companies/${request.company_id}/workspaces/${a.id}/channels?type=private&user=${data.id}`,
+                        `previous:workspace/${a.id}`,
+                        `previous:workspace_apps/${a.id}`,
+                        `previous:workspace_users/${a.id}`
+                    ]
                 } as Workspace
             }).sort((a: Workspace, b: Workspace) => a.name.localeCompare(b.name)) as Workspace[]
 

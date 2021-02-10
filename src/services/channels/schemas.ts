@@ -93,3 +93,17 @@ export const channelsMembersGetSchema = {
         }
     }
 }
+
+export const channelsInitSchema = {
+    tags: ['Channels'],
+    summary: 'Init channel and get the notification rooms',
+    querystring: {
+        type: 'object',
+        "required": ['company_id', 'workspace_id', 'channel_id'],
+        "properties": {
+            "company_id": {"type": "string"},
+            "workspace_id": {"type": "string"},
+            "channel_id": {"type": "string"},
+        }
+    }
+}

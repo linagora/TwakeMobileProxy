@@ -10,7 +10,7 @@ import {
     channelsPostSchema,
     directGetSchema,
     channelsMembersGetSchema,
-    channelsPutSchema
+    channelsPutSchema, channelsInitSchema
 } from "./schemas";
 import Api from "../../common/twakeapi2";
 import ChannelsService from "./service";
@@ -18,7 +18,7 @@ import ChannelsService from "./service";
 
 
 export default function(fastify: FastifyInstance){
-    fastify.get('/channels', {schema: channelsGetSchema}, async (request) => new Channels(request).listPublic(request.query as ChannelsTypes.ListRequest))
+    fastify.get('/channels', {schema: channelsGetSchema}, async (request) => new Channels(request).listPublic(request.query as ChannelsTypes.ChannelParameters))
     fastify.post('/channels', {schema: channelsPostSchema}, async (request) => new Channels(request).add(request.body as ChannelsTypes.AddRequest))
 
     fastify.get('/direct', {schema: directGetSchema}, async (request) => new Channels(request).listDirect((request.query as any).company_id))
@@ -54,6 +54,16 @@ export default function(fastify: FastifyInstance){
         // preHandler: accessControl,
         // preValidation: [fastify.authenticate],
         handler: channelsController.delete.bind(channelsController),
+    });
+
+
+    fastify.route({
+        method: "GET",
+        url: '/channels/init',
+        schema: channelsInitSchema,
+        // preHandler: accessControl,
+        // preValidation: [fastify.authenticate],
+        handler: channelsController.init.bind(channelsController),
     });
 
     fastify.post('/channels/members', {schema: channelsMembersPostSchema}, async (request) => new Channels(request).addChannelMember(request.body as ChannelsTypes.MemberAddRequest))
