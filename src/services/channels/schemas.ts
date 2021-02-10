@@ -82,7 +82,7 @@ export const directGetSchema = {
 
 export const channelsMembersGetSchema = {
     tags: ['Channels'],
-    summary: 'List of public/private channels',
+    summary: 'List of the channel members',
     querystring: {
         type: 'object',
         "required": ['company_id', 'workspace_id', 'channel_id'],
