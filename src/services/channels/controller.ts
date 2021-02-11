@@ -55,10 +55,7 @@ export default class extends Base {
         return this.__channelFormat(channel)
     }
 
-    async addChannelMember(request: ChannelsTypes.MemberAddRequest): Promise<any>{
-        await this.api.addChannelMember(request.company_id, request.workspace_id, request.channel_id, request.members)
-        return {"success":true}
-    }
+
 
     async delete(request: ChannelsTypes.ChannelParameters): Promise<any>{
         return this.api.deleteChannel(request.company_id, request.workspace_id, request.channel_id)
@@ -124,7 +121,7 @@ export default class extends Base {
 }
 
 
-export class Test{
+export class ChannelsController{
 
     constructor(protected service: ChannelsService) {}
 
@@ -132,7 +129,10 @@ export class Test{
         return this.service.getMembers(request.jwtToken, request.query)
     }
 
-
+    async addChannelMember( request: FastifyRequest<{  Body: ChannelsTypes.MemberAddRequest}>) : Promise<any> {
+         await this.service.addMembers(request.jwtToken, request.body)
+        return this.service.getMembers(request.jwtToken, request.body)
+    }
     edit(request: FastifyRequest<{ Body: ChannelsTypes.UpdateRequest }>) {
         return this.service.update(request.jwtToken, request.body)
     }

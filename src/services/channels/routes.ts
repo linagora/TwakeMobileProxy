@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginCallback } from "fastify";
 
 
-import Channels, {Test} from './controller'
+import Channels, {ChannelsController} from './controller'
 import  {ChannelsTypes} from "./types";
 import {
     channelsDeleteSchema,
@@ -25,7 +25,7 @@ export default function(fastify: FastifyInstance){
 
 
 
-    const channelsController = new Test(new ChannelsService(new Api()))
+    const channelsController = new ChannelsController(new ChannelsService(new Api()))
 
     fastify.route({
         method: "GET",
@@ -66,7 +66,13 @@ export default function(fastify: FastifyInstance){
         handler: channelsController.init.bind(channelsController),
     });
 
-    fastify.post('/channels/members', {schema: channelsMembersPostSchema}, async (request) => new Channels(request).addChannelMember(request.body as ChannelsTypes.MemberAddRequest))
-
+    fastify.route({
+        method: "POST",
+        url: '/channels/members',
+        schema: channelsMembersPostSchema,
+        // preHandler: accessControl,
+        // preValidation: [fastify.authenticate],
+        handler: channelsController.addChannelMember.bind(channelsController),
+    });
 
 }

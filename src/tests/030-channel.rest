@@ -16,7 +16,7 @@ Accept-version: 2.0.0
 
 
 GET {{host}}/channels/members?company_id={{company_id}}&workspace_id={{workspace_id}}&channel_id={{channel_id}}
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTI5NzA0MzAsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE2MTI5NjYyMzAsIm5iZiI6MTYxMjk2NjIzMCwic3ViIjoiZmY4YTJhMjItNmFlNS0xMWViLWI3MzktMDI0MmFjMTIwMDA2Iiwib3JnIjpbXX0._3Wpnr85ibEXdXoNlA8tWHtxONGt4mbRvJpZBi-Z360
+Authorization: Bearer {{token}}
 Content-Type: application/json
 Accept-version: 2.0.0
 
@@ -97,8 +97,8 @@ Accept-version: 2.0.0
   "workspace_id": "{{workspace_id}}",
   "channel_id": "{{channel_id}}",
   "members": [
-    "f3daa636-6548-11eb-a304-0242ac120004",
-    "72ab8454-65bb-11eb-a040-0242ac120004"
+    "f3daa636-6548-11eb-a304-0242ac120005",
+    "72ab8454-65bb-11eb-a040-0242ac120006"
   ]
 }
 

@@ -47,4 +47,13 @@ export default class ChannelsService {
     all(token: string, req: ChannelsTypes.BaseChannelsParameters) {
         return this.api.withToken(token).get(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels`, {"mine": true}).then(a=>a['resources'])
     }
+
+    async addMembers(jwtToken: any, req: ChannelsTypes.MemberAddRequest) {
+        const api = this.api.withToken(jwtToken)
+        const promises = req.members.map(user_id => api.post(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}/members`,
+            {"resource": {"user_id": user_id, "type": "member"}}
+        ))
+
+        return Promise.all(promises.map(p=>p.catch(e=>e)))
+    }
 }

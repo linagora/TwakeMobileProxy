@@ -11,7 +11,9 @@ export default class Api implements ApiType {
 
     token: string = ""
 
-    constructor() {
+    constructor(token?: string) {
+        if(token)
+            this.token = token
     }
 
 
