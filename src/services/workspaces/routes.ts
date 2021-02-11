@@ -52,7 +52,7 @@ export default function(fastify: FastifyInstance){
     fastify.route({
         method: "GET",
         url: '/workspace/notifications',
-        schema: workspacesSchema,
+        schema: workspaceNotificationsSchema,
         // preHandler: accessControl,
         // preValidation: [fastify.authenticate],
         handler: controller.notifications.bind(controller),

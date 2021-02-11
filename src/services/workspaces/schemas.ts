@@ -58,7 +58,7 @@ export const workspaceMembersDeleteSchema = {
 
 export const workspaceNotificationsSchema = {
     tags: ['Workspaces'],
-    summary: 'socket notifications rooms for workspace',
+    summary: 'Socket notifications rooms for workspace',
     querystring: {
         type: 'object',
         "required": ['company_id', 'workspace_id'],
