@@ -1,62 +1,17 @@
-import Base from '../common/base'
-import {arrayToObject} from '../common/helpers'
-import Users from '../services/users/controller'
+import Base from '../../common/base'
+import {arrayToObject} from '../../common/helpers'
+import Users from '../../services/users/controller'
 import assert from "assert";
-import {fixIt, parseCompile, toTwacode} from "../common/twacode"
-import {BadRequest} from "../common/errors";
+import {fixIt, parseCompile, toTwacode} from "../../common/twacode"
+import {BadRequest} from "../../common/errors";
+import {MessagesTypes} from "./types";
+import UsersService from "../workspaces/service";
+import MessagesService from "./service";
+import {ChannelsTypes} from "../channels/types";
 
+import { FastifyRequest} from "fastify";
+import ChannelsService from "../channels/service";
 
-export interface InsertMessageRequest {
-    company_id: string,
-    workspace_id: string,
-    channel_id: string,
-    thread_id: string
-    original_str: string
-    prepared: Array<Object>
-}
-
-export interface UpdateMessageRequest {
-    company_id: string,
-    workspace_id: string,
-    channel_id: string,
-    thread_id: string
-    message_id: string,
-    original_str: string
-    prepared: Array<Object>
-}
-
-
-export interface GetMessagesRequest {
-    company_id: string,
-    workspace_id: string,
-    channel_id: string,
-    thread_id: string
-    message_id: string,
-    before_message_id: string,
-    limit: number
-}
-
-export interface DeleteMessageRequest {
-    company_id: string
-    workspace_id: string,
-    channel_id: string
-    message_id: string
-    thread_id: string
-}
-
-export interface ReactionsRequest {
-    company_id: string
-    workspace_id: string,
-    channel_id: string
-    message_id: string
-    thread_id: string
-    reaction: string
-}
-
-export interface WhatsNewRequest {
-    "company_id": string
-    "workspace_id": string
-}
 
 /**
  * Messages methods
@@ -69,7 +24,7 @@ export default class extends Base {
      * @param {GetMessagesRequest} req
      * @return {Promise<object[]>}
      */
-    async get(req: GetMessagesRequest) {
+    async get(req: MessagesTypes.GetMessagesRequest) {
 
         assert(req.company_id, 'company_id is required');
         assert(req.workspace_id, 'workspace_id is required');
@@ -272,7 +227,7 @@ export default class extends Base {
      * @return {Promise<{object}>}
      * @param req
      */
-    async insertMessage(req: InsertMessageRequest) {
+    async insertMessage(req: MessagesTypes.InsertMessageRequest) {
 
         assert(req.company_id, 'company_id is required');
         assert(req.workspace_id, 'workspace_id is required');
@@ -299,7 +254,7 @@ export default class extends Base {
             thread_id: req.thread_id,
             message_id: id,
             limit: 1
-        } as GetMessagesRequest)
+        } as MessagesTypes.GetMessagesRequest)
 
         if (!insertedMessage.length) {
             throw Error("Can't get inserted message")
@@ -310,13 +265,13 @@ export default class extends Base {
 
     }
 
-    async updateMessage(req: UpdateMessageRequest) {
+    async updateMessage(req: MessagesTypes.UpdateMessageRequest) {
 
         return this.api.updateMessage(req.company_id, req.workspace_id, req.channel_id, req.message_id, req.thread_id, req.original_str, toTwacode)
 
     }
 
-    async deleteMessage(req: DeleteMessageRequest) {
+    async deleteMessage(req: MessagesTypes.DeleteMessageRequest) {
         assert(req.company_id, 'company_id is required');
         assert(req.workspace_id, 'workspace_id is required');
         assert(req.channel_id, 'channel_id is required');
@@ -338,7 +293,7 @@ export default class extends Base {
 
     }
 
-    async reactions(req: ReactionsRequest) {
+    async reactions(req: MessagesTypes.ReactionsRequest) {
 
         const res = await this.api.addReaction(req.company_id, req.workspace_id, req.channel_id, req.message_id, req.reaction, req.thread_id)
 
@@ -349,9 +304,20 @@ export default class extends Base {
 
     }
 
-    async whatsNew(req: WhatsNewRequest) {
+
+}
+
+
+export class MessagesController {
+
+    // constructor(protected service: WorkspaceService, protected channelsService: ChannelsService, protected usersService: UsersService) {}
+    constructor(protected messagesService: MessagesService, protected  channelsService: ChannelsService) {
+    }
+
+    async whatsnew(request: FastifyRequest<{ Querystring: MessagesTypes.WhatsNewRequest }>):Promise<any> {
+        const req = request.query
         if (req.workspace_id) {
-            let channels = await this.api.getChannels(req.company_id, req.workspace_id)
+            let channels = await this.channelsService.all(request.jwtToken, req)
 
             console.log('channel_name\tlast_channel_activity\tlast_user_access')
 
@@ -361,16 +327,16 @@ export default class extends Base {
                 stat.push({'name':channel.name, last_channel_activity: +channel.last_activity, last_user_access: +channel.user_member.last_access, greater: +channel.last_activity > +channel.user_member.last_access})
             })
 
-            console.table(stat)
-
             channels = channels.filter((channel: any) => +channel.last_activity > +channel.user_member.last_access)
                 .map(({company_id, workspace_id, id}: any) => ({company_id, workspace_id, channel_id: id}))
 
 
-            const messages = await this.api.whatsNew(req.company_id).then(a => a.resources)
+            const messages = await this.messagesService.whatsNew(request.jwtToken, request.query)
+
             return [...channels, ...messages]
         } else
-            return this.api.whatsNew(req.company_id).then(a => a.resources)
+            return await this.messagesService.whatsNew(request.jwtToken, request.query)
 
     }
+
 }

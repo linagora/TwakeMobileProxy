@@ -1,18 +1,10 @@
 import Fastify, {FastifyInstance} from 'fastify'
-// import {HandledException} from "./common/helpers";
 import {BadRequest, Forbidden} from './common/errors';
 import {AssertionError} from "assert";
 
 import Authorization, {InitParams, ProlongParams} from './controllers/authorization'
-// import Users, {UsersSearchRequest} from './controllers/users'
 
 
-import Messages, {
-    DeleteMessageRequest,
-    ReactionsRequest,
-    InsertMessageRequest,
-    UpdateMessageRequest
-} from './controllers/messages'
 import Settings from './controllers/settings'
 import Companies from './controllers/companies'
 
@@ -21,18 +13,11 @@ import Info from './controllers/info'
 
 const fastify: FastifyInstance = Fastify({logger: false})
 
-
-// const x = toTwacode("hello *my friend* \n> something is here\n")
-// console.log(x);
-
-
 declare module "fastify" {
     export interface FastifyRequest {
-        // user: UserProfile,
         jwtToken: string
     }
 }
-
 
 fastify.addHook("onRequest", async (request, reply) => {
     try {
@@ -106,122 +91,10 @@ const prolongSchema = {
 }
 
 
-
-
 const companiesSchema = {
     tags: ['Companies'],
     summary: "List of user's companies",
     querystring: {type: 'object', required: [], "properties": {}}
-}
-
-
-
-
-const messagesGetSchema = {
-    // description: 'Get list of messages',
-    tags: ['Messages'],
-    summary: 'List of messages',
-    querystring: {
-        type: 'object',
-        required: ['company_id', 'workspace_id', 'channel_id'],
-        properties:
-            {
-                "company_id": {"type": "string"},
-                "workspace_id": {"type": "string"},
-                "channel_id": {"type": "string"},
-                "thread_id": {"type": "string"},
-                "message_id": {"type": "string"},
-                "before_message_id": {"type": "string"},
-                "limit": {"type": "integer"},
-            }
-    },
-    // response: {
-    //     200: {
-    //         description: 'Successful response',
-    //         type: 'object',
-    //         properties: {
-    //             hello: { type: 'string' }
-    //         }
-    //     }
-    // }
-}
-
-
-const messagesPostSchema = {
-    tags: ['Messages'],
-    summary: 'Add new message',
-    body: {
-        type: 'object', "required": ['company_id', 'workspace_id', 'channel_id', 'original_str'],
-        properties: {
-            "company_id": {"type": "string"},
-            "workspace_id": {"type": "string"},
-            "channel_id": {"type": "string"},
-            "thread_id": {"type": "string"},
-            "message_id": {"type": "string"},
-            "original_str": {"type": "string"},
-            "prepared": {"type": "object"},
-
-        }
-    }
-}
-
-const messagesPutSchema = {
-    tags: ['Messages'],
-    summary: 'Update a message',
-    body: {
-        type: 'object', "required": ['company_id', 'workspace_id', 'channel_id', 'message_id', 'original_str'],
-        properties: {
-            "company_id": {"type": "string"},
-            "workspace_id": {"type": "string"},
-            "channel_id": {"type": "string"},
-            "thread_id": {"type": "string"},
-            "message_id": {"type": "string"},
-            "original_str": {"type": "string"},
-            "prepared": {"type": "object"},
-
-        }
-    }
-}
-
-
-const messagesDeleteSchema = {
-    tags: ['Messages'],
-    summary: 'Delete a message',
-    body: {
-        type: 'object', "required": ['company_id', 'workspace_id', 'channel_id', 'message_id'],
-        properties: {
-            "company_id": {"type": "string"},
-            "workspace_id": {"type": "string"},
-            "channel_id": {"type": "string"},
-            "thread_id": {"type": "string"},
-            "message_id": {"type": "string"}
-        }
-    }
-}
-
-const reactionsSchema = {
-    tags: ['Messages'],
-    summary: 'Add message reaction a message',
-    body: {
-        type: 'object', "required": ['company_id', 'workspace_id', 'channel_id', 'message_id', 'reaction'],
-        properties: {
-            "company_id": {"type": "string"},
-            "workspace_id": {"type": "string"},
-            "channel_id": {"type": "string"},
-            "thread_id": {"type": "string"},
-            "message_id": {"type": "string"},
-            "reaction": {"type": "string"}
-        }
-    }
-}
-
-const emojiSchema = {
-    tags: ['References'],
-    summary: 'List of available emojis',
-    querystring: {
-        type: 'object', "required": [],
-        properties: {}
-    }
 }
 
 
@@ -260,13 +133,12 @@ fastify.register(require('fastify-swagger'), {
 })
 
 
-const whatsNewSchema = {
-    tags: ['Messages'],
-    summary: 'List of unretrieved messages',
+export const emojiSchema = {
+    tags: ['References'],
+    summary: 'List of available emojis',
     querystring: {
-        type: 'object', "required": ['company_id'],
-        properties:
-            {"company_id": {type: "string"}, "workspace_id": {type: "string"}},
+        type: 'object', "required": [],
+        properties: {}
     }
 }
 
@@ -277,45 +149,18 @@ fastify.post('/authorization/prolong', {schema: prolongSchema}, async (request, 
 fastify.get('/companies', {schema: companiesSchema}, async (request, reply) => new Companies(request).list())
 
 
-fastify.get('/messages', {schema: messagesGetSchema}, async (request) => new Messages(request).get(request.query as any))
-fastify.post('/messages', {schema: messagesPostSchema}, async (request) => new Messages(request).insertMessage(request.body as InsertMessageRequest))
-fastify.put('/messages', {schema: messagesPutSchema}, async (request) => new Messages(request).updateMessage(request.body as UpdateMessageRequest))
-fastify.delete('/messages', {schema: messagesDeleteSchema}, async (request) => new Messages(request).deleteMessage(request.body as DeleteMessageRequest))
-fastify.post('/reactions', {schema: reactionsSchema}, async (request) => new Messages(request).reactions(request.body as ReactionsRequest))
 fastify.get('/settings/emoji', {schema: emojiSchema}, async (request) => new Settings(request).emoji())
-fastify.get('/messages/whatsnew', {schema: whatsNewSchema}, async (request) => new Messages(request).whatsNew(request.query as UpdateMessageRequest))
 
 
 import channelsServiceRoutes from './services/channels/routes'
 import workspacesServiceRoutes from './services/workspaces/routes'
 import usersServiceRoutes from './services/users/routes'
+import messagesServiceRoutes from './services/messages/routes'
 
 channelsServiceRoutes(fastify)
 workspacesServiceRoutes(fastify)
 usersServiceRoutes(fastify)
-
-// fastify.get('/company/:company_id/workspace/:workspace_id/channels', async (request) => {
-//     const company_id = (request.params as any).company_id
-//     const workspace_id = (request.params as any).workspace_id
-//     return new Channels(request.user).listPublic2(company_id, workspace_id)
-// })
-//
-// fastify.get('/company/:company_id/workspace/:workspace_id/channels/:channel_id/members', async (request) => {
-//     const companyId = (request.params as any).company_id
-//     const workspaceId = (request.params as any).workspace_id
-//     const channelId = (request.params as any).channel_id
-//     return new Channels(request.user).members(companyId, workspaceId, channelId)
-// })
-
-
-// fastify.get('/channels/:channel_id/init', async (request) => {
-//     const channel_id = (request.params as any).channel_id
-//     return new Messages(request.user).init(channel_id)
-// })
-
-
-// import InfoService from './services/info'
-// InfoService(fastify,{prefix:""})
+messagesServiceRoutes(fastify)
 
 
 fastify.setErrorHandler(function (error: Error, request, reply) {
@@ -345,9 +190,9 @@ const io = require('socket.io')(fastify.server);
 io.on('connection', function (socket) {
     console.log('on connection')
     socket.send('HELLO!')
-    setInterval(()=>{
-        socket.send('PING ' + new Date().toISOString() )
-    },5000)
+    setInterval(() => {
+        socket.send('PING ' + new Date().toISOString())
+    }, 5000)
     socket.on('message', function () {
         console.log('on message')
     });

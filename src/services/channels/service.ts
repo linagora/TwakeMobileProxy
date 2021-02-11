@@ -44,8 +44,18 @@ export default class ChannelsService {
         })
     }
 
-    all(token: string, req: ChannelsTypes.BaseChannelsParameters) {
+
+    public(token: string, req: ChannelsTypes.BaseChannelsParameters) {
         return this.api.withToken(token).get(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels`, {"mine": true}).then(a=>a['resources'])
+    }
+
+    direct(token: string, req: ChannelsTypes.BaseChannelsParameters) {
+        return this.api.withToken(token).get(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/direct/channels`, {"mine": true}).then(a=>a['resources'])
+    }
+
+
+    all(token: string, req: ChannelsTypes.BaseChannelsParameters) {
+        return Promise.all([this.public(token,req),this.direct(token,req)]).then(res =>[...res[0], ...res[1]])
     }
 
     async addMembers(jwtToken: any, req: ChannelsTypes.MemberAddRequest) {

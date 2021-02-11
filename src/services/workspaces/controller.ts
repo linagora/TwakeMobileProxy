@@ -98,7 +98,6 @@ export class WorkspaceController {
     async notifications(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
 
         const currentUser = await this.usersService.getCurrent(request.jwtToken)
-        console.log(request.jwtToken)
 
         const rooms = {} as { [key: string]: { type: string, id: string } }
 
@@ -111,10 +110,18 @@ export class WorkspaceController {
             id: 'PRIVATE'
         }
 
-        const allChannelsIds = (await this.channelsService.all(request.jwtToken, request.query as ChannelsTypes.BaseChannelsParameters)).map((a: any) => a.id)
+        const allChannelsIds = await this.channelsService.all(request.jwtToken, request.query as ChannelsTypes.BaseChannelsParameters).then(channel => {
+            return channel.map((a: any) => {
+                return {id: a.id, direct: a.visibility === 'direct'}
+            })
+        })
 
-        allChannelsIds.forEach((channelId: string) => {
-            rooms[`previous::channels/${channelId}/messages/updates`] = {type: 'CHANNEL', id: channelId}
+
+        allChannelsIds.forEach((channel: { id: string, direct: boolean }) => {
+            rooms[`previous::channels/${channel.id}/messages/updates`] = {
+                type: channel.direct ? 'DIRECT' : 'CHANNEL',
+                id: channel.id
+            }
         })
 
 
