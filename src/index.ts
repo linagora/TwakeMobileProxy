@@ -4,7 +4,7 @@ import {BadRequest, Forbidden} from './common/errors';
 import {AssertionError} from "assert";
 
 import Authorization, {InitParams, ProlongParams} from './controllers/authorization'
-import Users, {UsersSearchRequest} from './controllers/users'
+// import Users, {UsersSearchRequest} from './controllers/users'
 
 
 import Messages, {
@@ -15,12 +15,7 @@ import Messages, {
 } from './controllers/messages'
 import Settings from './controllers/settings'
 import Companies from './controllers/companies'
-import Workspaces, {
-    WorkspaceDeleteRequest,
-    WorkspaceListRequest,
-    WorkspaceMembersGetRequest, WorkspaceMembersPostRequest,
-    WorkspacePostRequest
-} from './controllers/workspaces'
+
 
 import Info from './controllers/info'
 
@@ -111,39 +106,7 @@ const prolongSchema = {
 }
 
 
-const userSchema = {
-    tags: ['User related'],
-    summary: 'Get current user',
-    querystring: {type: 'object', "required": [], "properties": {"timezoneoffset": {"type": "integer"}}}
-}
 
-const usersSchema = {
-    tags: ['References'],
-    summary: 'Get users by id',
-    querystring: {
-        type: 'object', "required": ["id"], "properties": {
-            "id":
-                {
-                    "anyOf": [
-                        {"type": "string"},
-                        {"type": "array", "items": {"type": "string"}}
-                    ]
-                }
-        }
-    }
-}
-
-const usersSearchSchema = {
-    tags: ['References'],
-    summary: 'Get users by name',
-    querystring: {
-        type: 'object', "required": ["company_id", "name"], "properties":
-            {
-                "company_id": {"type": "string"},
-                "name": {"type": "string"},
-            }
-    }
-}
 
 const companiesSchema = {
     tags: ['Companies'],
@@ -151,74 +114,7 @@ const companiesSchema = {
     querystring: {type: 'object', required: [], "properties": {}}
 }
 
-const workspacesSchema = {
-    tags: ['Workspaces'],
-    summary: 'List of company workspaces',
-    querystring: {type: 'object', "required": ['company_id'], "properties": {"company_id": {"type": "string"}}}
-}
 
-const workspacesPostSchema = {
-    tags: ['Workspaces'],
-    summary: 'Create a workspace',
-    body: {
-        type: 'object',
-        "required": ['company_id', 'name'],
-        "properties": {
-            "company_id": {"type": "string"},
-            "name": {type: "string"},
-            "members": {"type": "array", "items": {"type": "string"}}
-        }
-    }
-}
-
-const workspaceMembersGetSchema = {
-    tags: ['Workspaces'],
-    summary: 'List of workspaces members',
-    querystring: {
-        type: 'object',
-        "required": ['company_id', 'workspace_id'],
-        "properties": {"company_id": {"type": "string"}, "workspace_id": {type: "string"}}
-    }
-}
-
-const workspaceMembersPostSchema = {
-    tags: ['Workspaces'],
-    summary: 'Add workspace members',
-    body: {
-        type: 'object',
-        "required": ['company_id', 'workspace_id', 'members'],
-        "properties": {
-            "company_id": {"type": "string"},
-            "workspace_id": {type: "string"},
-            "members": {"type": "array", "items": {"type": "string"}}
-        }
-    }
-}
-
-const workspaceMembersDeleteSchema = {
-    tags: ['Workspaces'],
-    summary: 'Delete workspace members',
-    body: {
-        type: 'object',
-        "required": ['company_id', 'workspace_id', 'members'],
-        "properties": {
-            "company_id": {"type": "string"},
-            "workspace_id": {type: "string"},
-            "members": {"type": "array", "items": {"type": "string"}}
-        }
-    }
-}
-
-
-const workspacesDeleteSchema = {
-    tags: ['Workspaces'],
-    summary: 'Delete a workspace',
-    body: {
-        type: 'object',
-        "required": ['company_id', 'workspace_id'],
-        "properties": {"company_id": {"type": "string"}, "workspace_id": {type: "string"}}
-    }
-}
 
 
 const messagesGetSchema = {
@@ -378,17 +274,7 @@ fastify.get('/', {schema: {hide: true} as any}, async (request, reply) => new In
 // fastify.post('/authorize', async (request, reply) => await new Authorization(request).auth(request.body as AuthParams))
 fastify.post('/init', {schema: initSchema}, async (request, reply) => new Authorization(request).init(request.body as InitParams))
 fastify.post('/authorization/prolong', {schema: prolongSchema}, async (request, reply) => new Authorization(request).prolong(request.body as ProlongParams))
-fastify.get('/user', {schema: userSchema}, async (request, reply) => new Users(request).getCurrent((request.query as any).timezoneoffset))
-fastify.get('/users', {schema: usersSchema}, async (request, reply) => new Users(request).getUsers((request.query as any).id))
-fastify.get('/users/search', {schema: usersSearchSchema}, async (request, reply) => new Users(request).searchUsers(request.query as UsersSearchRequest))
 fastify.get('/companies', {schema: companiesSchema}, async (request, reply) => new Companies(request).list())
-fastify.get('/workspaces', {schema: workspacesSchema}, async (request, reply) => new Workspaces(request).list(request.query as WorkspaceListRequest))
-fastify.post('/workspaces', {schema: workspacesPostSchema}, async (request, reply) => new Workspaces(request).add(request.body as WorkspacePostRequest))
-fastify.delete('/workspaces', {schema: workspacesDeleteSchema}, async (request, reply) => new Workspaces(request).delete(request.body as WorkspaceDeleteRequest))
-
-fastify.get('/workspaces/members', {schema: workspaceMembersGetSchema}, async (request, reply) => new Workspaces(request).listMembers(request.query as WorkspaceMembersGetRequest))
-fastify.post('/workspaces/members', {schema: workspaceMembersPostSchema}, async (request, reply) => new Workspaces(request).addMembers(request.body as WorkspaceMembersPostRequest))
-fastify.delete('/workspaces/members', {schema: workspaceMembersDeleteSchema}, async (request, reply) => new Workspaces(request).removeMembers(request.body as WorkspaceMembersPostRequest))
 
 
 fastify.get('/messages', {schema: messagesGetSchema}, async (request) => new Messages(request).get(request.query as any))
@@ -401,8 +287,12 @@ fastify.get('/messages/whatsnew', {schema: whatsNewSchema}, async (request) => n
 
 
 import channelsServiceRoutes from './services/channels/routes'
+import workspacesServiceRoutes from './services/workspaces/routes'
+import usersServiceRoutes from './services/users/routes'
 
 channelsServiceRoutes(fastify)
+workspacesServiceRoutes(fastify)
+usersServiceRoutes(fastify)
 
 // fastify.get('/company/:company_id/workspace/:workspace_id/channels', async (request) => {
 //     const company_id = (request.params as any).company_id

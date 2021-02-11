@@ -1,5 +1,5 @@
 import Base from '../../common/base'
-import Users from '../../controllers/users'
+import Users from '../users/controller'
 import {arrayToObject} from "../../common/helpers";
 import {authCache} from "../../common/simplecache";
 // import {BadRequest} from "../common/errors";

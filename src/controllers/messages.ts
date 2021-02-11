@@ -1,6 +1,6 @@
 import Base from '../common/base'
 import {arrayToObject} from '../common/helpers'
-import Users from './users'
+import Users from '../services/users/controller'
 import assert from "assert";
 import {fixIt, parseCompile, toTwacode} from "../common/twacode"
 import {BadRequest} from "../common/errors";

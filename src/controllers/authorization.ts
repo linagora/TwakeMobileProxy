@@ -1,5 +1,5 @@
 import Base from '../common/base'
-import Users from './users'
+import Users from '../services/users/controller'
 import {authCache} from "../common/simplecache";
 import AuthParams from "../models/auth_params";
 import {Forbidden} from '../common/errors';

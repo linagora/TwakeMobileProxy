@@ -29,7 +29,7 @@ export default class ChannelsService {
         return {success: true}
     }
 
-    init(token: any, req: ChannelsTypes.ChannelParameters) {
+    init(token: string, req: ChannelsTypes.ChannelParameters) {
         const params = {
             "multiple": [{
                 "collection_id": `updates/${req.channel_id}`,
@@ -42,5 +42,9 @@ export default class ChannelsService {
                 notification_rooms: a.data.map((a: any) => 'previous:collections/' + a.data.room_id)
             }
         })
+    }
+
+    all(token: string, req: ChannelsTypes.BaseChannelsParameters) {
+        return this.api.withToken(token).get(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels`, {"mine": true}).then(a=>a['resources'])
     }
 }

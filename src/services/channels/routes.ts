@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginCallback } from "fastify";
 
 
-import Channels, {Test} from './index'
+import Channels, {Test} from './controller'
 import  {ChannelsTypes} from "./types";
 import {
     channelsDeleteSchema,

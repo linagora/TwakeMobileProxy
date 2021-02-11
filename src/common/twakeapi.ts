@@ -2,7 +2,6 @@ import axios from 'axios'
 import {BadRequest, Forbidden} from "./errors";
 import assert from "assert";
 import {required} from "./helpers";
-import workspaces from "../controllers/workspaces";
 
 // const HOST = 'https://devapi.twake.app'
 const HOST = 'https://web.qa.twake.app'

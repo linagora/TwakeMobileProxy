@@ -192,3 +192,20 @@ Accept-version: 2.0.0
         client.assert(response.status === 200, "Response status is not 200");
     });
 %}
+
+
+
+
+### Get workspace notifications
+
+GET {{host}}/workspace/notifications?company_id={{company_id}}&workspace_id={{workspace_id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}

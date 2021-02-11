@@ -1,14 +1,14 @@
-import Base from '../common/base'
-import {authCache, usersCache} from '../common/simplecache'
-import User from "../models/user";
+import Base from '../../common/base'
+import {authCache, usersCache} from '../../common/simplecache'
+import User from "../../models/user";
 import assert from "assert";
+import WorkspaceService from "../workspaces/service";
+import ChannelsService from "../channels/service";
+import UsersService from "../workspaces/service";
+import {UsersTypes} from "./types";
+import UsersSearchRequest = UsersTypes.UsersSearchRequest;
 
 
-export interface UsersSearchRequest {
-    "company_id": string
-    "name": string
-
-}
 
 /**
  * Users methods
@@ -94,4 +94,12 @@ export default class extends Base {
             }
         }))
     }
+}
+
+export class UsersController {
+
+    // constructor(protected service: WorkspaceService, protected channelsService: ChannelsService, protected usersService: UsersService) {}
+    constructor(protected usersService: UsersService) {
+    }
+
 }
