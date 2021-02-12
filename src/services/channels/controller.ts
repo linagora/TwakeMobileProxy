@@ -6,6 +6,7 @@ import {authCache} from "../../common/simplecache";
 import {ChannelsTypes} from "./types";
 import {FastifyRequest} from "fastify";
 import ChannelsService from "./service";
+import UsersService from "../users/service";
 
 
 /**
@@ -40,9 +41,9 @@ export default class extends Base {
 
         if (!request.members) request.members = []
         if (!request.workspace_id) request.workspace_id = 'direct'
-        if (request.workspace_id === 'direct')  {
+        if (request.workspace_id === 'direct') {
             const user = await new Users(this.request).getCurrent()
-            if (request.members.indexOf(user.id)===-1)
+            if (request.members.indexOf(user.id) === -1)
                 request.members.push(user.id)
         }
 
@@ -56,8 +57,7 @@ export default class extends Base {
     }
 
 
-
-    async delete(request: ChannelsTypes.ChannelParameters): Promise<any>{
+    async delete(request: ChannelsTypes.ChannelParameters): Promise<any> {
         return this.api.deleteChannel(request.company_id, request.workspace_id, request.channel_id)
     }
 
@@ -72,15 +72,17 @@ export default class extends Base {
             channel_group: a.channel_group,
             direct_channel_members: a.direct_channel_members,  // используются в директах
             last_activity: +a.last_activity,
-            has_unread: +a.last_activity > + a.user_member.last_access,
-            members:  a.direct_channel_members,
+            has_unread: +a.last_activity > +a.user_member.last_access,
+            members: a.direct_channel_members,
             members_count: a.direct_channel_members ? a.direct_channel_members.length : 0,
             visibility: a.visibility
         } as ChannelsTypes.Channel
     }
 
     __channelsFormat = (source: any): ChannelsTypes.Channel[] =>
-        source.map((a: any) => {return this.__channelFormat(a)})
+        source.map((a: any) => {
+            return this.__channelFormat(a)
+        })
 
 
     listPublic = (request: ChannelsTypes.BaseChannelsParameters): Promise<ChannelsTypes.Channel[]> =>
@@ -117,37 +119,58 @@ export default class extends Base {
     }
 
 
-
 }
 
 
-export class ChannelsController{
+export class ChannelsController {
 
-    constructor(protected service: ChannelsService) {}
-
-    getChannelMembers( request: FastifyRequest<{  Querystring: ChannelsTypes.ChannelParameters}>) {
-        return this.service.getMembers(request.jwtToken, request.query)
+    constructor(protected channelsService: ChannelsService, protected usersService: UsersService) {
     }
 
-    async addMember(request: FastifyRequest<{  Body: ChannelsTypes.ChangeMembersRequest}>) : Promise<any> {
-        await this.service.addMembers(request.jwtToken, request.body)
-        return this.service.getMembers(request.jwtToken, request.body)
+    async addEmailsToMembers(members: any) {
+
+        const promises = members.map((member:any)=> this.usersService.getUserById(member.id))
+        const users = await Promise.all(promises.map((p:any)=>p.catch(()=>null))).then(a=>a.filter(a=>a))
+
+        const membersMap = {} as { [key:string]: any}
+        members.forEach((member:any)=>{
+            membersMap[member.id] = member
+        })
+
+        const res = [] as any[]
+        users.forEach((user:any)=>{
+            const member = membersMap[user.id]
+            member['email'] = user.email
+            res.push(member)
+        })
+
+        return res
     }
 
-    async removeMember( request: FastifyRequest<{  Body: ChannelsTypes.ChangeMembersRequest}>) : Promise<any> {
-        await this.service.removeMembers(request.jwtToken, request.body)
-        return this.service.getMembers(request.jwtToken, request.body)
+
+    getMembers(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
+        return this.channelsService.getMembers(request.query).then(a => this.addEmailsToMembers(a))
+    }
+
+    async addMembers(request: FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>): Promise<any> {
+        await this.channelsService.addMembers(request.body)
+        return this.channelsService.getMembers(request.body).then(a => this.addEmailsToMembers(a))
+    }
+
+    async removeMembers(request: FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>): Promise<any> {
+        await this.channelsService.removeMembers(request.body)
+        return this.channelsService.getMembers(request.body).then(a => this.addEmailsToMembers(a))
     }
 
     edit(request: FastifyRequest<{ Body: ChannelsTypes.UpdateRequest }>) {
-        return this.service.update(request.jwtToken, request.body)
+        return this.channelsService.update(request.body)
     }
 
-    delete(request: FastifyRequest<{ Body: ChannelsTypes.ChannelParameters }>){
-        return this.service.delete(request.jwtToken, request.body)
+    delete(request: FastifyRequest<{ Body: ChannelsTypes.ChannelParameters }>) {
+        return this.channelsService.delete(request.body)
     }
 
-    init( request: FastifyRequest<{  Querystring: ChannelsTypes.ChannelParameters}>) {
-        return this.service.init(request.jwtToken, request.query)
+    init(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
+        return this.channelsService.init(request.query)
     }
 }

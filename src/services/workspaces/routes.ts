@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyPluginCallback } from "fastify";
+import { FastifyInstance, FastifyRequest } from "fastify";
 import {WorkspaceController} from "./controller";
 import WorkspaceService from "./service";
 import Api from "../../common/twakeapi2";
@@ -16,6 +16,9 @@ import Workspaces from './controller'
 import {WorkspacesTypes} from "./types";
 import ChannelsService from "../channels/service";
 import UsersService from "../users/service";
+import {MessagesController} from "../messages/controller";
+import MessagesService from "../messages/service";
+import {ChannelsTypes} from "../channels/types";
 // import Channels, {Test} from './controller'
 // import  {ChannelsTypes} from "./types";
 // import {
@@ -49,13 +52,19 @@ export default function(fastify: FastifyInstance){
     const api = new Api()
     const controller = new WorkspaceController(new WorkspaceService(api), new ChannelsService(api), new UsersService(api))
 
+    function ctrl(request: FastifyRequest) {
+        const api = new Api(request.jwtToken)
+        return new WorkspaceController(new WorkspaceService(api), new ChannelsService(api), new UsersService(api))
+    }
+
+
     fastify.route({
         method: "GET",
         url: '/workspace/notifications',
         schema: workspaceNotificationsSchema,
         // preHandler: accessControl,
         // preValidation: [fastify.authenticate],
-        handler: controller.notifications.bind(controller),
+        handler: (request) => ctrl(request).notifications(request as FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>)
     });
 
 

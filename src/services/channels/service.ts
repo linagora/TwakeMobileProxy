@@ -6,11 +6,11 @@ export default class ChannelsService {
     constructor(protected api: Api) {
     }
 
-    getMembers(token: string, req: ChannelsTypes.ChannelParameters) {
-        return this.api.withToken(token).get(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}/members`, {"limit": 1000}).then(a => a.resources)
+    getMembers(req: ChannelsTypes.ChannelParameters) {
+        return this.api.get(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}/members`, {"limit": 1000}).then(a => a.resources)
     }
 
-    update(token: string, req: ChannelsTypes.UpdateRequest) {
+    update( req: ChannelsTypes.UpdateRequest) {
         const params = {
             "resource": {
                 "id": req.channel_id,
@@ -21,15 +21,15 @@ export default class ChannelsService {
                 "name": req.name,
             }, "options": {}
         }
-        return this.api.withToken(token).post(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}`, params).then(a => a.resource)
+        return this.api.post(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}`, params).then(a => a.resource)
     }
 
-    async delete(token: string, req: ChannelsTypes.ChannelParameters) {
-        await this.api.withToken(token).delete(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}`)
+    async delete( req: ChannelsTypes.ChannelParameters) {
+        await this.api.delete(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}`)
         return {success: true}
     }
 
-    init(token: string, req: ChannelsTypes.ChannelParameters) {
+    init( req: ChannelsTypes.ChannelParameters) {
         const params = {
             "multiple": [{
                 "collection_id": `updates/${req.channel_id}`,
@@ -37,7 +37,7 @@ export default class ChannelsService {
                 "_grouped": true
             }]
         }
-        return this.api.withToken(token).post('/ajax/core/collections/init', params).then(a => {
+        return this.api.post('/ajax/core/collections/init', params).then(a => {
             return {
                 notification_rooms: a.data.map((a: any) => 'previous:collections/' + a.data.room_id)
             }
@@ -45,31 +45,29 @@ export default class ChannelsService {
     }
 
 
-    public(token: string, req: ChannelsTypes.BaseChannelsParameters) {
-        return this.api.withToken(token).get(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels`, {"mine": true}).then(a=>a['resources'])
+    public( req: ChannelsTypes.BaseChannelsParameters) {
+        return this.api.get(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels`, {"mine": true}).then(a=>a['resources'])
     }
 
-    direct(token: string, req: ChannelsTypes.BaseChannelsParameters) {
-        return this.api.withToken(token).get(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/direct/channels`, {"mine": true}).then(a=>a['resources'])
+    direct( req: ChannelsTypes.BaseChannelsParameters) {
+        return this.api.get(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/direct/channels`, {"mine": true}).then(a=>a['resources'])
     }
 
 
-    all(token: string, req: ChannelsTypes.BaseChannelsParameters) {
-        return Promise.all([this.public(token,req),this.direct(token,req)]).then(res =>[...res[0], ...res[1]])
+    all( req: ChannelsTypes.BaseChannelsParameters) {
+        return Promise.all([this.public(req),this.direct(req)]).then(res =>[...res[0], ...res[1]])
     }
 
-    async addMembers(jwtToken: any, req: ChannelsTypes.ChangeMembersRequest) {
-        const api = this.api.withToken(jwtToken)
-        const promises = req.members.map(user_id => api.post(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}/members`,
+    async addMembers(req: ChannelsTypes.ChangeMembersRequest) {
+        const promises = req.members.map(user_id => this.api.post(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}/members`,
             {"resource": {"user_id": user_id, "type": "member"}}
         ))
 
         return Promise.all(promises.map(p=>p.catch(e=>e)))
     }
 
-    async removeMembers(jwtToken: any, req: ChannelsTypes.ChangeMembersRequest) {
-        const api = this.api.withToken(jwtToken)
-        const promises = req.members.map(user_id => api.delete(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}/members/${user_id}`))
+    async removeMembers( req: ChannelsTypes.ChangeMembersRequest) {
+        const promises = req.members.map(user_id => this.api.delete(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}/members/${user_id}`))
         return Promise.all(promises.map(p=>p.catch(e=>e)))
     }
 }

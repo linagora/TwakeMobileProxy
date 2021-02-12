@@ -18,6 +18,8 @@ import ChannelsService from "../channels/service";
 import UsersService from "../users/service";
 import Api from "../../common/twakeapi2";
 import MessagesService from "./service";
+import {ChannelsController} from "../channels/controller";
+import {ChannelsTypes} from "../channels/types";
 
 
 export default function (fastify: FastifyInstance) {
@@ -31,8 +33,11 @@ export default function (fastify: FastifyInstance) {
 
     // const accessControl = async (request:FastifyRequest<any>) => {};
 
-    const api = new Api()
-    const controller = new MessagesController(new MessagesService(api), new ChannelsService(api))
+    function ctrl(request: FastifyRequest) {
+        const api = new Api(request.jwtToken)
+        return new MessagesController(new MessagesService(api), new ChannelsService(api))
+    }
+
 
     fastify.route({
         method: "GET",
@@ -40,7 +45,7 @@ export default function (fastify: FastifyInstance) {
         schema: whatsNewSchema,
         // preHandler: accessControl,
         // preValidation: [fastify.authenticate],
-        handler: controller.whatsnew.bind(controller),
+        handler: (request) => ctrl(request).whatsnew(request as FastifyRequest<{ Querystring: MessagesTypes.WhatsNewRequest }>)
     });
 
 }

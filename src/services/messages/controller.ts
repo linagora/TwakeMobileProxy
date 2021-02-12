@@ -319,7 +319,7 @@ export class MessagesController {
     async whatsnew(request: FastifyRequest<{ Querystring: MessagesTypes.WhatsNewRequest }>):Promise<any> {
         const req = request.query
         if (req.workspace_id) {
-            let channels = await this.channelsService.all(request.jwtToken, req)
+            let channels = await this.channelsService.all(req)
 
             console.log('channel_name\tlast_channel_activity\tlast_user_access')
 
@@ -333,11 +333,11 @@ export class MessagesController {
                 .map(({company_id, workspace_id, id}: any) => ({company_id, workspace_id, channel_id: id}))
 
 
-            const messages = await this.messagesService.whatsNew(request.jwtToken, request.query)
+            const messages = await this.messagesService.whatsNew(request.query)
 
             return [...channels, ...messages]
         } else
-            return await this.messagesService.whatsNew(request.jwtToken, request.query)
+            return await this.messagesService.whatsNew(request.query)
 
     }
 
