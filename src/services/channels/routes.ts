@@ -10,7 +10,7 @@ import {
     channelsPostSchema,
     directGetSchema,
     channelsMembersGetSchema,
-    channelsPutSchema, channelsInitSchema, channelsMembersDeleteSchema
+    channelsPutSchema, channelsInitSchema, channelsMembersDeleteSchema, channelsMembersCountGetSchema
 } from "./schemas";
 import Api from "../../common/twakeapi2";
 import ChannelsService from "./service";
@@ -33,18 +33,21 @@ export default function (fastify: FastifyInstance) {
         method: "GET",
         url: '/channels/members',
         schema: channelsMembersGetSchema,
-        // preHandler: accessControl,
-        // preValidation: [fastify.authenticate],
         handler: (request) => ctrl(request).getMembers(request as FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>)
     });
 
 
     fastify.route({
+        method: "GET",
+        url: '/channels/members/count',
+        schema: channelsMembersCountGetSchema,
+        handler: (request) => ctrl(request).membersCount(request as FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>)
+    });
+
+    fastify.route({
         method: "PUT",
         url: '/channels',
         schema: channelsPutSchema,
-        // preHandler: accessControl,
-        // preValidation: [fastify.authenticate],
         handler: (request) => ctrl(request).edit(request as FastifyRequest<{ Body: ChannelsTypes.UpdateRequest }>)
 
     });
@@ -54,8 +57,6 @@ export default function (fastify: FastifyInstance) {
         method: "DELETE",
         url: '/channels',
         schema: channelsDeleteSchema,
-        // preHandler: accessControl,
-        // preValidation: [fastify.authenticate],
         handler: (request) => ctrl(request).delete(request as FastifyRequest<{ Body: ChannelsTypes.ChannelParameters }>)
     });
 
@@ -64,8 +65,6 @@ export default function (fastify: FastifyInstance) {
         method: "GET",
         url: '/channels/init',
         schema: channelsInitSchema,
-        // preHandler: accessControl,
-        // preValidation: [fastify.authenticate],
         handler: (request) => ctrl(request).init(request as FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>)
     });
 
@@ -73,8 +72,6 @@ export default function (fastify: FastifyInstance) {
         method: "POST",
         url: '/channels/members',
         schema: channelsMembersPostSchema,
-        // preHandler: accessControl,
-        // preValidation: [fastify.authenticate],
         handler: (request) => ctrl(request).addMembers(request as FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>)
     });
 
@@ -82,8 +79,6 @@ export default function (fastify: FastifyInstance) {
         method: "DELETE",
         url: '/channels/members',
         schema: channelsMembersDeleteSchema,
-        // preHandler: accessControl,
-        // preValidation: [fastify.authenticate],
         handler: (request) => ctrl(request).removeMembers(request as FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>)
     });
 

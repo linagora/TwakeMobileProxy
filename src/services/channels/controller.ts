@@ -130,16 +130,16 @@ export class ChannelsController {
 
     async addEmailsToMembers(members: any) {
 
-        const promises = members.map((member:any)=> this.usersService.getUserById(member.id))
-        const users = await Promise.all(promises.map((p:any)=>p.catch(()=>null))).then(a=>a.filter(a=>a))
+        const promises = members.map((member: any) => this.usersService.getUserById(member.id))
+        const users = await Promise.all(promises.map((p: any) => p.catch(() => null))).then(a => a.filter(a => a))
 
-        const membersMap = {} as { [key:string]: any}
-        members.forEach((member:any)=>{
+        const membersMap = {} as { [key: string]: any }
+        members.forEach((member: any) => {
             membersMap[member.id] = member
         })
 
         const res = [] as any[]
-        users.forEach((user:any)=>{
+        users.forEach((user: any) => {
             const member = membersMap[user.id]
             member['email'] = user.email
             res.push(member)
@@ -160,7 +160,11 @@ export class ChannelsController {
 
     async removeMembers(request: FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>): Promise<any> {
         await this.channelsService.removeMembers(request.body)
-        return this.channelsService.getMembers(request.body).then(a => this.addEmailsToMembers(a))
+
+    }
+
+    membersCount(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
+        return this.channelsService.getMembers(request.query).then(a => ({count: a.length}))
     }
 
     edit(request: FastifyRequest<{ Body: ChannelsTypes.UpdateRequest }>) {
