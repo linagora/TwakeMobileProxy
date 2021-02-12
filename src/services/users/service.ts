@@ -21,13 +21,13 @@ export default class UsersService {
 
     async getUserById(id: string) {
 
-        if (usersCache[id]) return usersCache[id]
+        // if (usersCache[id]) return usersCache[id]
 
         return this.api.post('/ajax/users/all/get', {'id': id}).then(a=>{
             if (a.errors && a.errors.length){
                 throw new BadRequest(`User id ${id} not found`)
             }
-            usersCache[id] = a.data
+            // usersCache[id] = a.data
             return a.data
         })
     }

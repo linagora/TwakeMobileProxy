@@ -136,6 +136,7 @@ export class ChannelsController {
         const res = [] as any[]
         users.forEach((user: any) => {
             const member = membersMap[user.id]
+            console.log('adding email' , user.email)
             member['email'] = user.email
             res.push(member)
         })
