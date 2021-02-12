@@ -156,7 +156,7 @@ export class ChannelsController {
 
     getMembers(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
         const {company_id, workspace_id, channel_id} = request.query
-        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then(a => { console.log(a); return this.addEmailsToMembers(a)})
+        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then(a =>  this.addEmailsToMembers(a))
     }
 
     async addMembers(request: FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>): Promise<any> {
