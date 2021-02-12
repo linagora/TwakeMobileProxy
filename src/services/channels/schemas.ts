@@ -111,7 +111,7 @@ export const channelsMembersGetSchema = {
 
 export const channelsMembersCountGetSchema = {
     tags: ['Channels'],
-    summary: 'Count of the channel members',
+    summary: 'Channel members count',
     querystring: {
         type: 'object',
         "required": ['company_id', 'workspace_id', 'channel_id'],
