@@ -149,6 +149,8 @@ export default class extends Base {
         let filteredMessages =
             messages.filter((a: any) => !(a['hidden_data'] instanceof Object && a['hidden_data']['type'] === 'init_channel'))
 
+        filteredMessages = filteredMessages.filter((a:any)=>a.content && a.content.original_str)
+
         filteredMessages = await Promise.all(filteredMessages.map((a: any) => formatMessages(a)))
 
         const usersCtrl = new Users(this.request)
