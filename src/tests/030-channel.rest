@@ -104,6 +104,23 @@ Accept-version: 2.0.0
 
 ###
 
+DELETE {{host}}/channels/members
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "{{company_id}}",
+  "workspace_id": "{{workspace_id}}",
+  "channel_id": "{{channel_id}}",
+  "members": [
+    "f3daa636-6548-11eb-a304-0242ac120004"
+  ]
+}
+
+###
+
+
 
 GET {{host}}/channels/init?company_id={{company_id}}&workspace_id={{workspace_id}}&channel_id={{channel_id}}
 Authorization: Bearer {{token}}

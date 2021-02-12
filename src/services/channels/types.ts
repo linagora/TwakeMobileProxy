@@ -38,7 +38,7 @@ export declare namespace ChannelsTypes {
     }
 
 
-    export interface MemberAddRequest extends ChannelParameters {
+    export interface ChangeMembersRequest extends ChannelParameters {
         members: string[]
     }
 

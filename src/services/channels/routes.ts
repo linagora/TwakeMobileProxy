@@ -10,7 +10,7 @@ import {
     channelsPostSchema,
     directGetSchema,
     channelsMembersGetSchema,
-    channelsPutSchema, channelsInitSchema
+    channelsPutSchema, channelsInitSchema, channelsMembersDeleteSchema
 } from "./schemas";
 import Api from "../../common/twakeapi2";
 import ChannelsService from "./service";
@@ -72,7 +72,16 @@ export default function(fastify: FastifyInstance){
         schema: channelsMembersPostSchema,
         // preHandler: accessControl,
         // preValidation: [fastify.authenticate],
-        handler: channelsController.addChannelMember.bind(channelsController),
+        handler: channelsController.addMember.bind(channelsController),
+    });
+
+    fastify.route({
+        method: "DELETE",
+        url: '/channels/members',
+        schema: channelsMembersDeleteSchema,
+        // preHandler: accessControl,
+        // preValidation: [fastify.authenticate],
+        handler: channelsController.removeMember.bind(channelsController),
     });
 
 }

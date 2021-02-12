@@ -58,12 +58,18 @@ export default class ChannelsService {
         return Promise.all([this.public(token,req),this.direct(token,req)]).then(res =>[...res[0], ...res[1]])
     }
 
-    async addMembers(jwtToken: any, req: ChannelsTypes.MemberAddRequest) {
+    async addMembers(jwtToken: any, req: ChannelsTypes.ChangeMembersRequest) {
         const api = this.api.withToken(jwtToken)
         const promises = req.members.map(user_id => api.post(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}/members`,
             {"resource": {"user_id": user_id, "type": "member"}}
         ))
 
+        return Promise.all(promises.map(p=>p.catch(e=>e)))
+    }
+
+    async removeMembers(jwtToken: any, req: ChannelsTypes.ChangeMembersRequest) {
+        const api = this.api.withToken(jwtToken)
+        const promises = req.members.map(user_id => api.delete(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}/members/${user_id}`))
         return Promise.all(promises.map(p=>p.catch(e=>e)))
     }
 }

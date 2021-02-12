@@ -129,10 +129,16 @@ export class ChannelsController{
         return this.service.getMembers(request.jwtToken, request.query)
     }
 
-    async addChannelMember( request: FastifyRequest<{  Body: ChannelsTypes.MemberAddRequest}>) : Promise<any> {
-         await this.service.addMembers(request.jwtToken, request.body)
+    async addMember(request: FastifyRequest<{  Body: ChannelsTypes.ChangeMembersRequest}>) : Promise<any> {
+        await this.service.addMembers(request.jwtToken, request.body)
         return this.service.getMembers(request.jwtToken, request.body)
     }
+
+    async removeMember( request: FastifyRequest<{  Body: ChannelsTypes.ChangeMembersRequest}>) : Promise<any> {
+        await this.service.removeMembers(request.jwtToken, request.body)
+        return this.service.getMembers(request.jwtToken, request.body)
+    }
+
     edit(request: FastifyRequest<{ Body: ChannelsTypes.UpdateRequest }>) {
         return this.service.update(request.jwtToken, request.body)
     }
