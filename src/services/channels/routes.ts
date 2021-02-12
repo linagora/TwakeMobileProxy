@@ -10,7 +10,7 @@ import {
     channelsPostSchema,
     directGetSchema,
     channelsMembersGetSchema,
-    channelsPutSchema, channelsInitSchema, channelsMembersDeleteSchema, channelsMembersCountGetSchema
+    channelsPutSchema, channelsInitSchema, channelsMembersDeleteSchema
 } from "./schemas";
 import Api from "../../common/twakeapi2";
 import ChannelsService from "./service";
@@ -18,7 +18,6 @@ import UsersService from "../users/service";
 
 
 export default function (fastify: FastifyInstance) {
-    fastify.get('/channels', {schema: channelsGetSchema}, async (request) => new Channels(request).listPublic(request.query as ChannelsTypes.ChannelParameters))
     fastify.post('/channels', {schema: channelsPostSchema}, async (request) => new Channels(request).add(request.body as ChannelsTypes.AddRequest))
 
     fastify.get('/direct', {schema: directGetSchema}, async (request) => new Channels(request).listDirect((request.query as any).company_id))
@@ -29,6 +28,15 @@ export default function (fastify: FastifyInstance) {
         return new ChannelsController(new ChannelsService(api), new UsersService(api))
     }
 
+
+    fastify.route({
+        method: "GET",
+        url: '/channels',
+        schema: channelsGetSchema,
+        handler: (request) => ctrl(request).public(request as FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>)
+    });
+
+
     fastify.route({
         method: "GET",
         url: '/channels/members',
@@ -37,12 +45,6 @@ export default function (fastify: FastifyInstance) {
     });
 
 
-    fastify.route({
-        method: "GET",
-        url: '/channels/members/count',
-        schema: channelsMembersCountGetSchema,
-        handler: (request) => ctrl(request).membersCount(request as FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>)
-    });
 
     fastify.route({
         method: "PUT",

@@ -9,6 +9,31 @@ import ChannelsService from "./service";
 import UsersService from "../users/service";
 
 
+function __channelFormat(a: any): ChannelsTypes.Channel {
+    return {
+        id: a.id,
+        name: a.name ? a.name.charAt(0).toUpperCase() + a.name.slice(1) : a.name,
+        icon: a.icon,
+        company_id: a.company_id,
+        workspace_id: a.workspace_id,
+        description: a.description,
+        channel_group: a.channel_group,
+        direct_channel_members: a.direct_channel_members,  // используются в директах
+        last_activity: +a.last_activity,
+        has_unread: +a.last_activity > +a.user_member.last_access,
+        user_last_access: +a.user_member.last_access,
+        members: a.direct_channel_members,
+        members_count: a.direct_channel_members ? a.direct_channel_members.length : a.members_count,
+        visibility: a.visibility
+    } as ChannelsTypes.Channel
+}
+
+function __channelsFormat(source: any): ChannelsTypes.Channel[] {
+    return source.map((a: any) => {
+        return __channelFormat(a)
+    })
+}
+
 /**
  * Channels methods
  */
@@ -49,11 +74,11 @@ export default class extends Base {
 
         let channel = await this.__findChannel(request.company_id, request.workspace_id, request.visibility, request.name, request.members)
         if (channel) {
-            return this.__channelFormat(channel)
+            return __channelFormat(channel)
         }
 
         channel = await this.api.addChannel(request.company_id, request.workspace_id, request.name, request.visibility, request.members, request.channel_group, request.description, request.icon)
-        return this.__channelFormat(channel)
+        return __channelFormat(channel)
     }
 
 
@@ -61,40 +86,10 @@ export default class extends Base {
         return this.api.deleteChannel(request.company_id, request.workspace_id, request.channel_id)
     }
 
-    __channelFormat(a: any): ChannelsTypes.Channel {
-        return {
-            id: a.id,
-            name: a.name ? a.name.charAt(0).toUpperCase() + a.name.slice(1) : a.name,
-            icon: a.icon,
-            company_id: a.company_id,
-            workspace_id: a.workspace_id,
-            description: a.description,
-            channel_group: a.channel_group,
-            direct_channel_members: a.direct_channel_members,  // используются в директах
-            last_activity: +a.last_activity,
-            has_unread: +a.last_activity > +a.user_member.last_access,
-            user_last_access: +a.user_member.last_access,
-            members: a.direct_channel_members,
-            members_count: a.direct_channel_members ? a.direct_channel_members.length : 0,
-            visibility: a.visibility
-        } as ChannelsTypes.Channel
-    }
-
-    __channelsFormat = (source: any): ChannelsTypes.Channel[] =>
-        source.map((a: any) => {
-            return this.__channelFormat(a)
-        })
-
-
-    listPublic = (request: ChannelsTypes.BaseChannelsParameters): Promise<ChannelsTypes.Channel[]> =>
-        this.api.getChannels(request.company_id, request.workspace_id)
-            .then(data => this.__channelsFormat(data)
-                .sort((a: any, b: any) => a.name.localeCompare(b.name)))
-
 
     async listDirect(companyId: string): Promise<ChannelsTypes.Channel[]> {
         const data = await this.api.getDirects(companyId)
-        const res = this.__channelsFormat(data).filter(a => a.direct_channel_members.length > 0)
+        const res = __channelsFormat(data).filter(a => a.direct_channel_members.length > 0)
         const usersIds = new Set()
 
         res.forEach((c: any) => {
@@ -148,23 +143,33 @@ export class ChannelsController {
         return res
     }
 
+    async public(request: FastifyRequest<{ Querystring: ChannelsTypes.BaseChannelsParameters }>): Promise<ChannelsTypes.Channel[]> {
+        const {company_id, workspace_id} = request.query
+        const channels = await this.channelsService.public(request.query) as any[]
+
+        const counts = await Promise.all(channels.map((c) => this.channelsService.getMembers(company_id, workspace_id, c.id).then(a => a.length)))
+
+        channels.forEach((ch: any) => ch.members_count = counts.shift())
+
+        return __channelsFormat(channels).sort((a: any, b: any) => a.name.localeCompare(b.name))
+    }
 
     getMembers(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
-        return this.channelsService.getMembers(request.query).then(a => this.addEmailsToMembers(a))
+        const {company_id, workspace_id, channel_id} = request.query
+        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then(a => { console.log(a); return this.addEmailsToMembers(a)})
     }
 
     async addMembers(request: FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>): Promise<any> {
+        const {company_id, workspace_id, channel_id} = request.body
         await this.channelsService.addMembers(request.body)
-        return this.channelsService.getMembers(request.body).then(a => this.addEmailsToMembers(a))
+        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then(a => this.addEmailsToMembers(a))
     }
 
     async removeMembers(request: FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>): Promise<any> {
+        const {company_id, workspace_id, channel_id} = request.body
+
         await this.channelsService.removeMembers(request.body)
-
-    }
-
-    membersCount(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
-        return this.channelsService.getMembers(request.query).then(a => ({count: a.length}))
+        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then(a => this.addEmailsToMembers(a))
     }
 
     edit(request: FastifyRequest<{ Body: ChannelsTypes.UpdateRequest }>) {

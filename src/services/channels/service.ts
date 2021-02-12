@@ -6,8 +6,8 @@ export default class ChannelsService {
     constructor(protected api: Api) {
     }
 
-    getMembers(req: ChannelsTypes.ChannelParameters) {
-        return this.api.get(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}/members`, {"limit": 1000}).then(a => a.resources)
+    getMembers(companyId: string, workspaceId: string, channelId: string) {
+        return this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}/members`, {"limit": 1000}).then(a => a.resources)
     }
 
     update( req: ChannelsTypes.UpdateRequest) {
