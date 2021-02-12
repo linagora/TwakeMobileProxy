@@ -20,6 +20,7 @@ export declare namespace ChannelsTypes {
         channel_group: string
         workspace_id: string | null
         last_activity: number
+        user_last_access: number
         company_id: string
         direct_channel_members: any[]
         visibility: string,

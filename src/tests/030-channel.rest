@@ -15,19 +15,6 @@ Accept-version: 2.0.0
 ###
 
 
-GET {{host}}/channels/members?company_id={{company_id}}&workspace_id={{workspace_id}}&channel_id={{channel_id}}
-Authorization: Bearer {{token}}
-Content-Type: application/json
-Accept-version: 2.0.0
-
-
-> {%
-    client.test("Request executed successfully", function() {
-        client.assert(response.status === 200, "Response status is not 200");
-    });
-%}
-
-###
 
 
 
@@ -83,43 +70,6 @@ Accept-version: 2.0.0
 }
 
 ###
-
-
-#
-#
-POST {{host}}/channels/members
-Authorization: Bearer {{token}}
-Content-Type: application/json
-Accept-version: 2.0.0
-
-{
-  "company_id": "{{company_id}}",
-  "workspace_id": "{{workspace_id}}",
-  "channel_id": "{{channel_id}}",
-  "members": [
-    "f3daa636-6548-11eb-a304-0242ac120005",
-    "72ab8454-65bb-11eb-a040-0242ac120006"
-  ]
-}
-
-###
-
-DELETE {{host}}/channels/members
-Authorization: Bearer {{token}}
-Content-Type: application/json
-Accept-version: 2.0.0
-
-{
-  "company_id": "{{company_id}}",
-  "workspace_id": "{{workspace_id}}",
-  "channel_id": "{{channel_id}}",
-  "members": [
-    "f3daa636-6548-11eb-a304-0242ac120004"
-  ]
-}
-
-###
-
 
 
 GET {{host}}/channels/init?company_id={{company_id}}&workspace_id={{workspace_id}}&channel_id={{channel_id}}

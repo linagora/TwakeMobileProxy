@@ -73,7 +73,7 @@ export default class extends Base {
             direct_channel_members: a.direct_channel_members,  // используются в директах
             last_activity: +a.last_activity,
             has_unread: +a.last_activity > +a.user_member.last_access,
-            user_last_access: a.user_member.last_access,
+            user_last_access: +a.user_member.last_access,
             members: a.direct_channel_members,
             members_count: a.direct_channel_members ? a.direct_channel_members.length : 0,
             visibility: a.visibility
