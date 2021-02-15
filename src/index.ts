@@ -143,7 +143,7 @@ export const emojiSchema = {
 }
 
 fastify.get('/', {schema: {hide: true} as any}, async (request, reply) => new Info(request).info())
-// fastify.post('/authorize', async (request, reply) => await new Authorization(request).auth(request.body as AuthParams))
+fastify.post('/authorize', async (request, reply) => await new Authorization(request).auth(request.body as AuthParams))
 fastify.post('/init', {schema: initSchema}, async (request, reply) => new Authorization(request).init(request.body as InitParams))
 fastify.post('/authorization/prolong', {schema: prolongSchema}, async (request, reply) => new Authorization(request).prolong(request.body as ProlongParams))
 fastify.get('/companies', {schema: companiesSchema}, async (request, reply) => new Companies(request).list())
@@ -156,6 +156,7 @@ import channelsServiceRoutes from './services/channels/routes'
 import workspacesServiceRoutes from './services/workspaces/routes'
 import usersServiceRoutes from './services/users/routes'
 import messagesServiceRoutes from './services/messages/routes'
+import AuthParams from "./models/auth_params";
 
 channelsServiceRoutes(fastify)
 workspacesServiceRoutes(fastify)
