@@ -53,7 +53,7 @@ export default class extends Base {
                 .filter((a: any) => a.visibility == visibility)
                 .find((a: any) => {
                      return (name && a.name.toLocaleLowerCase() == name.toLocaleLowerCase())
-                            || (a.members.length && eqArrays(members || [], a.members))
+                            || (!a.name && a.members.length && eqArrays(members || [], a.members))
 
                     }
                 )
