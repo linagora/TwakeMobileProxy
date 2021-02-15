@@ -47,7 +47,7 @@ export default class Api implements ApiType {
             else if (method == 'DELETE') {
                 // TODO: solve the problem with unanswered
                 axios.delete(HOST + url, {headers})
-                res = {"success": true}
+                res = { data : {"success": true} }
             } else
                 throw new Error('wrong api method type')
 
