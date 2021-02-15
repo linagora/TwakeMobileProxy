@@ -20,7 +20,6 @@ import UsersService from "../users/service";
 export default function (fastify: FastifyInstance) {
     fastify.post('/channels', {schema: channelsPostSchema}, async (request) => new Channels(request).add(request.body as ChannelsTypes.AddRequest))
 
-    fastify.get('/direct', {schema: directGetSchema}, async (request) => new Channels(request).listDirect((request.query as any).company_id))
 
 
     function ctrl(request: FastifyRequest) {
@@ -29,13 +28,22 @@ export default function (fastify: FastifyInstance) {
     }
 
 
+
+
     fastify.route({
         method: "GET",
         url: '/channels',
         schema: channelsGetSchema,
-        handler: (request) => ctrl(request).public(request as FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>)
+        handler: (request) => ctrl(request).public(request as FastifyRequest<{ Querystring: ChannelsTypes.BaseChannelsParameters }>)
     });
 
+
+    fastify.route({
+        method: "GET",
+        url: '/direct',
+        schema: directGetSchema,
+        handler: (request) => ctrl(request).direct(request as FastifyRequest<{ Querystring: ChannelsTypes.BaseChannelsParameters }>)
+    });
 
     fastify.route({
         method: "GET",

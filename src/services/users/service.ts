@@ -10,6 +10,10 @@ export default class UsersService {
     constructor(protected api: Api) {
     }
 
+    getJwtToken(){
+        return this.api.token
+    }
+
     async getCurrent(timeZoneOffset?: number) {
         const params = {} as any
         if (timeZoneOffset) {

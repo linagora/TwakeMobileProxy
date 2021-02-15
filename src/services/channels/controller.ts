@@ -52,7 +52,7 @@ export default class extends Base {
             .then(data => data
                 .filter((a: any) => a.visibility == visibility)
                 .find((a: any) => {
-                     return (name && a.name.toLocaleLowerCase() == name.toLocaleLowerCase())
+                        return (name && a.name.toLocaleLowerCase() == name.toLocaleLowerCase())
                             || (!a.name && a.members.length && eqArrays(members || [], a.members))
 
                     }
@@ -89,34 +89,6 @@ export default class extends Base {
     }
 
 
-    async listDirect(companyId: string): Promise<ChannelsTypes.Channel[]> {
-        const data = await this.api.getDirects(companyId)
-        const res = __channelsFormat(data).filter(a => a.direct_channel_members.length > 0)
-        const usersIds = new Set()
-
-        res.forEach((c: any) => {
-            c.direct_channel_members.forEach((m: string) => {
-                usersIds.add(m)
-            })
-        })
-        const usersCtrl = new Users(this.request)
-        const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => usersCtrl.getUser(user_id as string))), 'id')
-
-        const currentUserToken = authCache[this.request.jwtToken] ? authCache[this.request.jwtToken]['id'] : ""
-
-        return res.map((a: ChannelsTypes.Channel) => {
-            if (a.direct_channel_members) {
-                const members = (a.direct_channel_members.length > 1) ? a.direct_channel_members.filter((a: string) => a != currentUserToken) : a.direct_channel_members
-                a.name = members.map((a: string) => {
-                    const u = usersHash[a]
-                    return u.firstname + ' ' + u.lastname
-                }).join(', ')
-            }
-            return a
-        })
-    }
-
-
 }
 
 
@@ -138,7 +110,7 @@ export class ChannelsController {
         const res = [] as any[]
         users.forEach((user: any) => {
             const member = membersMap[user.id]
-            console.log('adding email' , user.email)
+            console.log('adding email', user.email)
             member['email'] = user.email
             res.push(member)
         })
@@ -159,7 +131,7 @@ export class ChannelsController {
 
     getMembers(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
         const {company_id, workspace_id, channel_id} = request.query
-        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then(a =>  this.addEmailsToMembers(a))
+        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then(a => this.addEmailsToMembers(a))
     }
 
     async addMembers(request: FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>): Promise<any> {
@@ -186,4 +158,34 @@ export class ChannelsController {
     init(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
         return this.channelsService.init(request.query)
     }
+
+
+    async direct(request: FastifyRequest<{ Querystring: ChannelsTypes.BaseChannelsParameters }>) {
+        const data = await this.channelsService.getDirects(request.query.company_id)
+        const res = __channelsFormat(data).filter(a => a.direct_channel_members.length > 0)
+        const usersIds = new Set()
+
+        res.forEach((c: any) => {
+            c.direct_channel_members.forEach((m: string) => {
+                usersIds.add(m)
+            })
+        })
+
+        const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => this.usersService.getUserById(user_id as string))), 'id')
+
+        const currentUserToken = authCache[this.usersService.getJwtToken()] ? authCache[this.usersService.getJwtToken()]['id'] : await this.usersService.getCurrent().then(a => a.id)
+
+        return res.map((a: ChannelsTypes.Channel) => {
+            if (a.direct_channel_members) {
+                const members = (a.direct_channel_members.length > 1) ? a.direct_channel_members.filter((a: string) => a != currentUserToken) : a.direct_channel_members
+                a.name = members.map((a: string) => {
+                    const u = usersHash[a]
+                    return u.firstname + ' ' + u.lastname
+                }).join(', ')
+                a.members = members as any
+            }
+            return a
+        })
+    }
+
 }

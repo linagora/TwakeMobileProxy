@@ -70,4 +70,8 @@ export default class ChannelsService {
         const promises = req.members.map(user_id => this.api.delete(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}/members/${user_id}`))
         return Promise.all(promises.map(p=>p.catch(e=>e)))
     }
+
+    async getDirects(companyId: string) {
+        return await this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/direct/channels`, {}).then(a=>a['resources'])
+    }
 }
