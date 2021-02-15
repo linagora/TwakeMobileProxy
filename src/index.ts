@@ -1,15 +1,17 @@
 import Fastify, {FastifyInstance} from 'fastify'
 import {BadRequest, Forbidden} from './common/errors';
 import {AssertionError} from "assert";
-
 import Authorization, {InitParams, ProlongParams} from './controllers/authorization'
-
-
 import Settings from './controllers/settings'
 import Companies from './controllers/companies'
-
-
 import Info from './controllers/info'
+import config from './common/config'
+
+if(!process.env.CORE_HOST){
+    console.error('Missing CORE_HOST env variable')
+    process.exit(1)
+}
+config.core_host = process.env.CORE_HOST.replace(/\/$/, "");
 
 const fastify: FastifyInstance = Fastify({logger: false})
 

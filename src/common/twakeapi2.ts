@@ -5,17 +5,17 @@ const fetch = require('node-fetch');
 import {BadRequest, Forbidden} from "./errors";
 import assert from "assert";
 import {required} from "./helpers";
-
-
-const HOST = 'https://web.qa.twake.app'
+import config from './config'
 
 import ApiType from "./types/api";
 
 export default class Api implements ApiType {
 
     token: string = ""
+    host: string = ""
 
     constructor(token?: string) {
+        this.host = config.core_host
         if (token)
             this.token = token
     }
@@ -45,12 +45,12 @@ export default class Api implements ApiType {
 
         try {
             if (method == 'GET')
-                res = await axios.get(HOST + url, {params, headers})
+                res = await axios.get(this.host + url, {params, headers})
             else if (method == 'POST')
-                res = await axios.post(HOST + url, params, {headers})
+                res = await axios.post(this.host + url, params, {headers})
             else if (method == 'DELETE') {
 
-                const x = await fetch(HOST + url, {method: 'DELETE', body: params, headers})
+                const x = await fetch(this.host + url, {method: 'DELETE', body: params, headers})
                 if (x.status >= 200 && x.status < 400) {
                     res = {data: {"success": true}}
                 } else {

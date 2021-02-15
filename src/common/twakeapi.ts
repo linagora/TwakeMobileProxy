@@ -2,21 +2,24 @@ import axios from 'axios'
 import {BadRequest, Forbidden} from "./errors";
 import assert from "assert";
 import {required} from "./helpers";
+import config from './config'
 
 // const HOST = 'https://devapi.twake.app'
-const HOST = 'https://web.qa.twake.app'
+// const HOST = 'https://web.qa.twake.app'
 // const HOST = 'http://localhost:8000'
 /**
  * TwakeApi connector
  */
 export default class {
     private readonly token: any
+    private readonly host: string;
 
     /**
      * @param {String} token
      */
     constructor(token: String) {
         this.token = token
+        this.host = config.core_host
     }
 
 
@@ -41,14 +44,14 @@ export default class {
 
         console.log('POST', url, JSON.stringify(params, null, 2))
 
-        const res = await axios.post(HOST + url, params, {headers})
+        const res = await axios.post(this.host + url, params, {headers})
 
         if (res.data.errors && res.data.errors.includes('user_not_connected')) {
             throw new Forbidden('Wrong token')
         }
 
         if (res.data.status && res.data.status === 'error') {
-            console.log(HOST + url, params)
+            console.log(this.host + url, params)
             console.error(res.data)
             throw new Error('Unknown error')
         }
@@ -80,7 +83,7 @@ export default class {
         try {
             // console.log(HOST + url)
             // console.log(headers)
-            const res = await axios.get(HOST + url, {params, headers})
+            const res = await axios.get(this.host + url, {params, headers})
 
             return res.data as any
         } catch (e) {
@@ -107,14 +110,14 @@ export default class {
 
         console.log('DELETE', url, JSON.stringify(params, null, 2))
 
-        const res = await axios.post(HOST + url, params, {headers})
+        const res = await axios.post(this.host + url, params, {headers})
 
         if (res.data.errors && res.data.errors.includes('user_not_connected')) {
             throw new Forbidden('Wrong token')
         }
 
         if (res.data.status && res.data.status === 'error') {
-            console.log(HOST + url, params)
+            console.log(this.host + url, params)
             console.error(res.data)
             throw new Error('Unknown error')
         }
@@ -130,7 +133,7 @@ export default class {
      * @return {Promise<AxiosResponse<T>>}
      */
     async postDirect(url: string, params: any, headers: any = undefined) {
-        return axios.post(HOST + url, params, {headers})
+        return axios.post(this.host + url, params, {headers})
     }
 
     async getCurrentUser(timeZoneOffset?: number) {
@@ -434,7 +437,7 @@ export default class {
     serverInfo() {
         return this.__get('/ajax/core/version', {}).then(a => a.data).then(a => {
             if (a.auth && a.auth.console) {
-                a.auth.console.mobile_endpoint_url = "https://beta.twake.app/ajax/users/console/openid?mobile=1"
+                a.auth.console.mobile_endpoint_url = config.core_host + "/ajax/users/console/openid?mobile=1"
             }
             return a
         })
