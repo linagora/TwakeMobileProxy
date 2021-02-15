@@ -438,6 +438,7 @@ export default class {
         return this.__get('/ajax/core/version', {}).then(a => a.data).then(a => {
             if (a.auth && a.auth.console) {
                 a.auth.console.mobile_endpoint_url = config.core_host + "/ajax/users/console/openid?mobile=1"
+                a.auth.console.core_endpoint_url = config.core_host + "/socket"
             }
             return a
         })
