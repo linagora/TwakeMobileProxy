@@ -1,7 +1,11 @@
 import axios from 'axios'
+
+const fetch = require('node-fetch');
+
 import {BadRequest, Forbidden} from "./errors";
 import assert from "assert";
 import {required} from "./helpers";
+
 
 const HOST = 'https://web.qa.twake.app'
 
@@ -12,7 +16,7 @@ export default class Api implements ApiType {
     token: string = ""
 
     constructor(token?: string) {
-        if(token)
+        if (token)
             this.token = token
     }
 
@@ -45,9 +49,14 @@ export default class Api implements ApiType {
             else if (method == 'POST')
                 res = await axios.post(HOST + url, params, {headers})
             else if (method == 'DELETE') {
-                // TODO: solve the problem with unanswered
-                axios.delete(HOST + url, {headers})
-                res = { data : {"success": true} }
+
+                const x = await fetch(HOST + url, {method: 'DELETE', body: params, headers})
+                if (x.status >= 200 && x.status < 400) {
+                    res = {data: {"success": true}}
+                } else {
+                    console.log(x)
+                    throw new Error('something went wrong')
+                }
             } else
                 throw new Error('wrong api method type')
 
