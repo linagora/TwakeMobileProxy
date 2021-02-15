@@ -52,8 +52,8 @@ export default class extends Base {
             .then(data => data
                 .filter((a: any) => a.visibility == visibility)
                 .find((a: any) => {
-                        return (name && a.name.toLocaleLowerCase() == name.toLocaleLowerCase())
-                            || (a.members && eqArrays(members || [], a.members))
+                     return (name && a.name.toLocaleLowerCase() == name.toLocaleLowerCase())
+                            || (a.members.length && eqArrays(members || [], a.members))
 
                     }
                 )
@@ -73,6 +73,8 @@ export default class extends Base {
         }
 
         let channel = await this.__findChannel(request.company_id, request.workspace_id, request.visibility, request.name, request.members)
+
+        console.log('FOUND', channel)
         if (channel) {
             return __channelFormat(channel)
         }
