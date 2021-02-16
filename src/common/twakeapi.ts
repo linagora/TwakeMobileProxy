@@ -1,8 +1,17 @@
-import axios from 'axios'
+import Axios from 'axios'
 import {BadRequest, Forbidden} from "./errors";
 import assert from "assert";
 import {required} from "./helpers";
 import config from './config'
+const https = require('https');
+
+
+const axios = Axios.create({
+    httpsAgent: new https.Agent({
+        rejectUnauthorized: false
+    })
+});
+
 
 // const HOST = 'https://devapi.twake.app'
 // const HOST = 'https://web.qa.twake.app'

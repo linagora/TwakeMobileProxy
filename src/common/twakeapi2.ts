@@ -1,6 +1,15 @@
-import axios from 'axios'
+import Axios from 'axios'
+const https = require('https');
 
 const fetch = require('node-fetch');
+
+
+const axios = Axios.create({
+    httpsAgent: new https.Agent({
+        rejectUnauthorized: false
+    })
+});
+
 
 import {BadRequest, Forbidden} from "./errors";
 import assert from "assert";
