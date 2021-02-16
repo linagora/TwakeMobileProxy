@@ -450,7 +450,10 @@ export default class {
                 a.auth.console.mobile_endpoint_url = config.core_host + "/ajax/users/console/openid?mobile=1"
             }
             a.core_endpoint_url = config.core_host
-            a.socket_endpoint_url = config.core_host + "/socket"
+            a.socket_endpoint =  {
+                host : config.core_host,
+                path : "/socket"
+            }
             return a
         })
     }
