@@ -451,7 +451,7 @@ export default class {
             }
             a.core_endpoint_url = config.core_host
             a.socket_endpoint =  {
-                host : config.core_host,
+                host : config.core_host.replace('https','http'),
                 path : "/socket"
             }
             return a
