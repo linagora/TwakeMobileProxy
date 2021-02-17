@@ -14,6 +14,7 @@ export const messagesGetSchema = {
                 "message_id": {"type": "string"},
                 "before_message_id": {"type": "string"},
                 "limit": {"type": "integer"},
+                "after_date": {"type": "integer"}
             }
     },
     // response: {

@@ -1,48 +1,32 @@
 export namespace MessagesTypes{
-    export interface InsertMessageRequest {
+
+    export interface MessageRequest {
         company_id: string,
         workspace_id: string,
         channel_id: string,
         thread_id: string
+        message_id: string
+    }
+
+
+    export interface InsertMessageRequest extends MessageRequest{
         original_str: string
         prepared: Array<Object>
     }
 
-    export interface UpdateMessageRequest {
-        company_id: string,
-        workspace_id: string,
-        channel_id: string,
-        thread_id: string
-        message_id: string,
+    export interface UpdateMessageRequest  extends MessageRequest{
         original_str: string
         prepared: Array<Object>
     }
 
-
-    export interface GetMessagesRequest {
-        company_id: string,
-        workspace_id: string,
-        channel_id: string,
-        thread_id: string
-        message_id: string,
+    export interface GetMessagesRequest  extends MessageRequest{
         before_message_id: string,
-        limit: number
+        limit: number,
+        after_date: number
     }
 
-    export interface DeleteMessageRequest {
-        company_id: string
-        workspace_id: string,
-        channel_id: string
-        message_id: string
-        thread_id: string
-    }
 
-    export interface ReactionsRequest {
-        company_id: string
-        workspace_id: string,
-        channel_id: string
-        message_id: string
-        thread_id: string
+    export interface ReactionsRequest  extends MessageRequest {
         reaction: string
     }
 

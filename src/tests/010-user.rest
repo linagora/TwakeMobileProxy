@@ -19,7 +19,7 @@ Accept-version: 2.0.0
 
 > {%
     client.test("Request executed successfully", function() {
-        client.global.set('company_id', response.body[0]['id'])
+        client.global.set('company_id', response.body[1]['id'])
         client.assert(response.status === 200, "Response status is not 200");
     });
 %}

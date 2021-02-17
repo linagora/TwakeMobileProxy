@@ -25,10 +25,10 @@ Accept-version: 2.0.0
     });
 %}
 
-###
+### Запрос по дате
 
 
-GET {{host}}/messages?company_id={{company_id}}&workspace_id=direct&channel_id=88d04e29-67f2-4316-b209-fb76710331d5
+GET {{host}}/messages?company_id={{company_id}}&workspace_id={{workspace_id}}&channel_id={{channel_id}}&after_date=1608868733000
 Authorization: Bearer {{token}}
 Content-Type: application/json
 Accept-version: 2.0.0

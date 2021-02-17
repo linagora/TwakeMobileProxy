@@ -9,11 +9,10 @@ import {
     messagesGetSchema,
     messagesPostSchema,
     messagesPutSchema,
-     reactionsSchema, whatsNewSchema
+    reactionsSchema, whatsNewSchema
 } from "./schemas";
 import {workspaceNotificationsSchema} from "../workspaces/schemas";
 import {WorkspaceController} from "../workspaces/controller";
-import WorkspaceService from "../workspaces/service";
 import ChannelsService from "../channels/service";
 import UsersService from "../users/service";
 import Api from "../../common/twakeapi2";
@@ -23,10 +22,8 @@ import {ChannelsTypes} from "../channels/types";
 
 
 export default function (fastify: FastifyInstance) {
-    fastify.get('/messages', {schema: messagesGetSchema}, async (request) => new Messages(request).get(request.query as any))
-    fastify.post('/messages', {schema: messagesPostSchema}, async (request) => new Messages(request).insertMessage(request.body as MessagesTypes.InsertMessageRequest))
     fastify.put('/messages', {schema: messagesPutSchema}, async (request) => new Messages(request).updateMessage(request.body as MessagesTypes.UpdateMessageRequest))
-    fastify.delete('/messages', {schema: messagesDeleteSchema}, async (request) => new Messages(request).deleteMessage(request.body as MessagesTypes.DeleteMessageRequest))
+    fastify.delete('/messages', {schema: messagesDeleteSchema}, async (request) => new Messages(request).deleteMessage(request.body as MessagesTypes.MessageRequest))
     fastify.post('/reactions', {schema: reactionsSchema}, async (request) => new Messages(request).reactions(request.body as MessagesTypes.ReactionsRequest))
     // fastify.get('/messages/whatsnew', {schema: whatsNewSchema}, async (request) => new Messages(request).whatsNew(request.query as MessagesTypes.UpdateMessageRequest))
 
@@ -35,7 +32,7 @@ export default function (fastify: FastifyInstance) {
 
     function ctrl(request: FastifyRequest) {
         const api = new Api(request.jwtToken)
-        return new MessagesController(new MessagesService(api), new ChannelsService(api))
+        return new MessagesController(new MessagesService(api), new ChannelsService(api), new UsersService(api))
     }
 
 
@@ -48,5 +45,23 @@ export default function (fastify: FastifyInstance) {
         handler: (request) => ctrl(request).whatsnew(request as FastifyRequest<{ Querystring: MessagesTypes.WhatsNewRequest }>)
     });
 
+
+    fastify.route({
+        method: "GET",
+        url: '/messages',
+        schema: messagesGetSchema,
+        // preHandler: accessControl,
+        // preValidation: [fastify.authenticate],
+        handler: (request) => ctrl(request).get(request as FastifyRequest<{ Querystring: MessagesTypes.GetMessagesRequest }>)
+    });
+
+    fastify.route({
+        method: "POST",
+        url: '/messages',
+        schema: messagesPostSchema,
+        // preHandler: accessControl,
+        // preValidation: [fastify.authenticate],
+        handler: (request) => ctrl(request).insert(request as FastifyRequest<{ Body: MessagesTypes.InsertMessageRequest }>)
+    });
 }
 

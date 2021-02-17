@@ -309,30 +309,7 @@ export default class {
 
     }
 
-    async addMessage(companyId: string, workspaceId: string, channelId: string, originalString: string, prepared: any, threadId?: string) {
 
-        assert(companyId)
-        assert(workspaceId)
-        assert(channelId)
-        assert(originalString)
-        assert(prepared)
-
-        const params = {
-            'object': {
-                company_id: companyId,
-                workspace_id: workspaceId,
-                channel_id: channelId,
-                thread_id: threadId,
-                parent_message_id: threadId, // backward compatibility
-                content: {
-                    original_str: originalString,
-                    prepared: prepared
-                }
-            }
-        }
-
-        return this.__post('/ajax/discussion/save', params)
-    }
 
     async updateMessage(companyId: string, workspaceId: string, channelId: string, messageId: string, threadId: string, original_str: string, toTwacode: (str: string) => Object[] | null) {
 
