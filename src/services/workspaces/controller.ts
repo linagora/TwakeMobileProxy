@@ -56,6 +56,8 @@ export default class extends Base {
         return this.api.addWorkspace(request.company_id, request.name, request.members || [])
     }
 
+
+
     async delete(request: WorkspaceRequest): Promise<any> {
         await this.api.deleteWorkspace(request.company_id, request.workspace_id)
         return {"success": true}

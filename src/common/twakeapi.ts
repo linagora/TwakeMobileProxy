@@ -3,6 +3,7 @@ import {BadRequest, Forbidden} from "./errors";
 import assert from "assert";
 import {required} from "./helpers";
 import config from './config'
+
 const https = require('https');
 
 
@@ -55,6 +56,15 @@ export default class {
 
         const res = await axios.post(this.host + url, params, {headers})
 
+
+        if (res.data) {
+            const data = String(res.data).trim()
+            if (!data.startsWith('{') && !data.startsWith('[')) {
+                console.error(data)
+                throw new Error('Unknown error')
+            }
+        }
+
         if (res.data.errors && res.data.errors.includes('user_not_connected')) {
             throw new Forbidden('Wrong token')
         }
@@ -65,7 +75,7 @@ export default class {
             throw new Error('Unknown error')
         }
 
-        if(res.data.data){
+        if (res.data.data) {
             return res.data.data as any
         } else {
             return res.data as any
@@ -205,13 +215,13 @@ export default class {
 
         }
 
-        return this.__post(url, params).then(a=>{
-            console.log('create channel response',a)
+        return this.__post(url, params).then(a => {
+            console.log('create channel response', a)
             return a.resource
         })
     }
 
-    async addChannelMember(companyId: string, workspaceId: string, channelId: string, members: string[]){
+    async addChannelMember(companyId: string, workspaceId: string, channelId: string, members: string[]) {
         return Promise.all(members.map(user_id => this.__post(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}/members`,
             {"resource": {"user_id": user_id, "type": "member"}}
         )))
@@ -220,13 +230,11 @@ export default class {
     async getChannels(companyId: string, workspaceId: string) {
         assert(companyId)
         assert(workspaceId)
-        let x=  this.__get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`, {"mine": true}).then(a=>a['resources'].filter(((a:any)=>
-        a.visibility!=='direct')))
+        let x = this.__get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`, {"mine": true}).then(a => a['resources'].filter(((a: any) =>
+            a.visibility !== 'direct')))
         // console.log('GET CHANNELS:', (await x))
         return x
     }
-
-
 
 
     async getMessages(companyId: string, workspaceId: string, channelId: string, threadId?: string, id?: string, limit?: number, offset?: string) {
@@ -280,7 +288,6 @@ export default class {
         // }
 
     }
-
 
 
     async updateMessage(companyId: string, workspaceId: string, channelId: string, messageId: string, threadId: string, original_str: string, toTwacode: (str: string) => Object[] | null) {
@@ -345,7 +352,7 @@ export default class {
 
     searchUsers(companyId: string, name: string) {
 
-        const params = {"options":{"scope":"group","name":name,"group_id":companyId,"language_preference":"en"}}
+        const params = {"options": {"scope": "group", "name": name, "group_id": companyId, "language_preference": "en"}}
         return this.__post('/ajax/users/all/search', params).then(a => a)
     }
 
@@ -356,7 +363,11 @@ export default class {
     async addWorkspace(companyId: string, name: string, members: string[]) {
         assert(companyId, 'company_id is required')
         assert(name, 'name id is required')
-        const ws = await this.__post('/ajax/workspace/create', {"name": name, "groupId": companyId, "channels": []}).then(a=>a.workspace)
+        const ws = await this.__post('/ajax/workspace/create', {
+            "name": name,
+            "groupId": companyId,
+            "channels": []
+        }).then(a => a.workspace)
         if (members && members.length) {
             await this.addWorkspaceMember(companyId, ws['id'], members)
         }
@@ -366,7 +377,8 @@ export default class {
     deleteWorkspace(companyId: string, workspaceId: string) {
         assert(companyId, 'company id is required')
         assert(workspaceId, 'workspace id is required')
-        return this.__post('/ajax/workspace/delete', {"workspaceId": workspaceId})
+        // return this.__post('/ajax/workspace/delete', {"companyId": companyId, "workspaceId": workspaceId})
+        return this.__post('/ajax/workspace/delete', { "workspaceId": workspaceId})
     }
 
 
@@ -399,9 +411,9 @@ export default class {
                 a.auth.console.mobile_endpoint_url = config.core_host + "/ajax/users/console/openid?mobile=1"
             }
             a.core_endpoint_url = config.core_host
-            a.socket_endpoint =  {
-                host : config.core_host.indexOf('chat.twake.app')>-1 ? config.core_host.replace('https','http'): config.core_host,
-                path : "/socket"
+            a.socket_endpoint = {
+                host: config.core_host.indexOf('chat.twake.app') > -1 ? config.core_host.replace('https', 'http') : config.core_host,
+                path: "/socket"
             }
             return a
         })

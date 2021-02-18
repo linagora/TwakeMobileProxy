@@ -38,7 +38,7 @@ describe('Messages', async function () {
     step('Get channel messages after date', async function () {
         const messages = await api.getMessages()
         assert(messages.length>0, 'No messages in the channel')
-        const randomNumber =  Math.floor(Math.random() * Math.floor(messages.length-1))+1;
+        const randomNumber =  Math.floor(Math.random() * Math.floor(messages.length-2))+2;
         const last_n_messages = messages.slice(Math.max(messages.length - randomNumber, 0))
         const first_date_of_the_slice =  last_n_messages[0].modification_date
         const messagesAfter = await api.getMessages({after_date: first_date_of_the_slice})

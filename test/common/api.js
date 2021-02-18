@@ -81,13 +81,19 @@ class Api {
         return this.company_id
     }
 
+
+
     async selectWorkspace(name) {
-        const res = await this.request.get('/workspaces', {company_id: this.company_id})
-        const workspace = res.find(a => a.name === name)
+        const workspace = await this.getWorkspaces().then(a=>a.find(a => a.name === name))
         assert(workspace, `Workspace ${name} not found`)
         this.workspace_id = workspace.id
         return this.workspace_id
     }
+
+    async getWorkspaces() {
+        return this.request.get('/workspaces', {company_id: this.company_id})
+    }
+
 
     async selectChannel(name) {
         const channels = await this.getChannels()
@@ -144,11 +150,32 @@ class Api {
             workspace_id: this.workspace_id,
             channel_id: this.channel_id
         }
-        const res = await this.request.get('/messages', {..._params, ...params})
-        return res
+        return this.request.get('/messages', {..._params, ...params})
     }
 
+    async addWorkspace(params) {
+        const _params = {
+            company_id: this.company_id,
+        }
+        return this.request.post('/workspaces', {..._params, ...params})
+    }
 
+    async updateWorkspace(workspace_id, params) {
+        const _params = {
+            company_id: this.company_id,
+            workspace_id: workspace_id
+        }
+        return this.request.put('/workspaces', {..._params, ...params})
+
+    }
+
+    async deleteWorkspace(workspace_id) {
+        const params = {
+            company_id: this.company_id,
+            workspace_id: workspace_id
+        }
+        return this.request.delete('/workspaces', params)
+    }
 }
 
 module.exports = Api
