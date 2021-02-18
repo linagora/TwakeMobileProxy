@@ -14,6 +14,7 @@ export default class MessagesService {
         return this.api.get(`/internal/services/notifications/v1/badges`, {"company_id": req.company_id}).then(a=>a.resources)
     }
 
+    fixDate (date: number): number { return String(date).length > 12 ? date : date * 1000  }
 
     async getMessages(companyId: string, workspaceId: string, channelId: string, threadId?: string, messageId?: string,  limit?: number, offset?: string): Promise<any> {
         required(companyId, 'string')
@@ -35,7 +36,7 @@ export default class MessagesService {
             },
         }
 
-        const fixDate = (date: number): number => date < 1611830724000 ? date * 1000 : date
+
 
         return this.api.post('/ajax/discussion/get', params).then(a=>{
             if (a && a.status == 'error'){
@@ -44,8 +45,8 @@ export default class MessagesService {
             }
 
             return a.data.map((a:any)=>{
-                a.modification_date = fixDate(a.modification_date)
-                a.creation_date = fixDate(a.creation_date)
+                a.modification_date = this.fixDate(a.modification_date)
+                a.creation_date = this.fixDate(a.creation_date)
                 return a
             })
         })

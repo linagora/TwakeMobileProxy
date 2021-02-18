@@ -65,8 +65,6 @@ describe('Workspaces', async function () {
         workspace = workspaces.find(a=>a.id===last_created_workspace_id)
         assert(!workspace,'Workspace was not deleted')
 
-
-
     })
 
 

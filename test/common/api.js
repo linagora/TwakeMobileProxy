@@ -176,6 +176,17 @@ class Api {
         }
         return this.request.delete('/workspaces', params)
     }
+
+    async addMessage(original_str, params) {
+        const _params = {
+            company_id: this.company_id,
+            workspace_id: this.workspace_id,
+            channel_id: this.channel_id,
+            original_str: original_str
+        }
+        return this.request.post('/messages', {..._params, ...params})
+
+    }
 }
 
 module.exports = Api

@@ -11,6 +11,7 @@ import {ChannelsTypes} from "../channels/types";
 
 import {FastifyRequest} from "fastify";
 import ChannelsService from "../channels/service";
+import GetMessagesRequest = MessagesTypes.GetMessagesRequest;
 
 
 /**
@@ -125,6 +126,7 @@ export class MessagesController {
     async __formatMessage(req: MessagesTypes.GetMessagesRequest, messages: any[]): Promise<any> {
 
 
+
         const getPreview = async (elementId: string) => this.messagesService.getDriveObject(req.company_id, req.workspace_id, elementId).then(a => a.preview_link)
 
 
@@ -144,8 +146,8 @@ export class MessagesController {
                 responses_count: a.responses_count || 0,
                 sender: a.sender ? {user_id: a.sender} : {},
                 application_id: a.application_id,
-                creation_date: a.creation_date,
-                modification_date: a.modification_date,
+                creation_date: this.messagesService.fixDate(a.creation_date),
+                modification_date: this.messagesService.fixDate(a.modification_date),
                 content: {
                     original_str: a.content.original_str,
                     prepared: null
@@ -295,21 +297,11 @@ export class MessagesController {
             throw new BadRequest('Unparseable message')
         }
 
-        const x = await this.messagesService.addMessage(req.company_id, req.workspace_id, req.channel_id, req.original_str, prepared, req.thread_id)
+        const msg =  await this.messagesService.addMessage(req.company_id, req.workspace_id, req.channel_id, req.original_str, prepared, req.thread_id).then(a=>a.object)
 
-        const id = x['object']['id']
 
-        await new Promise(((resolve, reject) => {
-            setTimeout(resolve, 500)
-        }))
+        return (await this.__formatMessage(req as any as GetMessagesRequest, [msg]))[0]
 
-        const insertedMessage = await this.__get(req as any as MessagesTypes.GetMessagesRequest)
-
-        if (!insertedMessage.length) {
-            throw Error("Can't get inserted message")
-        }
-
-        return insertedMessage[0]
 
     }
 

@@ -60,5 +60,11 @@ describe('Messages', async function () {
         assert.strictEqual(messagesAfter.length,0)
     })
 
+    step('Add message', async function(){
+        const message = await api.addMessage("test string")
+        const messages = await api.getMessages({limit:1})
+        assert.deepStrictEqual(messages[0], message, `Messages doesn't match`)
+    })
+
 
 });
