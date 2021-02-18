@@ -85,7 +85,7 @@ export default class extends Base {
         }
 
         const res = await this.api.postDirect('/ajax/users/login', loginObject)
-
+        // console.log(res)
 
         return this.doAuth(res.data, params.timezoneoffset)
     }

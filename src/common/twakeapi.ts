@@ -205,7 +205,10 @@ export default class {
 
         }
 
-        return this.__post(url, params).then(a=>a.resource)
+        return this.__post(url, params).then(a=>{
+            console.log('create channel response',a)
+            return a.resource
+        })
     }
 
     async addChannelMember(companyId: string, workspaceId: string, channelId: string, members: string[]){

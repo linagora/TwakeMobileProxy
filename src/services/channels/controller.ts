@@ -71,6 +71,7 @@ export default class extends Base {
             if (request.members.indexOf(user.id) === -1)
                 request.members.push(user.id)
         }
+        console.log(request)
 
         let channel = await this.__findChannel(request.company_id, request.workspace_id, request.visibility, request.name, request.members)
 

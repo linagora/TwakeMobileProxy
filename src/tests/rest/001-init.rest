@@ -1,5 +1,5 @@
 POST {{host}}/init
-#Authorization: Bearer {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 Accept-version: 2.0.0
 
