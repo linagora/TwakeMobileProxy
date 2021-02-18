@@ -7,6 +7,7 @@ import {ChannelsTypes} from "./types";
 import {FastifyRequest} from "fastify";
 import ChannelsService from "./service";
 import UsersService from "../users/service";
+import {BadRequest} from "../../common/errors";
 
 
 function __channelFormat(a: any): ChannelsTypes.Channel {
@@ -71,7 +72,7 @@ export default class extends Base {
             if (request.members.indexOf(user.id) === -1)
                 request.members.push(user.id)
         }
-        console.log(request)
+        // console.log(request)
 
         let channel = await this.__findChannel(request.company_id, request.workspace_id, request.visibility, request.name, request.members)
 
@@ -82,11 +83,6 @@ export default class extends Base {
 
         channel = await this.api.addChannel(request.company_id, request.workspace_id, request.name, request.visibility, request.members, request.channel_group, request.description, request.icon)
         return __channelFormat(channel)
-    }
-
-
-    async delete(request: ChannelsTypes.ChannelParameters): Promise<any> {
-        return this.api.deleteChannel(request.company_id, request.workspace_id, request.channel_id)
     }
 
 
@@ -152,8 +148,26 @@ export class ChannelsController {
         return this.channelsService.update(request.body)
     }
 
-    delete(request: FastifyRequest<{ Body: ChannelsTypes.ChannelParameters }>) {
-        return this.channelsService.delete(request.body)
+    async delete(request: FastifyRequest<{ Body: ChannelsTypes.ChannelParameters }>) {
+        // channel deletion has a bug we need to double check the deletion
+
+        const res = await this.channelsService.delete(request.body)
+
+        let done = false
+        let attempts = 0
+        while (!done) {
+            const channels = await this.channelsService.all(request.body)
+            const found = channels.find(a => a.id === request.body.channel_id)
+            if (found) {
+                if (attempts>2) throw new BadRequest("Can't delete channel after 3 requests")
+                await this.channelsService.delete(request.body)
+                attempts++
+            } else {
+                done = true
+            }
+        }
+
+        return res
     }
 
     init(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {

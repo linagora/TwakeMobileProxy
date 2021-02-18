@@ -226,39 +226,8 @@ export default class {
         return x
     }
 
-    async getDirects(companyId: string) {
-        assert(companyId)
-        const x=  this.__get(`/internal/services/channels/v1/companies/${companyId}/workspaces/direct/channels`, {}).then(a=>a['resources'])
-        console.log((await x))
-        return x
-    }
-
-    async getDriveObject(companyId: string, workspaceId: string, elementId: string) {
-        assert(companyId)
-        assert(workspaceId)
-        assert(elementId)
 
 
-        return this.__post('/ajax/drive/v2/find', {
-            'options': {
-                'element_id': elementId,
-                'company_id': companyId,
-                'workspace_id': workspaceId,
-                "public_access_token": null
-            },
-        })
-    }
-
-    /*
-    company_id: req.company_id,
-                workspace_id: req.workspace_id,
-                channel_id: req.channel_id,
-                limit: req.limit || 50,
-                offset: req.before_message_id,
-                parent_message_id: req.thread_id, // backward compatibility
-                thread_id: req.thread_id,
-                id: req.message_id
-     */
 
     async getMessages(companyId: string, workspaceId: string, channelId: string, threadId?: string, id?: string, limit?: number, offset?: string) {
 
@@ -436,10 +405,6 @@ export default class {
             }
             return a
         })
-    }
-
-    deleteChannel(companyId: string, workspaceId: string, channelId: string) {
-        return this.__delete(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}`, {})
     }
 
 

@@ -60,6 +60,7 @@ export default class Api implements ApiType {
             else if (method == 'DELETE') {
 
                 const x = await fetch(this.host + url, {method: 'DELETE', body: params, headers})
+                console.log(x)
                 if (x.status >= 200 && x.status < 400) {
                     res = {data: {"success": true}}
                 } else {

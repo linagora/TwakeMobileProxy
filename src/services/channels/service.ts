@@ -53,10 +53,11 @@ export default class ChannelsService {
         return this.api.get(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/direct/channels`, {"mine": true}).then(a=>a['resources'])
     }
 
-
     all( req: ChannelsTypes.BaseChannelsParameters) {
         return Promise.all([this.public(req),this.direct(req)]).then(res =>[...res[0], ...res[1]])
     }
+
+
 
     async addMembers(req: ChannelsTypes.ChangeMembersRequest) {
         const promises = req.members.map(user_id => this.api.post(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}/members`,

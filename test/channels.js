@@ -1,5 +1,5 @@
 var assert = require('assert');
-const {step} = require("mocha-steps");
+const {xstep, step} = require("mocha-steps");
 
 // @ts-ignore
 const Api = require('./common/api.js')
@@ -31,8 +31,8 @@ describe('Channels', async function () {
 
     step('Get list of channels', async function () {
         const channels = await api.getChannels()
-        const exist = channels.find(a=>a.name.startsWith('AutoCreationChannelTest'))
-        assert(!exist, 'channel already exists:\n' + JSON.stringify(exist,null,2))
+        let exist = channels.find(a=>a.name.startsWith('AutoCreationChannelTest'))
+        assert(!exist,'channel exists even after deleting' + JSON.stringify(exist,null,2))
         assert(channels.length > 0)
     });
 
@@ -49,14 +49,13 @@ describe('Channels', async function () {
         last_inserted_channel_id = channel.id
     });
 
-
     step('Delete the channel', async function(){
         const res = await api.deleteChannel(last_inserted_channel_id)
         assert.ok(res.success, 'channel delete faled')
+
     })
 
     step('Check channel not exists', async function(){
-        await new Promise((resolve)=>{setTimeout(resolve, 1500)})
         const res = await api.getChannels()
         const found = res.find(a=>a.id===last_inserted_channel_id)
         assert(!found, 'channel is expected to be deleted, but is still exists')

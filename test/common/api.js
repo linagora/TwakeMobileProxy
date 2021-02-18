@@ -26,7 +26,7 @@ class Request {
         })
     }
 
-    __action(method,path,params){
+    __action(method, path, params) {
         return fetch(this.host + path, {
             method: method,
             headers: this.headers(),
@@ -38,15 +38,15 @@ class Request {
     }
 
     post(path, params) {
-        return this.__action('POST', path,params)
+        return this.__action('POST', path, params)
     }
 
     delete(path, params) {
-        return this.__action('DELETE', path,params)
+        return this.__action('DELETE', path, params)
     }
 
     put(path, params) {
-        return this.__action('PUT', path,params)
+        return this.__action('PUT', path, params)
     }
 }
 
@@ -57,10 +57,11 @@ class Api {
         this.token = null
         this.company_id = null
         this.workspace_id = null
+        this.channel_id = null
     }
 
     async auth(username, password) {
-        this.token = await this.request.post( '/authorize', {
+        this.token = await this.request.post('/authorize', {
             "fcm_token": "123",
             "timezoneoffset": -180,
             "device": "apple",
@@ -73,29 +74,36 @@ class Api {
 
 
     async selectCompany(name) {
-        const res = await this.request.get( '/companies')
+        const res = await this.request.get('/companies')
         const company = res.find(a => a.name === name)
-        assert(company, 'company not found')
+        assert(company, `Company ${name} not found`)
         this.company_id = company.id
         return this.company_id
     }
 
     async selectWorkspace(name) {
-        const res = await this.request.get( '/workspaces', {company_id: this.company_id})
+        const res = await this.request.get('/workspaces', {company_id: this.company_id})
         const workspace = res.find(a => a.name === name)
-        assert(workspace, 'workspace not found')
+        assert(workspace, `Workspace ${name} not found`)
         this.workspace_id = workspace.id
         return this.workspace_id
     }
 
+    async selectChannel(name) {
+        const channels = await this.getChannels()
+        const channel = channels.find(a => a.name === name)
+        assert(channel, `Channel ${name} not found`)
+        this.channel_id = channel.id
+        return channel
+    }
+
     async getChannels() {
-        const res = await this.request.get( '/channels', {
+        const res = await this.request.get('/channels', {
             company_id: this.company_id,
             workspace_id: this.workspace_id
         })
         assert(res.length, 'channels not found')
         return res
-
     }
 
     async addChannel(name, visibility, members) {
@@ -106,7 +114,7 @@ class Api {
             workspace_id: this.workspace_id,
             name, visibility, members
         }
-        return await this.request.post( '/channels',params )
+        return await this.request.post('/channels', params)
     }
 
     async updateChannel(channel_id, name, visibility, members) {
@@ -118,7 +126,7 @@ class Api {
             channel_id,
             name, visibility, members
         }
-        return await this.request.put( '/channels',params )
+        return await this.request.put('/channels', params)
     }
 
     async deleteChannel(channel_id) {
@@ -127,7 +135,18 @@ class Api {
             workspace_id: this.workspace_id,
             channel_id
         }
-        return await this.request.delete( '/channels',params )
+        return await this.request.delete('/channels', params)
+    }
+
+    async getMessages(params) {
+        const _params = {
+            company_id: this.company_id,
+            workspace_id: this.workspace_id,
+            channel_id: this.channel_id
+        }
+        const res = await this.request.get('/messages', {..._params, ...params})
+        assert(res.length, 'channels not found')
+        return res
     }
 
 

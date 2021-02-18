@@ -35,7 +35,7 @@ export default class extends Base {
         return data.workspaces
             .filter((a: any) => a.group.id == request.company_id)
             .map((a: any) => {
-                console.log(a)
+                // console.log(a)
                 return {
                     id: a.id,
                     private: a.private,
