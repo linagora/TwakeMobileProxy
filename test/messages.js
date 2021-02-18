@@ -35,11 +35,30 @@ describe('Messages', async function () {
          await api.selectChannel('TestChannel')
     })
 
-    step('Get channel messages', async function () {
+    step('Get channel messages after date', async function () {
         const messages = await api.getMessages()
-        console.log(messages)
+        assert(messages.length>0, 'No messages in the channel')
+        const randomNumber =  Math.floor(Math.random() * Math.floor(messages.length-1))+1;
+        const last_n_messages = messages.slice(Math.max(messages.length - randomNumber, 0))
+        const first_date_of_the_slice =  last_n_messages[0].modification_date
+        const messagesAfter = await api.getMessages({after_date: first_date_of_the_slice})
+        assert(messagesAfter.length>0, `No messages after the date ${first_date_of_the_slice}`)
+
+        // console.log(messagesAfter.map(a=>a.modification_date))
+
+        assert.strictEqual(last_n_messages.length-1,messagesAfter.length, `got ${messagesAfter.length} instaed of ${last_n_messages.length-1}`)
+
+        for(let i = 0; i<messagesAfter.length; i++){
+            const message = messagesAfter[i]
+            assert(message.modification_date > first_date_of_the_slice, `pos: ${i}: ${message.modification_date} is not after ${first_date_of_the_slice}`)
+        }
     })
 
+    step('Get channel messages after future date', async function () {
+        const messages = await api.getMessages({limit:1})
+        const messagesAfter = await api.getMessages({after_date: messages[0].modification_date + 1000000000000})
+        assert.strictEqual(messagesAfter.length,0)
+    })
 
 
 });

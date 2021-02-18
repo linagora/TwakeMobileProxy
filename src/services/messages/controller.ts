@@ -105,7 +105,7 @@ export class MessagesController {
 
         await getPart()
 
-        return this.__formatMessage(req, messages)
+        return this.__formatMessage(req, messages.filter(m=>m.modification_date>req.after_date))
     }
 
 

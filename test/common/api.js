@@ -145,7 +145,6 @@ class Api {
             channel_id: this.channel_id
         }
         const res = await this.request.get('/messages', {..._params, ...params})
-        assert(res.length, 'channels not found')
         return res
     }
 
