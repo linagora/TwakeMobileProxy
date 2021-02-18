@@ -431,7 +431,7 @@ export default class {
             }
             a.core_endpoint_url = config.core_host
             a.socket_endpoint =  {
-                host : config.core_host.replace('https','http'),
+                host : config.core_host.indexOf('chat.twake.app')>-1 ? config.core_host.replace('https','http'): config.core_host,
                 path : "/socket"
             }
             return a
