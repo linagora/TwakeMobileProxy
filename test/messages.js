@@ -16,7 +16,7 @@ describe('Messages', async function () {
 
     const api = new Api(host)
 
-    let last_inserted_channel_id = null
+    let last_inserted_message_id = null
 
     before(async function () {
         await api.auth(username, password)
@@ -64,6 +64,15 @@ describe('Messages', async function () {
         const message = await api.addMessage("test string")
         const messages = await api.getMessages({limit:1})
         assert.deepStrictEqual(messages[0], message, `Messages doesn't match`)
+        last_inserted_message_id = message.id
+    })
+
+    step('Delete message', async function(){
+        const message = await api.deleteMessage(last_inserted_message_id)
+        const messages = await api.getMessages({limit:10})
+        const found = messages.find(a=>a.id === last_inserted_message_id)
+        assert(!found, 'Message was not deleted')
+
     })
 
 

@@ -187,6 +187,16 @@ class Api {
         return this.request.post('/messages', {..._params, ...params})
 
     }
+
+    async deleteMessage(message_id) {
+        const params = {
+            company_id: this.company_id,
+            workspace_id: this.workspace_id,
+            channel_id: this.channel_id,
+            message_id: message_id
+        }
+        return this.request.delete('/messages', params)
+    }
 }
 
 module.exports = Api
