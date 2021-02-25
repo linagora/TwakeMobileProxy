@@ -35,7 +35,7 @@ describe('Messages', async function () {
          await api.selectChannel('TestChannel')
     })
 
-    step('Get channel messages after date', async function () {
+    xstep('Get channel messages after date', async function () {
         const messages = await api.getMessages()
         assert(messages.length>0, 'No messages in the channel')
         const randomNumber =  Math.floor(Math.random() * Math.floor(messages.length-2))+2;
@@ -54,20 +54,31 @@ describe('Messages', async function () {
         }
     })
 
-    step('Get channel messages after future date', async function () {
+    step('Get the messages', async function(){
+        const messages = await api.getMessages({limit:50})
+        const threads = messages.filter(a=>a.responses_count)
+        assert(threads.length)
+        threads.forEach(t=>{
+            const replies = messages.filter(a=>a.thread_id === t.id)
+            assert.strictEqual(replies.length, t.responses_count)
+        })
+    })
+
+
+    xstep('Get channel messages after future date', async function () {
         const messages = await api.getMessages({limit:1})
         const messagesAfter = await api.getMessages({after_date: messages[0].modification_date + 1000000000000})
         assert.strictEqual(messagesAfter.length,0)
     })
 
-    step('Add message', async function(){
+    xstep('Add message', async function(){
         const message = await api.addMessage("test string")
         const messages = await api.getMessages({limit:1})
         assert.deepStrictEqual(messages[0], message, `Messages doesn't match`)
         last_inserted_message_id = message.id
     })
 
-    step('Delete message', async function(){
+    xstep('Delete message', async function(){
         const message = await api.deleteMessage(last_inserted_message_id)
         const messages = await api.getMessages({limit:10})
         const found = messages.find(a=>a.id === last_inserted_message_id)

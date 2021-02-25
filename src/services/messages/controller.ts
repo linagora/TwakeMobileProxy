@@ -106,13 +106,26 @@ export class MessagesController {
 
         await getPart()
 
-        return this.__formatMessage(req, messages.filter(m=>m.modification_date>req.after_date))
+        return this.__formatMessage(req, messages.filter(m => m.modification_date > req.after_date))
     }
 
 
     async __get(req: MessagesTypes.GetMessagesRequest): Promise<any> {
 
         let messages = await this.messagesService.getMessages(req.company_id, req.workspace_id, req.channel_id, req.thread_id, req.message_id, req.limit, req.before_message_id) as any[]
+
+        if (!req.thread_id) {
+            for (const m of messages) {
+                if (m.responses_count) {
+                    const replies = messages.filter(r => r.thread_id === m.id || r.parent_message_id === m.id)
+                    if (replies.length < m.responses_count) {
+                        const existed_replies = replies.reduce((acc, curr) => (acc[curr.id] = true, acc), {});
+                        const all_thread_replies = await this.messagesService.getMessages(req.company_id, req.workspace_id, req.channel_id, m.id, undefined, m.responses_count, undefined) as any[]
+                        messages = [...messages, ...all_thread_replies.filter(a => !existed_replies[a.id])]
+                    }
+                }
+            }
+        }
 
         if (!messages) {
             console.log('GOT NO MESSAGES FROM CORE')
@@ -124,7 +137,6 @@ export class MessagesController {
     }
 
     async __formatMessage(req: MessagesTypes.GetMessagesRequest, messages: any[]): Promise<any> {
-
 
 
         const getPreview = async (elementId: string) => this.messagesService.getDriveObject(req.company_id, req.workspace_id, elementId).then(a => a.preview_link)
@@ -297,7 +309,7 @@ export class MessagesController {
             throw new BadRequest('Unparseable message')
         }
 
-        const msg =  await this.messagesService.addMessage(req.company_id, req.workspace_id, req.channel_id, req.original_str, prepared, req.thread_id).then(a=>a.object)
+        const msg = await this.messagesService.addMessage(req.company_id, req.workspace_id, req.channel_id, req.original_str, prepared, req.thread_id).then(a => a.object)
 
 
         return (await this.__formatMessage(req as any as GetMessagesRequest, [msg]))[0]
