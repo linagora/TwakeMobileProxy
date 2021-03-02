@@ -154,14 +154,16 @@ class Api {
         return channel
     }
 
-    async getChannels() {
-        const res = await this.request.get('/channels', {
+    async getChannels(params) {
+        const _params = {
             company_id: this.company_id,
             workspace_id: this.workspace_id
-        })
+        }
+        const res = await this.request.get('/channels', {..._params, ...params})
         assert(res.length, 'channels not found')
         return res
     }
+
 
     async addChannel(name, visibility, members) {
         assert(['public', 'private', 'direct'].includes(visibility), 'wrong visibility type')
@@ -266,6 +268,8 @@ class Api {
         return res
 
     }
+
+
 }
 
 module.exports = Api

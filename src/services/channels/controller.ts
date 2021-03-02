@@ -20,11 +20,12 @@ function __channelFormat(a: any): ChannelsTypes.Channel {
         description: a.description,
         channel_group: a.channel_group,
         last_activity: +a.last_activity,
-        has_unread: +a.last_activity > +a.user_member.last_access,
-        user_last_access: +a.user_member.last_access,
+        has_unread: a.user_member ? +a.last_activity > +a.user_member.last_access : false,
+        user_last_access: a.user_member ? +a.user_member.last_access : undefined,
         members: a.members,
         members_count: a.members ? a.members.length : a.members_count,
-        visibility: a.visibility
+        visibility: a.visibility,
+        is_member: Boolean(a.user_member)
     } as ChannelsTypes.Channel
 }
 
@@ -117,14 +118,19 @@ export class ChannelsController {
     async public(request: FastifyRequest<{ Querystring: ChannelsTypes.PublicChannelsListParameters }>): Promise<ChannelsTypes.Channel[]> {
         const {company_id, workspace_id, all} = request.query
 
-        const channels = await this.channelsService.public(company_id, workspace_id, all) as any[]
+        const channels = await this.channelsService.public(company_id, workspace_id, false) as any[]
+        if (all) {
+            const existed_channels_id = channels.reduce((acc, curr) => (acc[curr.id] = true, acc), {});
+            await this.channelsService.public(company_id, workspace_id, true).then(
+                all_channels => all_channels.filter((a: any) => !existed_channels_id[a.id])
+                    .forEach((a: any) => channels.push(a)))
+        }
 
         const counts = await Promise.all(channels.map((c) => this.channelsService.getMembers(company_id, workspace_id, c.id).then(a => a.length)))
-
         channels.forEach((ch: any) => ch.members_count = counts.shift())
-
         return __channelsFormat(channels).sort((a: any, b: any) => a.name.localeCompare(b.name))
     }
+
 
     getMembers(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
         const {company_id, workspace_id, channel_id} = request.query
@@ -159,7 +165,7 @@ export class ChannelsController {
             const channels = await this.channelsService.all(request.body)
             const found = channels.find(a => a.id === request.body.channel_id)
             if (found) {
-                if (attempts>2) throw new BadRequest("Can't delete channel after 3 requests")
+                if (attempts > 2) throw new BadRequest("Can't delete channel after 3 requests")
                 await this.channelsService.delete(request.body)
                 attempts++
             } else {

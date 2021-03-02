@@ -13,6 +13,7 @@ describe('Channels', async function () {
     const api = new Api(host)
 
     let last_inserted_channel_id = null
+    let my_channels_count = null
 
     before(async function () {
         await api.auth()
@@ -31,8 +32,10 @@ describe('Channels', async function () {
         }
     })
 
+
     step('Get list of channels', async function () {
         const channels = await api.getChannels()
+        channels.forEach(a=> assert(a.is_member))
         let exist = channels.find(a=>a.name.startsWith('AutoCreationChannelTest'))
         assert(!exist,'channel exists even after deleting' + JSON.stringify(exist,null,2))
         assert(channels.length > 0)
@@ -54,7 +57,6 @@ describe('Channels', async function () {
 
     step('Mark messages read', async function () {
         const res = await api.markChannelRead(last_inserted_channel_id)
-        console.log(res)
     });
 
 
@@ -66,9 +68,14 @@ describe('Channels', async function () {
 
     step('Check channel not exists', async function(){
         const res = await api.getChannels()
+        my_channels_count = res.length
         const found = res.find(a=>a.id===last_inserted_channel_id)
         assert(!found, 'channel is expected to be deleted, but is still exists')
     })
 
+    step('All channels (not only mine)', async function(){
+        const res = await api.getChannels({all:true})
+        assert(res.length>my_channels_count)
+    })
 
 });

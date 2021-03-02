@@ -34,8 +34,9 @@ export default function (fastify: FastifyInstance) {
         method: "GET",
         url: '/channels',
         schema: channelsGetSchema,
-        handler: (request) => ctrl(request).public(request as FastifyRequest<{ Querystring: ChannelsTypes.BaseChannelsParameters }>)
+        handler: (request) => ctrl(request).public(request as FastifyRequest<{ Querystring: ChannelsTypes.PublicChannelsListParameters }>)
     });
+
 
 
     fastify.route({
