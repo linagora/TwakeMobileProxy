@@ -114,9 +114,10 @@ export class ChannelsController {
         return res
     }
 
-    async public(request: FastifyRequest<{ Querystring: ChannelsTypes.BaseChannelsParameters }>): Promise<ChannelsTypes.Channel[]> {
-        const {company_id, workspace_id} = request.query
-        const channels = await this.channelsService.public(request.query) as any[]
+    async public(request: FastifyRequest<{ Querystring: ChannelsTypes.PublicChannelsListParameters }>): Promise<ChannelsTypes.Channel[]> {
+        const {company_id, workspace_id, all} = request.query
+
+        const channels = await this.channelsService.public(company_id, workspace_id, all) as any[]
 
         const counts = await Promise.all(channels.map((c) => this.channelsService.getMembers(company_id, workspace_id, c.id).then(a => a.length)))
 

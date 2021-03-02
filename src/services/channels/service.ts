@@ -45,8 +45,9 @@ export default class ChannelsService {
     }
 
 
-    public( req: ChannelsTypes.BaseChannelsParameters) {
-        return this.api.get(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels`, {"mine": true}).then(a=>a['resources'])
+    public( companyId: string, workspaceId: string, all:boolean) {
+        const params = all ? {} : {"mine": true}
+        return this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`, params).then(a=>a['resources'])
     }
 
     direct( req: ChannelsTypes.BaseChannelsParameters) {
@@ -54,7 +55,7 @@ export default class ChannelsService {
     }
 
     all( req: ChannelsTypes.BaseChannelsParameters) {
-        return Promise.all([this.public(req),this.direct(req)]).then(res =>[...res[0], ...res[1]])
+        return Promise.all([this.public(req.company_id, req.workspace_id, false),this.direct(req)]).then(res =>[...res[0], ...res[1]])
     }
 
 

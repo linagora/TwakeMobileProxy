@@ -65,25 +65,34 @@ class Api {
 
     }
 
+    __writeConfig(token){
+        delete this.auth_config.token
+        delete this.auth_config.auth_token
+        if(token){
+            this.auth_config.token = token
+        }
+        this.auth_config.auth_token = ""
+        fs.writeFileSync('./test/auth.json', JSON.stringify(this.auth_config, null, 2));
+    }
+
     async auth() {
         // @ts-ignore
         this.auth_config = require('../auth.json')
 
-        if (this.auth_config.token){
+        if (this.auth_config.token && !this.auth_config.auth_token){
             this.request.token = this.auth_config.token
 
             try {
                 await this.request.get('/user')
             } catch(e){
-                delete this.auth_config.token
-                this.auth_config.auth_token = ""
-                fs.writeFileSync('./test/auth.json', JSON.stringify(this.auth_config, null, 2));
+                this.__writeConfig(null)
                 throw e
             }
             return
         }
 
         if (this.auth_config.auth_token) {
+
             const params = {
                 "fcm_token": "123",
                 "timezoneoffset": -180,
@@ -91,10 +100,13 @@ class Api {
                 "token": this.auth_config.auth_token
             }
             // console.log(params)
-            this.request.token = await this.request.post('/init', params).then(a => a.token)
-            this.auth_config.token = this.request.token
-            delete this.auth_config.auth_token
-            fs.writeFileSync('./test/auth.json', JSON.stringify(this.auth_config, null, 2));
+            try {
+                this.request.token = await this.request.post('/init', params).then(a => a.token)
+            } catch(e){
+                this.__writeConfig(null)
+                throw e
+            }
+            this.__writeConfig(this.request.token)
             return this.request.token
 
         } else {
@@ -105,6 +117,7 @@ class Api {
                 "username": this.auth_config.username,
                 "password": this.auth_config.password
             }
+            // console.log(params)
             this.request.token = await this.request.post('/authorize', params).then(a => a.token)
             return this.request.token
         }
