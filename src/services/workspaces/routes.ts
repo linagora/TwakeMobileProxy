@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyRequest } from "fastify";
+import {FastifyInstance, FastifyRequest} from "fastify";
 import {WorkspaceController} from "./controller";
 import WorkspaceService from "./service";
 import Api from "../../common/twakeapi2";
@@ -34,12 +34,10 @@ import {ChannelsTypes} from "../channels/types";
 // import ChannelsService from "./service";
 
 
-
-export default function(fastify: FastifyInstance){
+export default function (fastify: FastifyInstance) {
 
 
     fastify.get('/workspaces', {schema: workspacesSchema}, async (request, reply) => new Workspaces(request).list(request.query as WorkspacesTypes.WorkspaceBaseRequest))
-    fastify.post('/workspaces', {schema: workspacesPostSchema}, async (request, reply) => new Workspaces(request).add(request.body as WorkspacesTypes.WorkspacePostRequest))
     fastify.delete('/workspaces', {schema: workspacesDeleteSchema}, async (request, reply) => new Workspaces(request).delete(request.body as WorkspacesTypes.WorkspaceRequest))
 
     fastify.get('/workspaces/members', {schema: workspaceMembersGetSchema}, async (request, reply) => new Workspaces(request).listMembers(request.query as WorkspacesTypes.WorkspaceRequest))
@@ -57,7 +55,6 @@ export default function(fastify: FastifyInstance){
         return new WorkspaceController(new WorkspaceService(api), new ChannelsService(api), new UsersService(api))
     }
 
-
     fastify.route({
         method: "GET",
         url: '/workspace/notifications',
@@ -67,7 +64,14 @@ export default function(fastify: FastifyInstance){
         handler: (request) => ctrl(request).notifications(request as FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>)
     });
 
-
+    fastify.route({
+        method: "POST",
+        url: '/workspaces',
+        schema: workspacesPostSchema,
+        // preHandler: accessControl,
+        // preValidation: [fastify.authenticate],
+        handler: (request) => ctrl(request).add(request as FastifyRequest<{ Body: WorkspacesTypes.WorkspacePostRequest }>)
+    });
 
 
 }

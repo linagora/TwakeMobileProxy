@@ -1,11 +1,15 @@
 const {URL, URLSearchParams} = require('url');
 const fetch = require('node-fetch');
 const assert = require("assert");
+const fs = require('fs');
+const prompt = require('prompt-promise');
 
 class Request {
+
     constructor(host) {
         this.host = host
         this.token = null
+
     }
 
     headers() {
@@ -27,6 +31,7 @@ class Request {
     }
 
     __action(method, path, params) {
+        // console.log({method: method, headers: this.headers(), body: JSON.stringify(params)})
         return fetch(this.host + path, {
             method: method,
             headers: this.headers(),
@@ -54,22 +59,56 @@ class Api {
 
     constructor(host) {
         this.request = new Request(host)
-        this.token = null
         this.company_id = null
         this.workspace_id = null
         this.channel_id = null
+
     }
 
-    async auth(username, password) {
-        this.token = await this.request.post('/authorize', {
-            "fcm_token": "123",
-            "timezoneoffset": -180,
-            "device": "apple",
-            "username": username,
-            "password": password
-        }).then(a => a.token)
-        this.request.token = this.token
-        return this.token
+    async auth() {
+        // @ts-ignore
+        this.auth_config = require('../auth.json')
+
+        if (this.auth_config.token){
+            this.request.token = this.auth_config.token
+
+            try {
+                await this.request.get('/user')
+            } catch(e){
+                delete this.auth_config.token
+                this.auth_config.auth_token = ""
+                fs.writeFileSync('./test/auth.json', JSON.stringify(this.auth_config, null, 2));
+                throw e
+            }
+            return
+        }
+
+        if (this.auth_config.auth_token) {
+            const params = {
+                "fcm_token": "123",
+                "timezoneoffset": -180,
+                "username": this.auth_config.token_username,
+                "token": this.auth_config.auth_token
+            }
+            // console.log(params)
+            this.request.token = await this.request.post('/init', params).then(a => a.token)
+            this.auth_config.token = this.request.token
+            delete this.auth_config.auth_token
+            fs.writeFileSync('./test/auth.json', JSON.stringify(this.auth_config, null, 2));
+            return this.request.token
+
+        } else {
+            const params = {
+                "fcm_token": "123",
+                "timezoneoffset": -180,
+                "device": "apple",
+                "username": this.auth_config.username,
+                "password": this.auth_config.password
+            }
+            this.request.token = await this.request.post('/authorize', params).then(a => a.token)
+            return this.request.token
+        }
+
     }
 
 
@@ -82,9 +121,8 @@ class Api {
     }
 
 
-
     async selectWorkspace(name) {
-        const workspace = await this.getWorkspaces().then(a=>a.find(a => a.name === name))
+        const workspace = await this.getWorkspaces().then(a => a.find(a => a.name === name))
         assert(workspace, `Workspace ${name} not found`)
         this.workspace_id = workspace.id
         return this.workspace_id
@@ -196,6 +234,24 @@ class Api {
             message_id: message_id
         }
         return this.request.delete('/messages', params)
+    }
+
+    async markChannelRead(channel_id) {
+        const params = {
+            company_id: this.company_id,
+            workspace_id: this.workspace_id,
+            channel_id: channel_id,
+        }
+        return this.request.post('/channels/read', params)
+    }
+
+    async getDirectChannels() {
+        const res = await this.request.get('/direct', {
+            company_id: this.company_id
+        })
+        assert(res.length, 'channels not found')
+        return res
+
     }
 }
 

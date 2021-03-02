@@ -18,7 +18,7 @@ describe('Workspaces', async function () {
     let last_created_workspace_id = undefined
 
     before(async function () {
-        await api.auth(username, password)
+        await api.auth()
     })
 
 
@@ -33,8 +33,10 @@ describe('Workspaces', async function () {
     })
 
     step('Creating a workspace', async function () {
-        const workspace = await api.addWorkspace({name:'AutoTestWorkspace'})
+        const workspace = await api.addWorkspace({name: 'AutoTestWorkspace'})
         assert(workspace.id, 'workspace is not created')
+        assert.strictEqual('AutoTestWorkspace', workspace.name)
+        // assert.strictEqual('wrench', workspace.icon)
         last_created_workspace_id = workspace.id
     })
 
@@ -43,16 +45,16 @@ describe('Workspaces', async function () {
         // TODO: implement in API
 
         let workspaces = await api.getWorkspaces()
-        let workspace = workspaces.find(a=>a.id===last_created_workspace_id)
+        let workspace = workspaces.find(a => a.id === last_created_workspace_id)
         assert(workspace, 'workspace is not found')
         assert.strictEqual(workspace.name, 'AutoTestWorkspace', "Original name doesn't match")
-        const updated_workspace = await api.updateWorkspace(workspace.id, {name:"AutoTestWorkspace-rename"})
-        assert.strictEqual(updated_workspace.name,'AutoTestWorkspace-rename', "New name doesn't match" )
+        const updated_workspace = await api.updateWorkspace(workspace.id, {name: "AutoTestWorkspace-rename"})
+        assert.strictEqual(updated_workspace.name, 'AutoTestWorkspace-rename', "New name doesn't match")
 
         workspaces = await api.getWorkspaces()
-        workspace = workspaces.find(a=>a.id===last_created_workspace_id)
+        workspace = workspaces.find(a => a.id === last_created_workspace_id)
 
-        assert.deepStrictEqual(workspace,updated_workspace, `Workspaces doesn't match\noriginal\n${JSON.stringify(workspace,null,2)}\nnew:\n${JSON.stringify(workspace,null,2)}` )
+        assert.deepStrictEqual(workspace, updated_workspace, `Workspaces doesn't match\noriginal\n${JSON.stringify(workspace, null, 2)}\nnew:\n${JSON.stringify(workspace, null, 2)}`)
 
         // console.log(updated_workspace)
     })
@@ -62,12 +64,15 @@ describe('Workspaces', async function () {
         assert.ok(workspace.success)
         const workspaces = await api.getWorkspaces()
         // console.log(workspaces.find(a=>a.name.startsWith('AutoTestWorkspace')))
-        workspace = workspaces.find(a=>a.id===last_created_workspace_id)
-        assert(!workspace,'Workspace was not deleted')
-
+        workspace = workspaces.find(a => a.id === last_created_workspace_id)
+        assert(!workspace, 'Workspace was not deleted')
     })
 
-
+    after(async function () {
+        api.getWorkspaces().then(ws =>
+            ws.filter(a => a.name.startsWith('AutoTestWorkspace'))
+                .forEach(a => api.deleteWorkspace(a.id)))
+    })
 
 
 });

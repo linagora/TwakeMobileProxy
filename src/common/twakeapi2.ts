@@ -1,4 +1,5 @@
 import Axios from 'axios'
+
 const https = require('https');
 
 const fetch = require('node-fetch');
@@ -82,6 +83,7 @@ export default class Api implements ApiType {
         if (res.data.errors && res.data.errors.includes('user_not_connected')) {
             throw new Forbidden('Wrong token')
         }
+
         return res.data as any || {}
 
     }

@@ -4,11 +4,11 @@ export declare namespace ChannelsTypes {
 
     export interface BaseChannelsParameters {
         company_id: string;
-        workspace_id: string | DirectChannel;
+        workspace_id: string;
     }
 
     export interface ChannelParameters extends BaseChannelsParameters{
-        channel_id: string
+        channel_id: string | DirectChannel
     }
 
 
@@ -22,7 +22,6 @@ export declare namespace ChannelsTypes {
         last_activity: number
         user_last_access: number
         company_id: string
-        direct_channel_members: any[]
         visibility: string,
         members: [],
         members_count: number

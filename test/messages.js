@@ -5,8 +5,6 @@ const {xstep, step} = require("mocha-steps");
 const Api = require('./common/api.js')
 
 const host = 'http://localhost:3123'
-const username = "testbot"
-const password = "12345678"
 
 const CHANNEL_NAME = 'TestChannel'
 
@@ -19,7 +17,7 @@ describe('Messages', async function () {
     let last_inserted_message_id = null
 
     before(async function () {
-        await api.auth(username, password)
+        await api.auth()
     })
 
 
@@ -31,31 +29,30 @@ describe('Messages', async function () {
         await api.selectWorkspace('Main')
     })
 
-    step('Select channel TestChannel', async function () {
-         await api.selectChannel('TestChannel')
+    step('Direct messages', async function(){
+        const directChannels = await api.getDirectChannels()
+        assert(directChannels.length, 'no direct channels available')
+        const messages = await api.getMessages({workspace_id: 'direct', channel_id:directChannels[0].id})
+        assert(messages.length, 'no messages in direct channels')
     })
 
-    xstep('Get channel messages after date', async function () {
-        const messages = await api.getMessages()
-        assert(messages.length>0, 'No messages in the channel')
-        const randomNumber =  Math.floor(Math.random() * Math.floor(messages.length-2))+2;
-        const last_n_messages = messages.slice(Math.max(messages.length - randomNumber, 0))
-        const first_date_of_the_slice =  last_n_messages[0].modification_date
-        const messagesAfter = await api.getMessages({after_date: first_date_of_the_slice})
-        assert(messagesAfter.length>0, `No messages after the date ${first_date_of_the_slice}`)
 
-        // console.log(messagesAfter.map(a=>a.modification_date))
 
-        assert.strictEqual(last_n_messages.length-1,messagesAfter.length, `got ${messagesAfter.length} instaed of ${last_n_messages.length-1}`)
-
-        for(let i = 0; i<messagesAfter.length; i++){
-            const message = messagesAfter[i]
-            assert(message.modification_date > first_date_of_the_slice, `pos: ${i}: ${message.modification_date} is not after ${first_date_of_the_slice}`)
+    step(`Select channel ${CHANNEL_NAME}`, async function () {
+        try {
+            await api.selectChannel(CHANNEL_NAME)
+        } catch(e){
+            await api.addChannel(CHANNEL_NAME,'public')
+            await api.selectChannel(CHANNEL_NAME)
+            const first_message = await api.addMessage("first message")
+            await api.addMessage("first reply", {thread_id:first_message.id})
+            await api.addMessage("second reply", {thread_id:first_message.id})
         }
     })
 
+
     step('Get the messages', async function(){
-        const messages = await api.getMessages({limit:50})
+    const messages = await api.getMessages({limit:50})
         const threads = messages.filter(a=>a.responses_count)
         assert(threads.length)
         threads.forEach(t=>{
@@ -64,27 +61,44 @@ describe('Messages', async function () {
         })
     })
 
+    step('Get channel messages after date', async function () {
+        const messages = await api.getMessages()
+        assert(messages.length>0, 'No messages in the channel')
+        // const randomNumber =  Math.floor(Math.random() * Math.floor(messages.length-2))+2;
+        const randomNumber = 4
+        const last_n_messages = messages.slice(Math.max(messages.length - randomNumber, 0))
+        const first_date_of_the_slice =  last_n_messages[0].modification_date
+        const messagesAfter = await api.getMessages({after_date: first_date_of_the_slice})
+        assert(messagesAfter.length>0, `No messages after the date ${first_date_of_the_slice}`)
 
-    xstep('Get channel messages after future date', async function () {
+        for(let i = 0; i<messagesAfter.length; i++){
+            const message = messagesAfter[i]
+            assert(message.modification_date > first_date_of_the_slice, `pos: ${i}: ${message.modification_date} is not after ${first_date_of_the_slice}`)
+        }
+    })
+
+
+    step('Get channel messages after future date', async function () {
         const messages = await api.getMessages({limit:1})
         const messagesAfter = await api.getMessages({after_date: messages[0].modification_date + 1000000000000})
         assert.strictEqual(messagesAfter.length,0)
     })
 
-    xstep('Add message', async function(){
+    step('Add message', async function(){
         const message = await api.addMessage("test string")
         const messages = await api.getMessages({limit:1})
         assert.deepStrictEqual(messages[0], message, `Messages doesn't match`)
         last_inserted_message_id = message.id
     })
 
-    xstep('Delete message', async function(){
+    step('Delete message', async function(){
         const message = await api.deleteMessage(last_inserted_message_id)
         const messages = await api.getMessages({limit:10})
         const found = messages.find(a=>a.id === last_inserted_message_id)
         assert(!found, 'Message was not deleted')
-
     })
+
+
 
 
 });

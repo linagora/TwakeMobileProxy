@@ -52,9 +52,6 @@ export default class extends Base {
 
     }
 
-    async add(request: WorkspacePostRequest): Promise<Workspace> {
-        return this.api.addWorkspace(request.company_id, request.name, request.members || [])
-    }
 
 
 
@@ -96,6 +93,11 @@ export class WorkspaceController {
 
     // constructor(protected service: WorkspaceService, protected channelsService: ChannelsService, protected usersService: UsersService) {}
     constructor(protected workspaceService: WorkspaceService, protected channelsService: ChannelsService, protected usersService: UsersService) {
+    }
+
+    async add(request: FastifyRequest<{ Body: WorkspacesTypes.WorkspacePostRequest }>): Promise<Workspace> {
+        const req = request.body
+        return  this.workspaceService.add(req.company_id, req.name, req.members || [])
     }
 
     async notifications(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {

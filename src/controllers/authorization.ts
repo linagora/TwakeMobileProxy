@@ -41,12 +41,15 @@ export default class extends Base {
             },
         } as any
 
+
         if(params.token){
             loginObject._token = params.token
             loginObject._username = params.username
         } else if (!this.request.jwtToken) {
             throw new Forbidden('Token is not provided')
         }
+
+        console.log(loginObject)
 
 
         const res =

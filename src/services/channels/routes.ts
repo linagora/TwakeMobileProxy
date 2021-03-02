@@ -10,7 +10,7 @@ import {
     channelsPostSchema,
     directGetSchema,
     channelsMembersGetSchema,
-    channelsPutSchema, channelsInitSchema, channelsMembersDeleteSchema
+    channelsPutSchema, channelsInitSchema, channelsMembersDeleteSchema, channelsMarkReadSchema
 } from "./schemas";
 import Api from "../../common/twakeapi2";
 import ChannelsService from "./service";
@@ -85,11 +85,20 @@ export default function (fastify: FastifyInstance) {
         handler: (request) => ctrl(request).addMembers(request as FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>)
     });
 
+
+
     fastify.route({
         method: "DELETE",
         url: '/channels/members',
         schema: channelsMembersDeleteSchema,
         handler: (request) => ctrl(request).removeMembers(request as FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>)
+    });
+
+    fastify.route({
+        method: "POST",
+        url: '/channels/read',
+        schema: channelsMarkReadSchema,
+        handler: (request) => ctrl(request).markRead(request as FastifyRequest<{ Body: ChannelsTypes.ChannelParameters }>)
     });
 
 }

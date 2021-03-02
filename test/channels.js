@@ -5,9 +5,6 @@ const {xstep, step} = require("mocha-steps");
 const Api = require('./common/api.js')
 
 const host = 'http://localhost:3123'
-const username = "testbot"
-const password = "12345678"
-
 
 
 describe('Channels', async function () {
@@ -17,8 +14,8 @@ describe('Channels', async function () {
 
     let last_inserted_channel_id = null
 
-    step('Authorization', async function () {
-        await api.auth(username, password)
+    before(async function () {
+        await api.auth()
     })
 
     step('Select company TestCompany', async function () {
@@ -26,7 +23,12 @@ describe('Channels', async function () {
     })
 
     step('Select workspace Main', async function () {
-        await api.selectWorkspace('Main')
+        try{
+            await api.selectWorkspace('Main')
+        } catch(e){
+            await api.addWorkspace({name:'Main'})
+            await api.selectWorkspace('Main')
+        }
     })
 
     step('Get list of channels', async function () {
@@ -48,6 +50,13 @@ describe('Channels', async function () {
         assert.strictEqual(channel.name, new_name, 'rename failed')
         last_inserted_channel_id = channel.id
     });
+
+
+    step('Mark messages read', async function () {
+        const res = await api.markChannelRead(last_inserted_channel_id)
+        console.log(res)
+    });
+
 
     step('Delete the channel', async function(){
         const res = await api.deleteChannel(last_inserted_channel_id)

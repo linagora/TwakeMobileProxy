@@ -109,6 +109,19 @@ export const channelsMembersGetSchema = {
     }
 }
 
+export const channelsMarkReadSchema = {
+    tags: ['Channels'],
+    summary: 'Mark messages in channel as read',
+    body: {
+        type: 'object', "required": ['company_id', 'workspace_id', 'channel_id'],
+        properties: {
+            "company_id": {"type": "string"},
+            "workspace_id": {"type": "string"},
+            "channel_id": {"type": "string"},
+        }
+    }
+}
+
 
 export const channelsInitSchema = {
     tags: ['Channels'],

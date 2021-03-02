@@ -19,12 +19,11 @@ function __channelFormat(a: any): ChannelsTypes.Channel {
         workspace_id: a.workspace_id,
         description: a.description,
         channel_group: a.channel_group,
-        direct_channel_members: a.direct_channel_members,  // используются в директах
         last_activity: +a.last_activity,
         has_unread: +a.last_activity > +a.user_member.last_access,
         user_last_access: +a.user_member.last_access,
-        members: a.direct_channel_members,
-        members_count: a.direct_channel_members ? a.direct_channel_members.length : a.members_count,
+        members: a.members,
+        members_count: a.members ? a.members.length : a.members_count,
         visibility: a.visibility
     } as ChannelsTypes.Channel
 }
@@ -177,11 +176,11 @@ export class ChannelsController {
 
     async direct(request: FastifyRequest<{ Querystring: ChannelsTypes.BaseChannelsParameters }>) {
         const data = await this.channelsService.getDirects(request.query.company_id)
-        const res = __channelsFormat(data).filter(a => a.direct_channel_members.length > 0)
+        const res = __channelsFormat(data).filter(a => a.members.length > 0)
         const usersIds = new Set()
 
         res.forEach((c: any) => {
-            c.direct_channel_members.forEach((m: string) => {
+            c.members.forEach((m: string) => {
                 usersIds.add(m)
             })
         })
@@ -191,8 +190,8 @@ export class ChannelsController {
         const currentUserToken = authCache[this.usersService.getJwtToken()] ? authCache[this.usersService.getJwtToken()]['id'] : await this.usersService.getCurrent().then(a => a.id)
 
         return res.map((a: ChannelsTypes.Channel) => {
-            if (a.direct_channel_members) {
-                const members = (a.direct_channel_members.length > 1) ? a.direct_channel_members.filter((a: string) => a != currentUserToken) : a.direct_channel_members
+            if (a.members) {
+                const members = (a.members.length > 1) ? a.members.filter((a: string) => a != currentUserToken) : a.members
                 a.name = members.map((a: string) => {
                     const u = usersHash[a]
                     return u.firstname + ' ' + u.lastname
@@ -201,6 +200,12 @@ export class ChannelsController {
             }
             return a
         })
+    }
+
+
+    async markRead(request: FastifyRequest<{ Body: ChannelsTypes.ChannelParameters }>) {
+        const req = request.body
+        return this.channelsService.markRead(req.company_id, req.workspace_id, req.channel_id)
     }
 
 }

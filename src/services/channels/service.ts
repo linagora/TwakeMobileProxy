@@ -75,4 +75,13 @@ export default class ChannelsService {
     async getDirects(companyId: string) {
         return await this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/direct/channels`, {}).then(a=>a['resources'])
     }
+
+    markRead(companyId: string, workspaceId: string, channelId: string) {
+        return this.api.post(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}/read`, {"value":true}).then(a => {
+            console.log(a)
+            return(a)
+        })
+
+
+    }
 }

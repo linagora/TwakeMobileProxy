@@ -360,19 +360,7 @@ export default class {
         return this.__get(`/internal/services/notifications/v1/badges`, {"company_id": companyId})
     }
 
-    async addWorkspace(companyId: string, name: string, members: string[]) {
-        assert(companyId, 'company_id is required')
-        assert(name, 'name id is required')
-        const ws = await this.__post('/ajax/workspace/create', {
-            "name": name,
-            "groupId": companyId,
-            "channels": []
-        }).then(a => a.workspace)
-        if (members && members.length) {
-            await this.addWorkspaceMember(companyId, ws['id'], members)
-        }
-        return ws
-    }
+
 
     deleteWorkspace(companyId: string, workspaceId: string) {
         assert(companyId, 'company id is required')
