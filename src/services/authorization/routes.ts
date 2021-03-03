@@ -31,7 +31,7 @@ export default function (fastify: FastifyInstance) {
 
     fastify.route({
         method: "POST",
-        url: '/prolong',
+        url: '/authorization/prolong',
         schema: prolongSchema,
         handler: (request) =>
             ctrl(request).prolong(request as FastifyRequest<{ Body: AuthTypes.ProlongParams }>)
