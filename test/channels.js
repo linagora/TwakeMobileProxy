@@ -56,7 +56,6 @@ describe('Channels', async function () {
 
         assert.deepStrictEqual(firstChannel, newChannel)
 
-        assert(false)
     });
 
     step('Add a new channel', async function () {

@@ -174,7 +174,6 @@ class Api {
 
     async addChannel(name, visibility, members) {
         assert(['public', 'private', 'direct'].includes(visibility), 'wrong visibility type')
-        console.log(members)
         assert(!members || Array.isArray(members), 'members is not array')
         const params = {
             company_id: this.company_id,
