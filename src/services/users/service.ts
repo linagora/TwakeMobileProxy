@@ -36,4 +36,9 @@ export default class UsersService {
         })
     }
 
+    setJWTToken(token:string){
+        this.api.token = token
+        return this
+    }
+
 }

@@ -210,7 +210,7 @@ export default class {
             params.options = {"members": members}
 
             if (visibility === 'direct') {
-                (params.resource as any).direct_channel_members = members
+                (params.resource as any).members = members
             }
 
         }
@@ -227,14 +227,6 @@ export default class {
         )))
     }
 
-    async getChannels(companyId: string, workspaceId: string) {
-        assert(companyId)
-        assert(workspaceId)
-        let x = this.__get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`, {"mine": true}).then(a => a['resources'].filter(((a: any) =>
-            a.visibility !== 'direct')))
-        // console.log('GET CHANNELS:', (await x))
-        return x
-    }
 
 
     async getMessages(companyId: string, workspaceId: string, channelId: string, threadId?: string, id?: string, limit?: number, offset?: string) {

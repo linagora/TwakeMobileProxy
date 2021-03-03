@@ -4,13 +4,13 @@ const {xstep, step} = require("mocha-steps");
 // @ts-ignore
 const Api = require('./common/api.js')
 
-const host = 'http://localhost:3123'
+
 
 
 describe('Channels', async function () {
     this.timeout(10000);
 
-    const api = new Api(host)
+    const api = new Api()
 
     let last_inserted_channel_id = null
     let my_channels_count = null
@@ -32,6 +32,13 @@ describe('Channels', async function () {
         }
     })
 
+    step('Create direct channel', async function(){
+        const channels = await api.getDirectChannels()
+        const existed_channels = channels.filter(a=>a.name === 'Babur Makhmudov')
+        const new_channel = await api.addDirectChannel(existed_channels[0].members[0])
+        assert.deepStrictEqual(existed_channels[0],new_channel)
+    })
+
 
     step('Get list of channels', async function () {
         const channels = await api.getChannels()
@@ -39,6 +46,17 @@ describe('Channels', async function () {
         let exist = channels.find(a=>a.name.startsWith('AutoCreationChannelTest'))
         assert(!exist,'channel exists even after deleting' + JSON.stringify(exist,null,2))
         assert(channels.length > 0)
+    });
+
+    step('Add a existed channel', async function () {
+        const channels = await api.getChannels()
+        const firstChannel = channels[0]
+
+        const newChannel = await api.addChannel(firstChannel.name, firstChannel.visibility)
+
+        assert.deepStrictEqual(firstChannel, newChannel)
+
+        assert(false)
     });
 
     step('Add a new channel', async function () {

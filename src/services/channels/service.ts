@@ -1,5 +1,6 @@
 import Api from "../../common/twakeapi2";
 import {ChannelsTypes} from "./types";
+import assert from "assert";
 
 export default class ChannelsService {
 
@@ -82,7 +83,51 @@ export default class ChannelsService {
             console.log(a)
             return(a)
         })
-
-
     }
+
+    async addChannel(companyId: string, workspaceId: string, name: string, visibility: string, members?: string[], channelGroup?: string, description?: string, icon?: string) {
+
+        assert(companyId, 'company_id is required')
+        assert(visibility, 'visibility is required')
+
+        assert(['public', 'private', 'direct'].includes(visibility), "'visibility' should be 'public','private' or 'direct'")
+
+        if (visibility == 'direct') {
+            name = ''
+            workspaceId = 'direct'
+        } else {
+            assert(workspaceId, 'workspace_id is required')
+            assert(name, 'name is required for non-direct channels')
+        }
+
+        const url = `/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`
+
+        const params = {
+            //Only to create or locate a direct channel without its id
+            "options": {},
+            "resource": {
+                "icon": icon,
+                "name": name,
+                "company_id": companyId,
+                "workspace_id": workspaceId,
+                "description": description,
+                "channel_group": channelGroup,
+                "archived": false,
+                "visibility": visibility,
+
+                // "default": true
+            }
+        }
+
+
+        if (members) {
+            params.options = {"members": members}
+        }
+
+        return this.api.post(url, params).then(a => {
+            console.log('create channel response', a)
+            return a.resource
+        })
+    }
+
 }

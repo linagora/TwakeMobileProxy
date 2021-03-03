@@ -1,7 +1,7 @@
 import {FastifyInstance, FastifyRequest} from "fastify";
 
 
-import Channels, {ChannelsController} from './controller'
+import {ChannelsController} from './controller'
 import {ChannelsTypes} from "./types";
 import {
     channelsDeleteSchema,
@@ -10,7 +10,7 @@ import {
     channelsPostSchema,
     directGetSchema,
     channelsMembersGetSchema,
-    channelsPutSchema, channelsInitSchema, channelsMembersDeleteSchema, channelsMarkReadSchema
+    channelsPutSchema, channelsInitSchema, channelsMembersDeleteSchema, channelsMarkReadSchema, directPostSchema
 } from "./schemas";
 import Api from "../../common/twakeapi2";
 import ChannelsService from "./service";
@@ -18,16 +18,12 @@ import UsersService from "../users/service";
 
 
 export default function (fastify: FastifyInstance) {
-    fastify.post('/channels', {schema: channelsPostSchema}, async (request) => new Channels(request).add(request.body as ChannelsTypes.AddRequest))
-
 
 
     function ctrl(request: FastifyRequest) {
         const api = new Api(request.jwtToken)
         return new ChannelsController(new ChannelsService(api), new UsersService(api))
     }
-
-
 
 
     fastify.route({
@@ -38,7 +34,6 @@ export default function (fastify: FastifyInstance) {
     });
 
 
-
     fastify.route({
         method: "GET",
         url: '/direct',
@@ -47,12 +42,31 @@ export default function (fastify: FastifyInstance) {
     });
 
     fastify.route({
+        method: "POST",
+        url: '/direct',
+        schema: directPostSchema,
+        handler: (request) =>
+            ctrl(request).addDirect(request as FastifyRequest<{ Body: ChannelsTypes.AddDirectRequest }>)
+    });
+
+
+    fastify.route({
         method: "GET",
         url: '/channels/members',
         schema: channelsMembersGetSchema,
         handler: (request) => ctrl(request).getMembers(request as FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>)
     });
 
+
+
+    fastify.route({
+        method: "POST",
+        url: '/channels',
+        schema: channelsPostSchema,
+        handler: (request) =>
+            ctrl(request).add(request as FastifyRequest<{ Body: ChannelsTypes.AddRequest }>)
+
+    });
 
 
     fastify.route({

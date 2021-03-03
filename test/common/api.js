@@ -3,6 +3,8 @@ const fetch = require('node-fetch');
 const assert = require("assert");
 const fs = require('fs');
 const prompt = require('prompt-promise');
+// @ts-ignore
+const config = require('./config.json')
 
 class Request {
 
@@ -57,8 +59,8 @@ class Request {
 
 class Api {
 
-    constructor(host) {
-        this.request = new Request(host)
+    constructor() {
+        this.request = new Request(config.host)
         this.company_id = null
         this.workspace_id = null
         this.channel_id = null
@@ -72,12 +74,12 @@ class Api {
             this.auth_config.token = token
         }
         this.auth_config.auth_token = ""
-        fs.writeFileSync('./test/auth.json', JSON.stringify(this.auth_config, null, 2));
+        fs.writeFileSync('./test/common/config.json', JSON.stringify(this.auth_config, null, 2));
     }
 
     async auth() {
         // @ts-ignore
-        this.auth_config = require('../auth.json')
+        this.auth_config = require('./config.json')
 
         if (this.auth_config.token && !this.auth_config.auth_token){
             this.request.token = this.auth_config.token
@@ -101,13 +103,14 @@ class Api {
             }
             // console.log(params)
             try {
-                this.request.token = await this.request.post('/init', params).then(a => a.token)
+                const res = await this.request.post('/init', params)
+                this.request.token = res['token']
             } catch(e){
                 this.__writeConfig(null)
                 throw e
             }
             this.__writeConfig(this.request.token)
-            return this.request.token
+            return res
 
         } else {
             const params = {
@@ -118,12 +121,16 @@ class Api {
                 "password": this.auth_config.password
             }
             // console.log(params)
-            this.request.token = await this.request.post('/authorize', params).then(a => a.token)
-            return this.request.token
+            const res = await this.request.post('/authorize', params)
+            this.request.token = res['token']
+            return res
         }
 
     }
 
+    async prolong(refresh_token) {
+        return this.request.post('/prolong', {refresh_token, fcm_token: "123", timezoneoffset: -180})
+    }
 
     async selectCompany(name) {
         const res = await this.request.get('/companies')
@@ -167,7 +174,8 @@ class Api {
 
     async addChannel(name, visibility, members) {
         assert(['public', 'private', 'direct'].includes(visibility), 'wrong visibility type')
-        assert(!members || members.isArray(), 'members is not array')
+        console.log(members)
+        assert(!members || Array.isArray(members), 'members is not array')
         const params = {
             company_id: this.company_id,
             workspace_id: this.workspace_id,
@@ -178,7 +186,7 @@ class Api {
 
     async updateChannel(channel_id, name, visibility, members) {
         assert(!visibility || ['public', 'private', 'direct'].includes(visibility), 'wrong visibility type')
-        assert(!members || members.isArray(), 'members is not array')
+        assert(!members || Array.isArray(members), 'members is not array')
         const params = {
             company_id: this.company_id,
             workspace_id: this.workspace_id,
@@ -270,6 +278,13 @@ class Api {
     }
 
 
+    async addDirectChannel(member) {
+        const params = {
+            company_id: this.company_id,
+            member: member
+        }
+        return this.request.post('/direct', params)
+    }
 }
 
 module.exports = Api

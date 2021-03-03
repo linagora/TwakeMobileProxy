@@ -1,7 +1,6 @@
 import Fastify, {FastifyInstance} from 'fastify'
 import {BadRequest, Forbidden} from './common/errors';
 import {AssertionError} from "assert";
-import Authorization, {InitParams, ProlongParams} from './controllers/authorization'
 import Settings from './controllers/settings'
 import Companies from './controllers/companies'
 import Info from './controllers/info'
@@ -52,45 +51,7 @@ fastify.addHook("onRequest", async (request, reply) => {
 //
 
 
-const initSchema = {
-    tags: ['User related'],
-    summary: 'Initial method',
-    body: {
-        type: 'object', "required": ["fcm_token", "timezoneoffset"],
-        "properties": {
-            "fcm_token": {"type": "string"},
-            "timezoneoffset": {"type": "integer"},
-            "username": {type: "string"},
-            "token": {type: "string"}
-        }
-    },
-    response: {
-        200: {
-            description: 'Successful response',
-            type: 'object',
-            properties: {
-                token: {type: 'string'},
-                expiration: {type: 'integer'},
-                refresh_token: {type: 'string'},
-                refresh_expiration: {type: 'integer'}
-            }
-        }
-    }
 
-}
-
-const prolongSchema = {
-    tags: ['User related'],
-    summary: 'Prolong security token',
-    body: {
-        type: 'object', "required": ["fcm_token", "timezoneoffset", "refresh_token"],
-        "properties": {
-            "fcm_token": {"type": "string"},
-            "timezoneoffset": {"type": "integer"},
-            "refresh_token": {"type": "string"}
-        }
-    }
-}
 
 
 const companiesSchema = {
@@ -145,9 +106,6 @@ export const emojiSchema = {
 }
 
 fastify.get('/', {schema: {hide: true} as any}, async (request, reply) => new Info(request).info())
-fastify.post('/authorize', async (request, reply) => await new Authorization(request).auth(request.body as AuthParams))
-fastify.post('/init', {schema: initSchema}, async (request, reply) => new Authorization(request).init(request.body as InitParams))
-fastify.post('/authorization/prolong', {schema: prolongSchema}, async (request, reply) => new Authorization(request).prolong(request.body as ProlongParams))
 fastify.get('/companies', {schema: companiesSchema}, async (request, reply) => new Companies(request).list())
 
 
@@ -158,12 +116,13 @@ import channelsServiceRoutes from './services/channels/routes'
 import workspacesServiceRoutes from './services/workspaces/routes'
 import usersServiceRoutes from './services/users/routes'
 import messagesServiceRoutes from './services/messages/routes'
-import AuthParams from "./models/auth_params";
+import authorizationServiceRoutes from './services/authorization/routes'
 
 channelsServiceRoutes(fastify)
 workspacesServiceRoutes(fastify)
 usersServiceRoutes(fastify)
 messagesServiceRoutes(fastify)
+authorizationServiceRoutes(fastify)
 
 
 fastify.setErrorHandler(function (error: Error, request, reply) {

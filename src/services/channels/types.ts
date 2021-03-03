@@ -39,8 +39,13 @@ export declare namespace ChannelsTypes {
         description: string
         channel_group: string,
         visibility: string
-        members: string[] // direct channels only
+        members: string[]
     }
+
+    export interface AddDirectRequest extends BaseChannelsParameters {
+        member: string
+    }
+
 
 
     export interface ChangeMembersRequest extends ChannelParameters {

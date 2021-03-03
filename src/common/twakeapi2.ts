@@ -31,12 +31,10 @@ export default class Api implements ApiType {
     }
 
 
-    private async __action(method: string, url: string, params: any): Promise<any> {
+    private async __action(method: string, url: string, params: any, headers : any = null): Promise<any> {
 
-        let headers = {}
-
-        if (this.token) {
-            headers = {"Authorization": "Bearer " + this.token}
+        if(!headers){
+            headers = this.token ? {"Authorization": "Bearer " + this.token} : {}
         }
 
         // console.log(`CURL -x ${method} '${url}' -d ${JSON.stringify(params)}`)
@@ -92,8 +90,8 @@ export default class Api implements ApiType {
         return this.__action('GET', url, params)
     }
 
-    async post(url: string, params: any): Promise<any> {
-        return this.__action('POST', url, params)
+    async post(url: string, params: any, headers: any = null): Promise<any> {
+        return this.__action('POST', url, params, headers)
     }
 
     async delete(url: string): Promise<any> {

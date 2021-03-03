@@ -18,7 +18,7 @@ export const channelsPostSchema = {
             "company_id": {"type": "string"},
             "workspace_id": {"type": "string"},
             "name": {"type": "string"},
-            "visibility": {"type": "string", "enum": ["public", "private", "direct"]},
+            "visibility": {"type": "string", "enum": ["public", "private"]},
             "icon": {"type": "string"},
             "description": {"type": "string"},
             "channel_group": {"type": "string"},
@@ -26,6 +26,19 @@ export const channelsPostSchema = {
         }
     }
 }
+
+export const directPostSchema = {
+    tags: ['Channels'],
+    summary: 'Add new direct channel',
+    body: {
+        type: 'object', "required": ['company_id', 'member'],
+        properties: {
+            "company_id": {"type": "string"},
+            "member": {"type": "string"}
+        }
+    }
+}
+
 
 export const channelsPutSchema = {
     tags: ['Channels'],
