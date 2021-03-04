@@ -1,4 +1,4 @@
-import {websocketUsersCache} from './simplecache'
+import { websocketUsersCache } from './simplecache'
 import jwt from 'jsonwebtoken'
 import config from 'config'
 import Users from '../controllers/users'
@@ -22,13 +22,14 @@ export default class SocketProcessor {
    * @param {string} message
    */
   onMessage(message) {
-    let action; let data
+    let action;
+    let data
     try {
       [action, data] = JSON.parse(message)
       console.log(`Received action ${action} with data: ${JSON.stringify(data)}`)
     } catch (e) {
       if (e instanceof SyntaxError) {
-        this.send('error', {'message': 'wrong format'})
+        this.send('error', { 'message': 'wrong format' })
         return
       }
     }
@@ -47,7 +48,7 @@ export default class SocketProcessor {
       try {
         res = jwt.verify(data.token, config.jwt.secret)
       } catch (e) {
-        sp.send('error', {message: 'wrong token'})
+        sp.send('error', { message: 'wrong token' })
       }
 
       const user = await new Users(res).getCurrent(-180) // TODO: remove hardcode

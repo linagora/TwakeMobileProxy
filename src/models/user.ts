@@ -1,10 +1,11 @@
 export default interface User {
-    userId: string
+    id: string
     username: string
     firstname: string
     lastname: string
     thumbnail: string
     companies?: any[]
     timeZoneOffset?: number
-    status?: {"icon": string, "title": string},
+    status?: { "icon": string, "title": string },
+    notification_rooms?: string[]
 }

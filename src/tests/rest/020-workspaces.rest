@@ -1,0 +1,211 @@
+### Create workspace
+
+POST {{host}}/workspaces
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "{{company_id}}",
+  "name": "autoTestWorkspace",
+  "members": ["senjertomat@yandex.ru"]
+}
+
+
+> {%
+   client.test("Request executed successfully", function() {
+       client.global.set('last_created_workspace_id', response.body['id'])
+       client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+
+### List workspaces
+
+GET {{host}}/workspaces?company_id={{company_id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+
+> {%
+    client.test("Request executed successfully", function() {
+
+        var id = client.global.get('last_created_workspace_id')
+        var found = false;
+
+        for(var i=0; i<response.body.length; i++){
+            if (response.body[i].id === id) {
+                found = true
+                break
+            }
+        }
+        client.assert(found,'created workspace not found in returned list')
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+
+
+
+### Add workspace members
+
+POST {{host}}/workspaces/members
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "{{company_id}}",
+  "workspace_id": "{{last_created_workspace_id}}",
+  "members": ["{{user_dave}}"]
+}
+
+
+> {%
+   client.test("Request executed successfully", function() {
+       client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+
+### List workspace members
+
+GET {{host}}/workspaces/members?company_id={{company_id}}&workspace_id={{last_created_workspace_id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+
+> {%
+    client.test("Request executed successfully", function() {
+
+        var id = client.global.get('user_dave')
+
+        var found = false;
+        for(var i=0; i<response.body.length; i++){
+            if (response.body[i].id === id) {
+                found = true
+                break
+            }
+        }
+        client.assert(found,'user was not found in returned list')
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+
+### Delete members from workspace
+
+DELETE {{host}}/workspaces/members
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "{{company_id}}",
+  "workspace_id": "{{last_created_workspace_id}}",
+  "members": ["{{user_dave}}"]
+}
+
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+
+### Check if workspace members were deleted
+
+GET {{host}}/workspaces/members?company_id={{company_id}}&workspace_id={{last_created_workspace_id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+
+> {%
+    client.test("Request executed successfully", function() {
+
+        var id = client.global.get('user_dave')
+        var found = false;
+
+        for(var i=0; i<response.body.length; i++){
+            if (response.body[i].id === id) {
+                found = true
+                break
+            }
+        }
+        client.assert(!found,'created user is still present in returned list')
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+
+
+### Delete workspace
+
+DELETE {{host}}/workspaces
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "{{company_id}}",
+  "workspace_id": "{{last_created_workspace_id}}"
+}
+
+
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+
+### Check if workspace were deleted
+
+GET {{host}}/workspaces?company_id={{company_id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+
+> {%
+    client.test("Request executed successfully", function() {
+
+        var id = client.global.get('last_created_workspace_id')
+        var found = false;
+
+        for(var i=0; i<response.body.length; i++){
+            if (response.body[i].id === id) {
+                found = true
+                break
+            }
+        }
+        client.assert(!found,'created workspace is still present in returned list')
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+
+
+
+### Get workspace notifications
+
+GET {{host}}/workspace/notifications?company_id={{company_id}}&workspace_id={{workspace_id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}

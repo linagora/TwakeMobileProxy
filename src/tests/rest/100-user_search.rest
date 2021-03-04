@@ -1,0 +1,24 @@
+GET {{host}}/users/search?company_id={{company_id}}&name=a
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+> {%
+    client.test("Request executed successfully", function() {
+      client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+
+GET {{host}}/users?id=0e7a1904-54eb-11eb-9f03-0242ac120004
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept-version: 2.0.0
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}

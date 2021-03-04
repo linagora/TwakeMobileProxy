@@ -1,55 +1,45 @@
 import Fastify, {FastifyInstance} from 'fastify'
-
-// import {HandledException} from "./common/helpers";
 import {BadRequest, Forbidden} from './common/errors';
 import {AssertionError} from "assert";
+import Settings from './controllers/settings'
+import Companies from './controllers/companies'
+import Info from './controllers/info'
+import config from './common/config'
 
-import Authorization, {ProlongParams} from './controllers/authorization'
-import Users from './controllers/users'
-import Channels from './controllers/channels'
-import Messages, {PostMessage, ReactionsRequest} from './controllers/messages'
-import {authCache} from "./common/simplecache";
-import AuthParams from "./models/auth_params";
-import UserProfile, {UserProfileMock} from "./models/user_profile";
+if(!process.env.CORE_HOST){
+    console.error('Missing CORE_HOST env variable')
+    process.exit(1)
+}
+config.core_host = process.env.CORE_HOST.replace(/\/$/, "");
 
-const fastify: FastifyInstance = Fastify({logger: true})
+const fastify: FastifyInstance = Fastify({logger: false})
 
 declare module "fastify" {
-
-
-    export interface FastifyInstance {
-        jwt: any
-    }
-
     export interface FastifyRequest {
-        jwtVerify: any,
-        user: UserProfile,
-
+        jwtToken: string
     }
 }
-// fastify.register(require('fastify-jwt'), {secret: 'supersecret'})
-
 
 fastify.addHook("onRequest", async (request, reply) => {
     try {
-        if (request.routerPath !== '/authorize' && request.routerPath !== '/authorization/prolong') {
+        if (request.routerPath !== '/' && request.routerPath !== '/authorize' && request.routerPath !== '/authorization/prolong' && request.routerPath !== '/documentation/json') {
 
-            if (request.headers.authorization && request.headers.authorization.toLowerCase().indexOf('bearer')>-1){
-                const token = request.headers.authorization.substring(7).trim()
+            if (request.headers.authorization && request.headers.authorization.toLowerCase().indexOf('bearer') > -1) {
+                request.jwtToken = request.headers.authorization.substring(7).trim()
 
-                if (!authCache[token]){
-                    return reply
-                        .code(401)
-                        .header('Content-Type', 'application/json; charset=utf-8')
-                        .send({ "error": "Wrong token" })
-                }
-                const user = authCache[token]
-
-                request.user = {
-                    jwtToken: token,
-                    userId: user.userId,
-                    timeZoneOffset: user.timeZoneOffset || 0
-                }
+                // if (!authCache[token]) {
+                //     return reply
+                //         .code(401)
+                //         .header('Content-Type', 'application/json; charset=utf-8')
+                //         .send({"error": "Wrong token"})
+                // }
+                // const user = authCache[token]
+                //
+                // request.user = {
+                //     jwtToken: token,
+                //     userId: user.id,
+                //     timeZoneOffset: user.timeZoneOffset || 0
+                // }
 
                 // console.log(request.user)
             }
@@ -59,57 +49,82 @@ fastify.addHook("onRequest", async (request, reply) => {
     }
 })
 //
-fastify.post('/authorize', async (request, reply) => await new Authorization(UserProfileMock).auth(request.body as AuthParams))
-fastify.post('/authorization/prolong', async (request, reply) => {
-    return await new Authorization(request.user).prolong(request.body as ProlongParams)
-})
-fastify.get('/users/current/get', async (request, reply) => {
-    const timeZoneOffset = request.user.timeZoneOffset
-    return  new Users(request.user).getCurrent(timeZoneOffset);
+
+
+
+
+
+const companiesSchema = {
+    tags: ['Companies'],
+    summary: "List of user's companies",
+    querystring: {type: 'object', required: [], "properties": {}}
+}
+
+
+fastify.register(require('fastify-swagger'), {
+    exposeRoute: true,
+    routePrefix: '/documentation',
+    swagger: {
+        info: {
+            title: 'GATEWAY SERVICE',
+            description: 'All micro-services',
+            version: '1.0.0'
+        },
+        host: 'localhost:3123',
+        schemes: "",
+        consumes: ['application/json'],
+        produces: ['application/json'],
+        securityDefinitions: {
+            "Authorization": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header"
+            },
+            acceptVersion: {
+                type: 'apiKey',
+                name: 'accept-version',
+                description: 'version of API',
+                in: 'header'
+            }
+        },
+        security: [
+            {'acceptVersion': []},
+            {'Authorization': []}
+        ]
+
+    }
 })
 
-fastify.get('/workspace/:workspace_id/channels', async (request) =>
-    new Channels(request.user).listPublic((request.params as any).workspace_id)
-)
-fastify.get('/channels/:channel_id/messages', async (request) => {
-    const channel_id = (request.params as any).channel_id
-    const before = (request.query as any).before as string
-    const limit = (request.query as any).limit as number
-    return new Messages(request.user).get(channel_id, limit, before)
-})
-fastify.post('/channels/:channel_id/messages', async (request) => {
-    const channel_id = (request.params as any).channel_id
-    return new Messages(request.user).post(channel_id, request.body as PostMessage)
-})
 
-fastify.post('/channels/:channel_id/messages/reactions', async (request) => {
-    const channel_id = (request.params as any).channel_id
-    return new Messages(request.user).reactions(channel_id, request.body as ReactionsRequest)
-})
+export const emojiSchema = {
+    tags: ['References'],
+    summary: 'List of available emojis',
+    querystring: {
+        type: 'object', "required": [],
+        properties: {}
+    }
+}
 
-fastify.get('/company/:company_id/workspace/:workspace_id/channels', async (request) => {
-    const company_id = (request.params as any).company_id
-    const workspace_id = (request.params as any).workspace_id
-    return new Channels(request.user).listPublic2(company_id, workspace_id)
-})
+fastify.get('/', {schema: {hide: true} as any}, async (request, reply) => new Info(request).info())
+fastify.get('/companies', {schema: companiesSchema}, async (request, reply) => new Companies(request).list())
 
-fastify.get('/company/:company_id/workspace/:workspace_id/channels/:channel_id/members', async (request) => {
-    const companyId = (request.params as any).company_id
-    const workspaceId = (request.params as any).workspace_id
-    const channelId = (request.params as any).channel_id
-    return new Channels(request.user).members(companyId, workspaceId, channelId)
 
-})
+fastify.get('/settings/emoji', {schema: emojiSchema}, async (request) => new Settings(request).emoji())
 
-fastify.get('/company/:company_id/direct', async(request)=>{
-    const companyId = (request.params as any).company_id
-    return new Channels(request.user).listDirect(companyId)
-})
 
-fastify.get('/channels/:channel_id/init', async (request) => {
-    const channel_id = (request.params as any).channel_id
-    return new Messages(request.user).init(channel_id)
-})
+import channelsServiceRoutes from './services/channels/routes'
+import workspacesServiceRoutes from './services/workspaces/routes'
+import usersServiceRoutes from './services/users/routes'
+import messagesServiceRoutes from './services/messages/routes'
+import authorizationServiceRoutes from './services/authorization/routes'
+import infoServiceRoutes from './services/info/routes'
+
+channelsServiceRoutes(fastify)
+workspacesServiceRoutes(fastify)
+usersServiceRoutes(fastify)
+messagesServiceRoutes(fastify)
+authorizationServiceRoutes(fastify)
+infoServiceRoutes(fastify)
 
 
 fastify.setErrorHandler(function (error: Error, request, reply) {
@@ -117,11 +132,14 @@ fastify.setErrorHandler(function (error: Error, request, reply) {
     //     reply.status(400).send({"error": (error as HandledException).message})
     // }
 
+
     if (error instanceof AssertionError) {
         reply.status(400).send({"error": (error as AssertionError).message})
     } else if (error instanceof Forbidden) {
-            reply.status(403).send({"error": error.message})
+        reply.status(403).send({"error": error.message})
     } else if (error instanceof BadRequest) {
+        reply.status(400).send({"error": error.message})
+    } else if ((error as any).validation) {
         reply.status(400).send({"error": error.message})
     } else {
         console.error(error)
@@ -129,13 +147,36 @@ fastify.setErrorHandler(function (error: Error, request, reply) {
     }
 })
 
+
+const io = require('socket.io')(fastify.server);
+
+// @ts-ignore
+io.on('connection', function (socket) {
+    console.log('on connection')
+    socket.send('HELLO!')
+    setInterval(() => {
+        socket.send('PING ' + new Date().toISOString())
+    }, 5000)
+    socket.on('message', function () {
+        console.log('on message')
+    });
+    socket.on('disconnect', function () {
+        console.log('on disconnect')
+    });
+})
+
+
 const start = async () => {
     try {
         await fastify.listen(3123, '::')
-        // console.log(`fastify listening on 3123`)
+
+
     } catch (err) {
-        fastify.log.error(err)
+        console.error(err)
+        // fastify.log.error(err)
         process.exit(1)
     }
 }
+
+
 start()

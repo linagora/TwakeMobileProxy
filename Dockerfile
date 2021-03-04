@@ -9,6 +9,5 @@ RUN npm install --production
 COPY src /opt/app/src
 COPY tsconfig.json /opt/app/tsconfig.json
 EXPOSE 3123
-#EXPOSE 3124
 
 CMD [ "npm", "start" ]
