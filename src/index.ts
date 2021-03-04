@@ -117,12 +117,14 @@ import workspacesServiceRoutes from './services/workspaces/routes'
 import usersServiceRoutes from './services/users/routes'
 import messagesServiceRoutes from './services/messages/routes'
 import authorizationServiceRoutes from './services/authorization/routes'
+import infoServiceRoutes from './services/info/routes'
 
 channelsServiceRoutes(fastify)
 workspacesServiceRoutes(fastify)
 usersServiceRoutes(fastify)
 messagesServiceRoutes(fastify)
 authorizationServiceRoutes(fastify)
+infoServiceRoutes(fastify)
 
 
 fastify.setErrorHandler(function (error: Error, request, reply) {

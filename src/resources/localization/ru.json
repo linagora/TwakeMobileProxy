@@ -1,0 +1,17 @@
+{
+  "CHANNELS": "Каналы",
+  "DIRECT_MESSAGES": "Личные сообщения",
+  "CANCEL": "Отмена",
+  "CREATE": "Создать",
+  "BACK": "Добавить",
+  "ADD": "Пригласить",
+  "CHAT_SEE_ALL_ANSWERS": "Смотреть все ответы",
+  "CHAT_YESTERDAY": "Вчера",
+  "CHAT_TODAY": "Сегодня",
+  "CHAT_THREADED_REPLIES": "Ответы",
+  "MDL_COL_INVITE_TITLE": "Приглашения",
+  "MDL_COL_TYPE_EMAIL_ADDRESSES": "Введите email'ы приглашаемых",
+  "MDL_COL_TYPE_EMAIL_ADDRESSES_HINT": "Добавить участников",
+  "MDL_CH_NEW_CHANNEL_TITLE": "Новый канал",
+  "MDL_CH_CHANNEL_NAME": "Название канала"
+}

@@ -16,7 +16,7 @@ describe('Channels', async function () {
     let my_channels_count = null
 
     before(async function () {
-        console.log(await api.auth())
+        await api.auth()
     })
 
     step('Select company TestCompany', async function () {
