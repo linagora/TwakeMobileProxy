@@ -42,6 +42,8 @@ describe('Channels', async function () {
 
     step('Get list of channels', async function () {
         const channels = await api.getChannels()
+        console.log(channels)
+        assert(false)
         channels.forEach(a=> assert(a.is_member))
         let exist = channels.find(a=>a.name.startsWith('AutoCreationChannelTest'))
         assert(!exist,'channel exists even after deleting' + JSON.stringify(exist,null,2))
