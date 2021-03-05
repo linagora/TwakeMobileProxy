@@ -29,7 +29,7 @@
     "ts-node": "^9.0.0"
   },
   "scripts": {
-    "build": "tsc && mkdir build/resources && cp -r src/resources build/resources",
+    "build": "tsc  && cp -r src/resources build/resources",
     "dev": "nodemon",
     "start": "npm run build && node build/index.js",
     "test": "mocha --require mocha-steps"
