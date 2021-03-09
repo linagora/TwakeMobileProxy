@@ -15,11 +15,11 @@ const emojis = require('../../resources/emojis.json')
 const trim = (str:string, chr: string) => str.replace(new RegExp("^[" + chr + "]+|[" + chr + "]+$", "g"), "");
 
 function __channelFormat(a: any): ChannelsTypes.Channel {
-
+    // console.log(a)
     return {
         id: a.id,
         name: a.name ? a.name.charAt(0).toUpperCase() + a.name.slice(1) : a.name,
-        icon: a.icon.startsWith(':') ? emojis[trim(a.icon,':')] || '' : a.icon,
+        icon: a.icon && a.icon.startsWith(':') ? emojis[trim(a.icon,':')] || '' : a.icon,
         // icon: a.icon,
         company_id: a.company_id,
         workspace_id: a.workspace_id,
