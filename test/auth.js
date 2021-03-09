@@ -30,5 +30,8 @@ describe('Auth', async function () {
         assert(x.token !== x.refresh_token)
     })
 
+    step('Logout', async function () {
+        await api.logout()
+    })
 
 });

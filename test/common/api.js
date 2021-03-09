@@ -132,6 +132,10 @@ class Api {
         return this.request.post('/prolong', {refresh_token, fcm_token: "123", timezoneoffset: -180})
     }
 
+    async logout() {
+        return this.request.post('/logout', {fcm_token: "123"})
+    }
+
     async selectCompany(name) {
         const res = await this.request.get('/companies')
         const company = res.find(a => a.name === name)
