@@ -148,6 +148,7 @@ export class MessagesController {
             if (!a.content) {
                 a.content = {}
             }
+
             let processedReactions: Record<string, {users: Array<string>, count: number}> = {}
             for (const [k, v] of Object.entries(a.reactions)) {
                 let emoji: string = k.startsWith(':') ? emojis[k.substring(1, k.length - 1)] || '👍' : k        
