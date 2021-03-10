@@ -1,12 +1,12 @@
 import Base from '../../common/base'
 import {authCache, usersCache} from '../../common/simplecache'
-import User from "../../models/user";
 import assert from "assert";
 import WorkspaceService from "../workspaces/service";
 import ChannelsService from "../channels/service";
 import UsersService from "../workspaces/service";
 import {UsersTypes} from "./types";
 import UsersSearchRequest = UsersTypes.UsersSearchRequest;
+import User = UsersTypes.User;
 
 
 

@@ -14,6 +14,14 @@ describe('Info', async function () {
         await api.auth()
     })
 
+    step('server info', async function () {
+        const info = await api.getServerInfo()
+        assert(info.ready)
+        assert(info.core_endpoint_url)
+        assert(info.socket_endpoint)
+
+    })
+
     step('localization', async function () {
         const en = await api.getLocalizationStrings('en')
         assert(Object.keys(en).length > 10, 'no language info')

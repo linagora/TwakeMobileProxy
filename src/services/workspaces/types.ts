@@ -27,6 +27,7 @@ export declare namespace WorkspacesTypes {
         is_archived: boolean
         user_last_access: number,
         user_is_admin: boolean
+        permissions: string[]
     }
 
 }

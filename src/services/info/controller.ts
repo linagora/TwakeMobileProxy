@@ -16,4 +16,7 @@ export class InfoController{
         return this.infoService.getLocalizationStrings(request.query.lang)
     }
 
+    info() {
+        return this.infoService.serverInfo()
+    }
 }

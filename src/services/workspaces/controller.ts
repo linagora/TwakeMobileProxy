@@ -60,6 +60,8 @@ export class WorkspaceController {
     async list(request: FastifyRequest<{ Querystring: WorkspacesTypes.WorkspaceBaseRequest }>): Promise<Workspace[]> {
         const data = await this.usersService.getCurrent()
 
+
+
         return data.workspaces
             .filter((a: any) => a.group.id == request.query.company_id)
             .map((a: any) => {
@@ -74,7 +76,8 @@ export class WorkspaceController {
                     total_members: a.total_members,
                     is_archived: a.is_archived,
                     user_last_access: a._user_last_access,
-                    user_is_admin: a._user_is_admin
+                    // user_is_admin: a._user_is_admin
+                    permissions: data.user_is_organization_administrator ? ['EDIT_WORKSPACE'] : []
                 } as Workspace
             }).sort((a: Workspace, b: Workspace) => a.name.localeCompare(b.name)) as Workspace[]
 

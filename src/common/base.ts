@@ -1,5 +1,4 @@
 import Api from './twakeapi'
-import UserProfile from "../models/user_profile";
 import {FastifyRequest} from "fastify";
 import {BadRequest} from "./errors";
 
@@ -28,11 +27,6 @@ export default class {
         this.version = (this.request.headers['accept-version'] as string).split('.').map(a => +a)
     }
 
-    userProfile(){
-        return {
-
-        } as UserProfile
-    }
 
     versionFrom(version: String) {
         const exp = this.version

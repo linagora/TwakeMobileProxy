@@ -2,7 +2,6 @@ import Fastify, {FastifyInstance} from 'fastify'
 import {BadRequest, Forbidden} from './common/errors';
 import {AssertionError} from "assert";
 import Settings from './controllers/settings'
-import Info from './controllers/info'
 import config from './common/config'
 
 if(!process.env.CORE_HOST){
@@ -99,7 +98,6 @@ export const emojiSchema = {
     }
 }
 
-fastify.get('/', {schema: {hide: true} as any}, async (request, reply) => new Info(request).info())
 
 
 fastify.get('/settings/emoji', {schema: emojiSchema}, async (request) => new Settings(request).emoji())

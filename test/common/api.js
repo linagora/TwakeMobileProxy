@@ -296,6 +296,10 @@ class Api {
     async getLocalizationStrings(lang){
         return this.request.get('/info/localization' , {lang})
     }
+
+    async getServerInfo(){
+        return this.request.get('/' , {})
+    }
 }
 
 module.exports = Api
