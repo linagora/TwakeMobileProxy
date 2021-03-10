@@ -19,16 +19,11 @@ describe('Workspaces', async function () {
 
     before(async function () {
         await api.auth()
-    })
-
-
-    step('Select company TestCompany', async function () {
         await api.selectCompany('TestCompany')
     })
 
     step('List of workspaces', async function () {
         const workspaces = await api.getWorkspaces()
-        // console.log(workspaces)
         workspaces_length = workspaces.length
     })
 

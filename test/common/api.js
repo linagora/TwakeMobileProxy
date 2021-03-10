@@ -148,6 +148,10 @@ class Api {
         return this.workspace_id
     }
 
+    async getCompanies() {
+        return this.request.get('/companies', {})
+    }
+
     async getWorkspaces() {
         return this.request.get('/workspaces', {company_id: this.company_id})
     }
