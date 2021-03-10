@@ -1,5 +1,6 @@
 {
   "host": "http://localhost:3123",
+  "prefix": "/internal/mobile",
   "username": "testbot",
   "password": "12345678",
   "token_username": "romanbykovsky",

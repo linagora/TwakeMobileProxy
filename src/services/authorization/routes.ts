@@ -6,8 +6,7 @@ import {AuthorizationController} from "./controller";
 import AuthorizationService from "./service";
 import UsersService from "../users/service";
 
-export default function (fastify: FastifyInstance) {
-
+export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
     function ctrl(request: FastifyRequest) {
         const api = new Api(request.jwtToken)
         return new AuthorizationController(new AuthorizationService(api), new UsersService(api))
@@ -44,5 +43,6 @@ export default function (fastify: FastifyInstance) {
         handler: (request) =>
             ctrl(request).logout(request as FastifyRequest<{ Body: AuthTypes.LogoutParams }>)
     });
+    next()
 }
 

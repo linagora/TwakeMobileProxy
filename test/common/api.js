@@ -8,8 +8,9 @@ const config = require('./config.json')
 
 class Request {
 
-    constructor(host) {
+    constructor({host, prefix}) {
         this.host = host
+        this.prefix = prefix
         this.token = null
 
     }
@@ -24,7 +25,7 @@ class Request {
 
 
     get(path, params) {
-        const url = new URL(this.host + path)
+        const url = new URL(this.host + this.prefix + path)
         url.search = new URLSearchParams(params).toString()
         return fetch(url, {method: 'GET', headers: this.headers()}).then(async response => {
             if (response.status !== 200) throw new Error(await response.json().then(a => a.error))
@@ -34,7 +35,7 @@ class Request {
 
     __action(method, path, params) {
         // console.log({method: method, headers: this.headers(), body: JSON.stringify(params)})
-        return fetch(this.host + path, {
+        return fetch(this.host + this.prefix + path, {
             method: method,
             headers: this.headers(),
             body: JSON.stringify(params)
@@ -60,7 +61,7 @@ class Request {
 class Api {
 
     constructor() {
-        this.request = new Request(config.host)
+        this.request = new Request(config)
         this.company_id = null
         this.workspace_id = null
         this.channel_id = null

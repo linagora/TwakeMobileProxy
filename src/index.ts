@@ -111,13 +111,15 @@ import authorizationServiceRoutes from './services/authorization/routes'
 import infoServiceRoutes from './services/info/routes'
 import companiesServiceRoutes from './services/companies/routes'
 
-channelsServiceRoutes(fastify)
-workspacesServiceRoutes(fastify)
-usersServiceRoutes(fastify)
-messagesServiceRoutes(fastify)
-authorizationServiceRoutes(fastify)
-infoServiceRoutes(fastify)
-companiesServiceRoutes(fastify)
+
+fastify.register(channelsServiceRoutes, {prefix: '/internal/mobile'})
+fastify.register(workspacesServiceRoutes,{prefix: '/internal/mobile'})
+fastify.register(usersServiceRoutes,{prefix: '/internal/mobile'})
+fastify.register(messagesServiceRoutes,{prefix: '/internal/mobile'})
+fastify.register(authorizationServiceRoutes,{prefix: '/internal/mobile'})
+fastify.register(infoServiceRoutes,{prefix: '/internal/mobile'})
+fastify.register(companiesServiceRoutes,{prefix: '/internal/mobile'})
+
 
 
 fastify.setErrorHandler(function (error: Error, request, reply) {

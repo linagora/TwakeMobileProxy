@@ -17,7 +17,7 @@ import ChannelsService from "./service";
 import UsersService from "../users/service";
 
 
-export default function (fastify: FastifyInstance) {
+export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
 
 
     function ctrl(request: FastifyRequest) {
@@ -115,5 +115,7 @@ export default function (fastify: FastifyInstance) {
         schema: channelsMarkReadSchema,
         handler: (request) => ctrl(request).markRead(request as FastifyRequest<{ Body: ChannelsTypes.ChannelParameters }>)
     });
+
+    next()
 
 }

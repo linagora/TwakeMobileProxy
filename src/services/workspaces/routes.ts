@@ -34,8 +34,7 @@ import {ChannelsTypes} from "../channels/types";
 // import ChannelsService from "./service";
 
 
-export default function (fastify: FastifyInstance) {
-
+export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
 
 
     fastify.delete('/workspaces', {schema: workspacesDeleteSchema}, async (request, reply) => new Workspaces(request).delete(request.body as WorkspacesTypes.WorkspaceRequest))
@@ -81,5 +80,6 @@ export default function (fastify: FastifyInstance) {
         handler: (request) => ctrl(request).add(request as FastifyRequest<{ Body: WorkspacesTypes.WorkspacePostRequest }>)
     });
 
+    next()
 
 }
