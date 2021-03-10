@@ -34,5 +34,4 @@ export namespace MessagesTypes{
         "company_id": string
         "workspace_id": string
     }
-
 }

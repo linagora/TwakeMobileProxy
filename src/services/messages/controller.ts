@@ -1,19 +1,20 @@
 import Base from '../../common/base'
 import {arrayToObject} from '../../common/helpers'
-import Users from '../../services/users/controller'
+// import Users from '../../services/users/controller'
 import assert from "assert";
 import {fixIt, parseCompile, toTwacode} from "../../common/twacode"
 import {BadRequest} from "../../common/errors";
 import {MessagesTypes} from "./types";
 import UsersService from "../users/service";
 import MessagesService from "./service";
-import {ChannelsTypes} from "../channels/types";
+// import {ChannelsTypes} from "../channels/types";
 
 import {FastifyRequest} from "fastify";
 import ChannelsService from "../channels/service";
 import GetMessagesRequest = MessagesTypes.GetMessagesRequest;
 
 
+const emojis = require('../../resources/emojis.json')
 /**
  * Messages methods
  */
@@ -61,7 +62,6 @@ export default class extends Base {
 
 
 }
-
 
 export class MessagesController {
 
@@ -148,6 +148,14 @@ export class MessagesController {
             if (!a.content) {
                 a.content = {}
             }
+            let processedReactions: Record<string, {users: Array<string>, count: number}> = {}
+            for (const [k, v] of Object.entries(a.reactions)) {
+                let emoji: string = k.startsWith(':') ? emojis[k.substring(1, k.length - 1)] || '👍' : k        
+                processedReactions[emoji] = {
+                    users: (v as any).users, 
+                    count: (v as any).count
+                }
+            }
 
             const r = {
                 id: a.id,
@@ -163,7 +171,7 @@ export class MessagesController {
                     prepared: null
                     // files: a.files
                 },
-                reactions: Object.keys(a.reactions).length ? a.reactions : null,
+                reactions: Object.keys(processedReactions).length ? processedReactions : null,
                 // user_reaction: a._user_reaction
 
             } as any
