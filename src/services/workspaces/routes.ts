@@ -46,9 +46,6 @@ export default function (fastify: FastifyInstance) {
 
     // fastify.get('/workspaces/members', {schema: workspaceNotificationsSchema}, async (request, reply) => new Workspaces(request).notifications(request.query as WorkspaceRequest))
 
-
-    const api = new Api()
-
     function ctrl(request: FastifyRequest) {
         const api = new Api(request.jwtToken)
         return new WorkspaceController(new WorkspaceService(api), new ChannelsService(api), new UsersService(api))

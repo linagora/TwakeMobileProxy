@@ -1,10 +1,5 @@
 import Base from '../../common/base'
-import {BadRequest} from "../../common/errors";
 import {WorkspacesTypes} from "./types";
-import WorkspaceBaseRequest = WorkspacesTypes.WorkspaceBaseRequest;
-import WorkspacePostRequest = WorkspacesTypes.WorkspacePostRequest;
-import WorkspaceRequest = WorkspacesTypes.WorkspaceRequest;
-import WorkspaceMembersPostRequest = WorkspacesTypes.WorkspaceMembersPostRequest;
 import ChannelsService from "../channels/service";
 import {ChannelsTypes} from "../channels/types";
 
@@ -12,20 +7,9 @@ import {ChannelsTypes} from "../channels/types";
 import {FastifyRequest} from "fastify";
 import WorkspaceService from "./service";
 import UsersService from "../users/service";
-
-
-interface Workspace {
-    id: string
-    private: boolean
-    logo: string
-    color: string
-    company_id: string
-    name: string
-    total_members: 6
-    is_archived: boolean
-    user_last_access: number,
-    user_is_admin: boolean
-}
+import WorkspaceRequest = WorkspacesTypes.WorkspaceRequest;
+import WorkspaceMembersPostRequest = WorkspacesTypes.WorkspaceMembersPostRequest;
+import Workspace = WorkspacesTypes.Workspace;
 
 
 export default class extends Base {

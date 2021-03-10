@@ -16,4 +16,17 @@ export declare namespace WorkspacesTypes {
         members: string[] // тут email'ы
     }
 
+    export interface Workspace {
+        id: string
+        private: boolean
+        logo: string
+        color: string
+        company_id: string
+        name: string
+        total_members: 6
+        is_archived: boolean
+        user_last_access: number,
+        user_is_admin: boolean
+    }
+
 }
