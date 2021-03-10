@@ -34,7 +34,7 @@ export default class AuthorizationService {
         return this.__login(getLoginObject(username,password,null,fcm_token), {})
     }
 
-    async prolong(refresh_token: string, fcm_token:string): Promise<any> {
+    async prolong(refresh_token: string, fcm_token: string): Promise<any> {
 
         const loginObject = {
             'device': {
@@ -44,5 +44,17 @@ export default class AuthorizationService {
             },
         }
         return this.__login(loginObject, {"Authorization": "Bearer " + refresh_token})
+    }
+
+    async logout(fcm_token: string): Promise<any> {
+        const logoutObject = {
+            'device': {
+                'type': "fcm",
+                'value': fcm_token,
+                'version': '2020.Q3.107',
+            },
+        }
+        const res = await this.api.post('/ajax/users/logout', logoutObject)
+        return res
     }
 }

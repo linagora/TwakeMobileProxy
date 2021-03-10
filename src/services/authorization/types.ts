@@ -21,4 +21,7 @@ export declare namespace AuthTypes {
         fcm_token: string
     }
 
+    export interface LogoutParams {
+        fcm_token: string
+    }
 }

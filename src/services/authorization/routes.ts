@@ -42,7 +42,7 @@ export default function (fastify: FastifyInstance) {
         url: '/logout',
         // schema: prolongSchema,
         handler: (request) =>
-            ctrl(request).logout(request as FastifyRequest)
+            ctrl(request).logout(request as FastifyRequest<{ Body: AuthTypes.LogoutParams }>)
     });
 }
 

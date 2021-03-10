@@ -63,8 +63,9 @@ export class AuthorizationController{
         }
     }
 
-    logout(request: FastifyRequest) : Promise<any> {
+    async logout(request: FastifyRequest<{Body: AuthTypes.LogoutParams}>) : Promise<any> {
         delete authCache[request.jwtToken]
-        return Promise.resolve(()=>({success:true}))
+        const { fcm_token } = request.body
+        return await this.authorizationService.logout(fcm_token)
     }
 }
