@@ -24,7 +24,7 @@ describe('Workspaces', async function () {
 
     step('List of workspaces', async function () {
         const workspaces = await api.getWorkspaces()
-        console.log(workspaces)
+        // console.log(workspaces)
         workspaces_length = workspaces.length
     })
 
