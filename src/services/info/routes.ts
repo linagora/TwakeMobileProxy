@@ -3,11 +3,9 @@ import Api from "../../common/twakeapi2";
 import {InfoTypes} from "./types";
 import { localizationGetSchema} from "./schemas";
 import { InfoController} from "./controller";
-import AuthorizationService from "./service";
-import UsersService from "../users/service";
 import InfoService from "./service";
 
-export default function (fastify: FastifyInstance) {
+export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
 
     function ctrl(request: FastifyRequest) {
         const api = new Api(request.jwtToken)
@@ -23,5 +21,14 @@ export default function (fastify: FastifyInstance) {
     });
 
 
+    fastify.route({
+        method: "GET",
+        url: '/',
+        schema: {hide: true} as any,
+        handler: (request) =>
+            ctrl(request).info()
+    });
+
+    next()
 }
 

@@ -2,8 +2,6 @@ import Fastify, {FastifyInstance} from 'fastify'
 import {BadRequest, Forbidden} from './common/errors';
 import {AssertionError} from "assert";
 import Settings from './controllers/settings'
-import Companies from './controllers/companies'
-import Info from './controllers/info'
 import config from './common/config'
 
 if(!process.env.CORE_HOST){
@@ -54,11 +52,6 @@ fastify.addHook("onRequest", async (request, reply) => {
 
 
 
-const companiesSchema = {
-    tags: ['Companies'],
-    summary: "List of user's companies",
-    querystring: {type: 'object', required: [], "properties": {}}
-}
 
 
 fastify.register(require('fastify-swagger'), {
@@ -105,8 +98,6 @@ export const emojiSchema = {
     }
 }
 
-fastify.get('/', {schema: {hide: true} as any}, async (request, reply) => new Info(request).info())
-fastify.get('/companies', {schema: companiesSchema}, async (request, reply) => new Companies(request).list())
 
 
 fastify.get('/settings/emoji', {schema: emojiSchema}, async (request) => new Settings(request).emoji())
@@ -118,13 +109,17 @@ import usersServiceRoutes from './services/users/routes'
 import messagesServiceRoutes from './services/messages/routes'
 import authorizationServiceRoutes from './services/authorization/routes'
 import infoServiceRoutes from './services/info/routes'
+import companiesServiceRoutes from './services/companies/routes'
 
-channelsServiceRoutes(fastify)
-workspacesServiceRoutes(fastify)
-usersServiceRoutes(fastify)
-messagesServiceRoutes(fastify)
-authorizationServiceRoutes(fastify)
-infoServiceRoutes(fastify)
+
+fastify.register(channelsServiceRoutes, {prefix: '/internal/mobile'})
+fastify.register(workspacesServiceRoutes,{prefix: '/internal/mobile'})
+fastify.register(usersServiceRoutes,{prefix: '/internal/mobile'})
+fastify.register(messagesServiceRoutes,{prefix: '/internal/mobile'})
+fastify.register(authorizationServiceRoutes,{prefix: '/internal/mobile'})
+fastify.register(infoServiceRoutes,{prefix: '/internal/mobile'})
+fastify.register(companiesServiceRoutes,{prefix: '/internal/mobile'})
+
 
 
 fastify.setErrorHandler(function (error: Error, request, reply) {

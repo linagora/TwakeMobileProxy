@@ -20,7 +20,10 @@ export default class UsersService {
             assert(!isNaN(+timeZoneOffset), 'timezone should be numeric (i.e. -180 for Moscow)')
             params.timezone = timeZoneOffset
         }
-        return this.api.post('/ajax/users/current/get', params).then(a => a.data)
+        return this.api.post('/ajax/users/current/get', params).then(a => {
+            a.data.user_is_organization_administrator = a.data.workspaces && a.data.workspaces.length && a.data.workspaces[0]._user_is_organization_administrator
+            return a.data
+        })
     }
 
     async getUserById(id: string) {

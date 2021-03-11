@@ -21,7 +21,7 @@ import {ChannelsController} from "../channels/controller";
 import {ChannelsTypes} from "../channels/types";
 
 
-export default function (fastify: FastifyInstance) {
+export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
     fastify.put('/messages', {schema: messagesPutSchema}, async (request) => new Messages(request).updateMessage(request.body as MessagesTypes.UpdateMessageRequest))
     fastify.delete('/messages', {schema: messagesDeleteSchema}, async (request) => new Messages(request).deleteMessage(request.body as MessagesTypes.MessageRequest))
     fastify.post('/reactions', {schema: reactionsSchema}, async (request) => new Messages(request).reactions(request.body as MessagesTypes.ReactionsRequest))
@@ -63,5 +63,7 @@ export default function (fastify: FastifyInstance) {
         // preValidation: [fastify.authenticate],
         handler: (request) => ctrl(request).insert(request as FastifyRequest<{ Body: MessagesTypes.InsertMessageRequest }>)
     });
+
+    next()
 }
 

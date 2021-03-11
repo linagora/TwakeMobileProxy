@@ -63,7 +63,9 @@ export default class Api implements ApiType {
                 if (x.status >= 200 && x.status < 400) {
                     res = {data: {"success": true}}
                 } else {
-                    console.log(x)
+                    if (x.status === 404){
+                        throw new Error('Object not found')
+                    }
                     throw new Error('something went wrong')
                 }
             } else
@@ -74,8 +76,12 @@ export default class Api implements ApiType {
                 throw new Forbidden('Wrong token')
             }
 
-            console.error(e)
-            throw new BadRequest(e.response.data.message)
+            if(e.response && e.response.status === 404){
+                throw  new BadRequest('Object not found')
+            }
+
+
+            throw new BadRequest( e.response ? e.response.data.message : e.message)
         }
 
         if (res.data.errors && res.data.errors.includes('user_not_connected')) {

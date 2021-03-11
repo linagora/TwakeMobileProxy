@@ -1,10 +1,5 @@
 import Base from '../../common/base'
-import {BadRequest} from "../../common/errors";
 import {WorkspacesTypes} from "./types";
-import WorkspaceBaseRequest = WorkspacesTypes.WorkspaceBaseRequest;
-import WorkspacePostRequest = WorkspacesTypes.WorkspacePostRequest;
-import WorkspaceRequest = WorkspacesTypes.WorkspaceRequest;
-import WorkspaceMembersPostRequest = WorkspacesTypes.WorkspaceMembersPostRequest;
 import ChannelsService from "../channels/service";
 import {ChannelsTypes} from "../channels/types";
 
@@ -12,45 +7,12 @@ import {ChannelsTypes} from "../channels/types";
 import {FastifyRequest} from "fastify";
 import WorkspaceService from "./service";
 import UsersService from "../users/service";
-
-
-interface Workspace {
-    id: string
-    private: boolean
-    logo: string
-    color: string
-    company_id: string
-    name: string
-    total_members: 6
-    is_archived: boolean
-    user_last_access: number,
-    user_is_admin: boolean
-}
+import WorkspaceRequest = WorkspacesTypes.WorkspaceRequest;
+import WorkspaceMembersPostRequest = WorkspacesTypes.WorkspaceMembersPostRequest;
+import Workspace = WorkspacesTypes.Workspace;
 
 
 export default class extends Base {
-    async list(request: WorkspaceBaseRequest): Promise<Workspace[]> {
-
-        const data = await this.api.getCurrentUser()
-        return data.workspaces
-            .filter((a: any) => a.group.id == request.company_id)
-            .map((a: any) => {
-                // console.log(a)
-                return {
-                    id: a.id,
-                    private: a.private,
-                    logo: a.logo || 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTGyI3IzeJ0NMtz2CJnuolnLc_WFyVHtMffwg&usqp=CAU',
-                    color: a.color,
-                    company_id: a.group.id,
-                    name: a.name,
-                    total_members: a.total_members,
-                    is_archived: a.is_archived,
-                    user_last_access: a._user_last_access,
-                    user_is_admin: a._user_is_admin
-                } as Workspace
-            }).sort((a: Workspace, b: Workspace) => a.name.localeCompare(b.name)) as Workspace[]
-
-    }
 
 
 
@@ -94,6 +56,33 @@ export class WorkspaceController {
     // constructor(protected service: WorkspaceService, protected channelsService: ChannelsService, protected usersService: UsersService) {}
     constructor(protected workspaceService: WorkspaceService, protected channelsService: ChannelsService, protected usersService: UsersService) {
     }
+
+    async list(request: FastifyRequest<{ Querystring: WorkspacesTypes.WorkspaceBaseRequest }>): Promise<Workspace[]> {
+        const data = await this.usersService.getCurrent()
+
+
+
+        return data.workspaces
+            .filter((a: any) => a.group.id == request.query.company_id)
+            .map((a: any) => {
+                // console.log(a)
+                return {
+                    id: a.id,
+                    private: a.private,
+                    logo: a.logo || 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTGyI3IzeJ0NMtz2CJnuolnLc_WFyVHtMffwg&usqp=CAU',
+                    color: a.color,
+                    company_id: a.group.id,
+                    name: a.name,
+                    total_members: a.total_members,
+                    is_archived: a.is_archived,
+                    user_last_access: a._user_last_access,
+                    // user_is_admin: a._user_is_admin
+                    permissions: data.user_is_organization_administrator ? ['EDIT_WORKSPACE'] : []
+                } as Workspace
+            }).sort((a: Workspace, b: Workspace) => a.name.localeCompare(b.name)) as Workspace[]
+
+    }
+
 
     async add(request: FastifyRequest<{ Body: WorkspacesTypes.WorkspacePostRequest }>): Promise<Workspace> {
         const req = request.body

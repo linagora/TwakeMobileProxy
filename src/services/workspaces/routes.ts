@@ -34,10 +34,9 @@ import {ChannelsTypes} from "../channels/types";
 // import ChannelsService from "./service";
 
 
-export default function (fastify: FastifyInstance) {
+export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
 
 
-    fastify.get('/workspaces', {schema: workspacesSchema}, async (request, reply) => new Workspaces(request).list(request.query as WorkspacesTypes.WorkspaceBaseRequest))
     fastify.delete('/workspaces', {schema: workspacesDeleteSchema}, async (request, reply) => new Workspaces(request).delete(request.body as WorkspacesTypes.WorkspaceRequest))
 
     fastify.get('/workspaces/members', {schema: workspaceMembersGetSchema}, async (request, reply) => new Workspaces(request).listMembers(request.query as WorkspacesTypes.WorkspaceRequest))
@@ -46,14 +45,22 @@ export default function (fastify: FastifyInstance) {
 
     // fastify.get('/workspaces/members', {schema: workspaceNotificationsSchema}, async (request, reply) => new Workspaces(request).notifications(request.query as WorkspaceRequest))
 
-
-    const api = new Api()
-    const controller = new WorkspaceController(new WorkspaceService(api), new ChannelsService(api), new UsersService(api))
-
     function ctrl(request: FastifyRequest) {
         const api = new Api(request.jwtToken)
         return new WorkspaceController(new WorkspaceService(api), new ChannelsService(api), new UsersService(api))
     }
+
+
+    fastify.route({
+        method: "GET",
+        url: '/workspaces',
+        schema: workspacesSchema,
+        // preHandler: accessControl,
+        // preValidation: [fastify.authenticate],
+        handler: (request) =>
+            ctrl(request).list(request as FastifyRequest<{ Querystring: WorkspacesTypes.WorkspaceBaseRequest  }>)
+    });
+
 
     fastify.route({
         method: "GET",
@@ -73,5 +80,6 @@ export default function (fastify: FastifyInstance) {
         handler: (request) => ctrl(request).add(request as FastifyRequest<{ Body: WorkspacesTypes.WorkspacePostRequest }>)
     });
 
+    next()
 
 }
