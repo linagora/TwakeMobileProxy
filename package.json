@@ -5,7 +5,7 @@
   "main": "server.js",
   "dependencies": {
     "@sentry/node": "^5.28.0",
-    "@sentry/tracing": "^5.28.0",
+    "@sentry/tracing": "^5.30.0",
     "@types/uuid": "^8.3.0",
     "axios": "^0.21.0",
     "fastify": "^3.8.0",
