@@ -198,8 +198,11 @@ export class ChannelsController {
                 usersIds.add(m)
             })
         })
-        const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => this.usersService.getUserById(user_id as string))), 'id')
-        const currentUserToken = authCache[this.usersService.getJwtToken()] ? authCache[this.usersService.getJwtToken()]['id'] : await this.usersService.getCurrent().then(a => a.id)
+        const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values())
+            .map((user_id) => this.usersService.getUserById(user_id as string))), 'id')
+        const currentUserToken = authCache[this.usersService.getJwtToken()] 
+            ? authCache[this.usersService.getJwtToken()]['id'] 
+            : await this.usersService.getCurrent().then(a => a.id)
 
         return items.map((a: ChannelsTypes.Channel) => {
             if (a.members) {
@@ -216,7 +219,9 @@ export class ChannelsController {
 
     async direct(request: FastifyRequest<{ Querystring: ChannelsTypes.BaseChannelsParameters }>) {
         const data = await this.channelsService.getDirects(request.query.company_id)
-        const res = __channelsFormat(data).filter(a => a.members.length > 0)
+        const res = __channelsFormat(data)
+            .filter(a => a.members.length > 0)
+            .sort((d1, d2) => d2.last_activity - d1.last_activity)
         return this.__formatDirectChannels(res)
     }
 
