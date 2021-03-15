@@ -325,7 +325,6 @@ export default class {
         assert(workspaceId)
         assert(channelId)
         assert(messageId)
-        assert(reaction)
 
         const params = {
             'object': {
