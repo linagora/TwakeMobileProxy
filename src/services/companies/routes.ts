@@ -9,14 +9,17 @@ import {WorkspacesTypes} from "../workspaces/types";
 import Api from "../../common/twakeapi2";
 import ChannelsService from "../channels/service";
 import UsersService from "../users/service";
-import {companiesSchema} from "./schemas";
+import CompaniesService from "./service";
+import {companiesSchema, badgesSchema} from "./schemas";
 import {CompaniesController} from "./controller";
+import {CompanyTypes} from "./types";
 
 export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
 
     function ctrl(request: FastifyRequest) {
         const api = new Api(request.jwtToken)
-        return new CompaniesController(new UsersService(api))
+        const service = new CompaniesService(api)
+        return new CompaniesController(new UsersService(api), service)
     }
 
 
@@ -28,6 +31,16 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         // preValidation: [fastify.authenticate],
         handler: (request) =>
             ctrl(request).list()
+    });
+
+    fastify.route({
+        method: "GET",
+        url: '/badges',
+        schema: badgesSchema,
+        // preHandler: accessControl,
+        // preValidation: [fastify.authenticate],
+        handler: (request) =>
+            ctrl(request).badges(request as FastifyRequest<{Querystring: CompanyTypes.GetBadges}>)
     });
 
     next()
