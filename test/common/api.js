@@ -146,8 +146,13 @@ class Api {
     }
 
 
-    async selectWorkspace(name) {
-        const workspace = await this.getWorkspaces().then(a => a.find(a => a.name === name))
+    async selectWorkspace(name, add_if_not_exists=false) {
+        let workspace = await this.getWorkspaces().then(a => a.find(a => a.name === name))
+
+        if(!workspace && add_if_not_exists){
+            workspace = await this.addWorkspace({name})
+        }
+
         assert(workspace, `Workspace ${name} not found`)
         this.workspace_id = workspace.id
         return this.workspace_id
