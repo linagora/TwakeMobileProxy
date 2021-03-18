@@ -103,6 +103,10 @@ export class WorkspaceController {
             type: 'CHANNELS_LIST',
             id: 'PRIVATE'
         }
+        rooms[`/notifications?type=private&user=${currentUser.id}`] = {
+            type: 'NOTIFICATIONS',
+            id: 'PRIVATE'
+        }
 
         const allChannelsIds = await this.channelsService.all(request.query as ChannelsTypes.BaseChannelsParameters).then(channel => {
             return channel.map((a: any) => {
