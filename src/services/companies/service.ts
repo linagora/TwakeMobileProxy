@@ -17,9 +17,9 @@ export default class CompaniesService {
         for (let v of resources) {
             companies[v['company_id']] = companies[v['company_id']] || 0
             companies[v['company_id']] += 1
-            workspaces[v['workspace_id']] = companies[v['workspace_id']] || 0
+            workspaces[v['workspace_id']] = workspaces[v['workspace_id']] || 0
             workspaces[v['workspace_id']] += 1
-            channels[v['channel_id']] = companies[v['channel_id']] || 0
+            channels[v['channel_id']] = channels[v['channel_id']] || 0
             channels[v['channel_id']] += 1
         }
 
