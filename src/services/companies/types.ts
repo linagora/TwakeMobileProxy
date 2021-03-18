@@ -11,8 +11,9 @@ export declare namespace CompanyTypes{
     }
 
     export interface Badges {
-        companies: {[id: string]: number},
-        workspaces: {[id: string]: number},
-        channels: {[id: string]: number},
+        companies: {[id: string]: number}
+        workspaces: {[id: string]: number}
+        channels: {[id: string]: number}
     }
+
 }

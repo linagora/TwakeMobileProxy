@@ -306,6 +306,10 @@ class Api {
     async getServerInfo(){
         return this.request.get('/' , {})
     }
+
+    async getCompanyBadges(company_id, all_companies=false) {
+        return this.request.get('/badges', {company_id,all_companies})
+    }
 }
 
 module.exports = Api
