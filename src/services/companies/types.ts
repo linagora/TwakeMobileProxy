@@ -5,4 +5,14 @@ export declare namespace CompanyTypes{
         logo: string
         total_members: number
     }
+    export interface GetBadges {
+        company_id: string,
+        all_companies: boolean,
+    }
+
+    export interface Badges {
+        companies: {[id: string]: number},
+        workspaces: {[id: string]: number},
+        channels: {[id: string]: number},
+    }
 }

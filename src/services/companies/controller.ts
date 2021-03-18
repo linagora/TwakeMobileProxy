@@ -1,9 +1,11 @@
+import {FastifyRequest} from "fastify";
 import UsersService from "../users/service";
+import CompaniesService from "./service";
 import {CompanyTypes} from "./types";
 
 export class CompaniesController {
-
-    constructor( protected usersService: UsersService) {
+    
+    constructor( protected usersService: UsersService, protected companiesService: CompaniesService ) {
     }
 
 
@@ -31,4 +33,12 @@ export class CompaniesController {
         return Object.values(companiesHash).sort((a: any, b: any) => a.name.localeCompare(b.name)) as CompanyTypes.Company[]
 
     }
+
+    async badges(request: FastifyRequest<{Querystring: CompanyTypes.GetBadges}>): Promise<CompanyTypes.Badges> {
+        return await this.companiesService.badges(
+            request.query.company_id, 
+            request.query.all_companies
+        )
+    }
+
 }
