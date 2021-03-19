@@ -29,7 +29,7 @@ function __channelFormat(a: any): ChannelsTypes.Channel {
         has_unread: a.user_member ? +a.last_activity > +a.user_member.last_access : false,
         user_last_access: a.user_member ? +a.user_member.last_access : undefined,
         members: a.members,
-        members_count: a.members ? a.members.length : a.members_count,
+        members_count: a.members_count,
         visibility: a.visibility,
         is_member: Boolean(a.user_member),
         permissions: a.user_is_organization_administrator || a.owner === a.user_member.user_id ? ['EDIT_CHANNEL']: []
@@ -94,12 +94,14 @@ export class ChannelsController {
 
     async add(request: FastifyRequest<{ Body: ChannelsTypes.AddRequest }>): Promise<any> {
         let {company_id, workspace_id, visibility, name, members, channel_group, description, icon} = request.body
-        const found = await this.channelsService.public(company_id, workspace_id, false)
+        let found = await this.channelsService.public(company_id, workspace_id, false)
             .then(data => data.find((a: any) => a.visibility === visibility && a.name === name))
         if (found){
+            found.members_count = (await this.channelsService.getMembers(company_id, workspace_id, found.id)).length
             return __channelFormat(found)
         }
-        const channel = await this.channelsService.addChannel(company_id, workspace_id, name, visibility, members, channel_group, description, icon)
+        let channel = await this.channelsService.addChannel(company_id, workspace_id, name, visibility, members, channel_group, description, icon)
+        channel.members_count = (await this.channelsService.getMembers(company_id, workspace_id, channel.id)).length
         return __channelFormat(channel)
     }
 

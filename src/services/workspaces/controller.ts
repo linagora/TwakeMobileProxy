@@ -66,6 +66,7 @@ export class WorkspaceController {
             .filter((a: any) => a.group.id == request.query.company_id)
             .map((a: any) => {
                 // console.log(a)
+                let tm = a.total_members || a.stats?.total_members || 0
                 return {
                     id: a.id,
                     private: a.private,
@@ -73,7 +74,7 @@ export class WorkspaceController {
                     color: a.color,
                     company_id: a.group.id,
                     name: a.name,
-                    total_members: a.total_members,
+                    total_members: tm,
                     is_archived: a.is_archived,
                     user_last_access: a._user_last_access,
                     // user_is_admin: a._user_is_admin
