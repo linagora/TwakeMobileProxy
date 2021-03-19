@@ -39,7 +39,7 @@ describe('Channels', async function () {
         assert(channels.length > 0)
     });
 
-    step('Add a existed channel', async function () {
+    step('Add an existing channel', async function () {
         const channels = await api.getChannels()
         const firstChannel = channels[0]
 
