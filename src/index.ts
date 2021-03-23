@@ -89,6 +89,17 @@ fastify.register(require('fastify-swagger'), {
 })
 
 
+// Register fastify plugin to handle multipart uploads
+fastify.register(require('fastify-multipart'), {
+  limits: {
+    fieldNameSize: 200, // Max field name size in bytes
+    fieldSize: 10000,   // Max field value size in bytes
+    fields: 10,         // Max number of non-file fields
+    fileSize: 50000000, // For multipart forms, the max file size
+    files: 1,           // Max number of file fields
+  }
+});
+
 export const emojiSchema = {
     tags: ['References'],
     summary: 'List of available emojis',
