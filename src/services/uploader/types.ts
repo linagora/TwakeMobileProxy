@@ -12,4 +12,11 @@ export interface PreprocessResponse {
     identifier: string
 }
 
+export interface UploadResponse {
+    id: string,
+    name: string,
+    extension: string,
+    size: number
+}
+
 export const FILE_SIZE = 50000000

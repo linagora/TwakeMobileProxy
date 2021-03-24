@@ -1,6 +1,6 @@
 import FormData from "form-data";
 import Api from "../../common/twakeapi2";
-import {UploadedFile, PreprocessResponse, FILE_SIZE} from "./types";
+import {UploadedFile, PreprocessResponse, FILE_SIZE, UploadResponse} from "./types";
 import {createReadStream, ReadStream, Stats, statSync} from "fs";
 
 
@@ -8,32 +8,25 @@ export default class UploadService {
 
     constructor(protected api: Api) {}
 
-    async uploadFile(file: UploadedFile) {
+    async uploadFile(file: UploadedFile): Promise<UploadResponse> {
         const res: PreprocessResponse = await this.api.post(
             '/ajax/driveupload/preprocess', {
             workspace_id: file.workspace_id,
             name: file.filename,
             extension: file.filename.split('.').reverse().unshift(),
         }) 
+
         file.upload_id = res.identifier
         const form = this.buildFormData(file)
+
+        const upload: UploadResponse = (await this.api.post(
+            '/ajax/driveupload/upload', 
+            form
+        ))['object']
+
+        return upload
     }
 
-    async getDriveObject(companyId: string, workspaceId: string, elementId: string): Promise<any> {
-        // required(companyId)
-        // required(workspaceId)
-        // required(elementId)
-
-
-        return this.api.post('/ajax/drive/v2/find', {
-            'options': {
-                'element_id': elementId,
-                'company_id': companyId,
-                'workspace_id': workspaceId,
-                "public_access_token": null
-            },
-        }).then(a=>a.data)
-    }
 
     buildFormData(file: UploadedFile): FormData {
         const form = new FormData()
