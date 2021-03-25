@@ -35,6 +35,8 @@ export default class Api implements ApiType {
 
         if(!headers){
             headers = this.token ? {"Authorization": "Bearer " + this.token} : {}
+        } else if (this.token) {
+            headers["Authorization"] = "Bearer " + this.token
         }
 
         // console.log(`CURL -x ${method} '${url}' -d ${JSON.stringify(params)}`)
@@ -52,10 +54,11 @@ export default class Api implements ApiType {
         let res = null
 
         try {
-            if (method == 'GET')
-                res = await axios.get(this.host + url, {params, headers})
-            else if (method == 'POST')
+            if (method == 'GET') 
+            res = await axios.get(this.host + url, {params, headers})
+            else if (method == 'POST') {
                 res = await axios.post(this.host + url, params, {headers})
+            }
             else if (method == 'DELETE') {
 
                 const x = await fetch(this.host + url, {method: 'DELETE', body: params, headers})

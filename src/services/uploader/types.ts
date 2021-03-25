@@ -3,9 +3,8 @@ export interface UploadedFile {
     filename: string,
     encoding?: string,
     mimetype?: string,
-    workspace_id?: string,
     upload_id?: string,
-    fields: {[key: string]: string | number},
+    fields: any,
 }
 
 export interface PreprocessResponse {

@@ -1,5 +1,5 @@
 import Fastify, {FastifyInstance} from 'fastify'
-import {BadRequest, Forbidden} from './common/errors';
+import {BadRequest, Forbidden, PayloadTooLarge} from './common/errors';
 import {AssertionError} from "assert";
 import Settings from './controllers/settings'
 import config from './common/config'
@@ -88,6 +88,7 @@ fastify.register(require('fastify-swagger'), {
     }
 })
 
+import {FILE_SIZE} from './services/uploader/types'
 
 // Register fastify plugin to handle multipart uploads
 fastify.register(require('fastify-multipart'), {
@@ -95,7 +96,7 @@ fastify.register(require('fastify-multipart'), {
     fieldNameSize: 200, // Max field name size in bytes
     fieldSize: 10000,   // Max field value size in bytes
     fields: 10,         // Max number of non-file fields
-    fileSize: 50000000, // For multipart forms, the max file size
+    fileSize: FILE_SIZE, // For multipart forms, the max file size
     files: 1,           // Max number of file fields
   }
 });
@@ -121,6 +122,7 @@ import messagesServiceRoutes from './services/messages/routes'
 import authorizationServiceRoutes from './services/authorization/routes'
 import infoServiceRoutes from './services/info/routes'
 import companiesServiceRoutes from './services/companies/routes'
+import uploadServiceRoutes from './services/uploader/routes'
 
 
 fastify.register(channelsServiceRoutes, {prefix: '/internal/mobile'})
@@ -130,6 +132,7 @@ fastify.register(messagesServiceRoutes,{prefix: '/internal/mobile'})
 fastify.register(authorizationServiceRoutes,{prefix: '/internal/mobile'})
 fastify.register(infoServiceRoutes,{prefix: '/internal/mobile'})
 fastify.register(companiesServiceRoutes,{prefix: '/internal/mobile'})
+fastify.register(uploadServiceRoutes,{prefix: '/internal/mobile'})
 
 
 
@@ -147,6 +150,8 @@ fastify.setErrorHandler(function (error: Error, request, reply) {
         reply.status(400).send({"error": error.message})
     } else if ((error as any).validation) {
         reply.status(400).send({"error": error.message})
+    } else if (error instanceof PayloadTooLarge) {
+        reply.status(400).send({"error": "Uploaded file is too large"})
     } else {
         console.error(error)
         reply.status(500).send({"error": "something went wrong"})
