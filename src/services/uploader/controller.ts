@@ -10,12 +10,12 @@ export default class UploadController {
     async upload(request: any): Promise<UploadResponse> {
         let file: UploadedFile
         try {
-        file = (await request.saveRequestFiles())[0]
+            file = (await request.saveRequestFiles())[0]
         } catch (e) {
             throw new PayloadTooLarge(e.message)
         }
         const upload: UploadResponse = await this.uploadService.uploadFile(file)
-        console.log("RESPONSE: " + Object.entries(upload))
+        await request.cleanRequestFiles()
 
         return upload
     }

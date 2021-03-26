@@ -151,7 +151,7 @@ fastify.setErrorHandler(function (error: Error, request, reply) {
     } else if ((error as any).validation) {
         reply.status(400).send({"error": error.message})
     } else if (error instanceof PayloadTooLarge) {
-        reply.status(400).send({"error": "Uploaded file is too large"})
+        reply.status(400).send({"error": error.message})
     } else {
         console.error(error)
         reply.status(500).send({"error": "something went wrong"})
