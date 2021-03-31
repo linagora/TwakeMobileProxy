@@ -1,6 +1,7 @@
 const {URL, URLSearchParams} = require('url');
 const fetch = require('node-fetch');
 const assert = require("assert");
+const FormData = require("form-data");
 const fs = require('fs');
 const prompt = require('prompt-promise');
 // @ts-ignore
@@ -33,20 +34,21 @@ class Request {
         })
     }
 
-    __action(method, path, params) {
+    __action(method, path, params, headers, stringify = true) {
         // console.log({method: method, headers: this.headers(), body: JSON.stringify(params)})
+        let hdrs = headers ? {...headers, ...this.headers()} : this.headers()
         return fetch(this.host + this.prefix + path, {
             method: method,
-            headers: this.headers(),
-            body: JSON.stringify(params)
+            headers: hdrs,
+            body: stringify ? JSON.stringify(params) : params
         }).then(async response => {
             if (response.status !== 200) throw new Error(await response.json().then(a => a.error))
             return response.json()
         })
     }
 
-    post(path, params) {
-        return this.__action('POST', path, params)
+    post(path, params, headers, stringify = true) {
+        return this.__action('POST', path, params, headers, stringify)
     }
 
     delete(path, params) {
@@ -308,7 +310,22 @@ class Api {
     }
 
     async getCompanyBadges(company_id, all_companies=false) {
-        return this.request.get('/badges', {company_id,all_companies})
+        return this.request.get('/badges', {
+            company_id: company_id,
+            all_companies: all_companies
+        })
+    }
+
+    async uploadFile(file, workspace_id) {
+        let form = new FormData()
+        form.append('workspace_id', workspace_id);
+        form.append('file', file);
+        return this.request.post(
+            '/media/upload', 
+            form,
+            form.getHeaders(),
+            false
+        )
     }
 }
 

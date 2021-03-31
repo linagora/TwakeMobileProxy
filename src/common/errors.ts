@@ -12,3 +12,9 @@ export class BadRequest extends Error {
     }
 }
 
+export class PayloadTooLarge extends Error {
+    constructor(m: string) {
+        super(m);
+        Object.setPrototypeOf(this, PayloadTooLarge.prototype);
+    }
+}
