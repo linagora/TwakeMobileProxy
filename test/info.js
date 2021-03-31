@@ -14,7 +14,7 @@ describe('Info', async function () {
         await api.auth()
     })
 
-    step('server info', async function () {
+    step('Server info', async function () {
         const info = await api.getServerInfo()
         assert(info.ready)
         assert(info.core_endpoint_url)
@@ -22,7 +22,7 @@ describe('Info', async function () {
 
     })
 
-    step('localization', async function () {
+    step('Localization', async function () {
         const en = await api.getLocalizationStrings('en')
         assert(Object.keys(en).length > 10, 'no language info')
         assert.deepStrictEqual(en['CREATE'].toLowerCase(),'create')
@@ -30,7 +30,6 @@ describe('Info', async function () {
         const ru = await api.getLocalizationStrings('ru')
         assert(Object.keys(ru).length > 10, 'no language info')
         assert.deepStrictEqual(ru['CREATE'].toLowerCase(),'создать')
-
     })
 
 

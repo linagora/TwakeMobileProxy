@@ -130,7 +130,7 @@ class Api {
     }
 
     async prolong(refresh_token) {
-        return this.request.post('/prolong', {refresh_token, fcm_token: "123", timezoneoffset: -180})
+        return this.request.post('/authorization/prolong', {refresh_token, fcm_token: "123", timezoneoffset: -180})
     }
 
     async logout() {

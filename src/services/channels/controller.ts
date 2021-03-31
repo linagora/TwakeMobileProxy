@@ -15,6 +15,24 @@ const emojis = require('../../resources/emojis.json')
 const trim = (str:string, chr: string) => str.replace(new RegExp("^[" + chr + "]+|[" + chr + "]+$", "g"), "");
 
 function __channelFormat(a: any): ChannelsTypes.Channel {
+
+    const userRole = a.user_is_organization_administrator ? 'ADMIN' : a.owner === a.user_member.user_id ? 'CREATOR' : 'OTHER'
+
+    let permissions = []
+
+    switch(userRole){
+        case "ADMIN":
+        case "CREATOR":
+            permissions = ['UPDATE_NAME','UPDATE_DESCRIPTION','ADD_MEMBER','REMOVE_MEMBER', 'UPDATE_PRIVACY','DELETE_CHANNEL']
+            break
+        case "OTHER":
+            permissions = ['UPDATE_NAME','UPDATE_DESCRIPTION','ADD_MEMBER','REMOVE_MEMBER']
+            break
+        // case "GUEST":
+        //     permissions = []
+        //     break
+    }
+
     return {
         id: a.id,
         name: a.name ? a.name.charAt(0).toUpperCase() + a.name.slice(1) : a.name,
@@ -32,7 +50,7 @@ function __channelFormat(a: any): ChannelsTypes.Channel {
         members_count: a.members_count,
         visibility: a.visibility,
         is_member: Boolean(a.user_member),
-        permissions: a.user_is_organization_administrator || a.owner === a.user_member.user_id ? ['EDIT_CHANNEL']: []
+        permissions: permissions
     } as ChannelsTypes.Channel
 }
 
@@ -81,7 +99,7 @@ export class ChannelsController {
 
 
     async addDirect(request: FastifyRequest<{ Body: ChannelsTypes.AddDirectRequest }>) {
-        let {company_id, member } = request.body
+        const {company_id, member } = request.body
         const current_user = await this.usersService.getCurrent()
         const members = [member, current_user.id]
         let channel = await this.channelsService.getDirects(company_id)
@@ -93,14 +111,14 @@ export class ChannelsController {
     }
 
     async add(request: FastifyRequest<{ Body: ChannelsTypes.AddRequest }>): Promise<any> {
-        let {company_id, workspace_id, visibility, name, members, channel_group, description, icon} = request.body
-        let found = await this.channelsService.public(company_id, workspace_id, false)
+        const {company_id, workspace_id, visibility, name, members, channel_group, description, icon} = request.body
+        const found = await this.channelsService.public(company_id, workspace_id, false)
             .then(data => data.find((a: any) => a.visibility === visibility && a.name === name))
         if (found){
             found.members_count = (await this.channelsService.getMembers(company_id, workspace_id, found.id)).length
             return __channelFormat(found)
         }
-        let channel = await this.channelsService.addChannel(company_id, workspace_id, name, visibility, members, channel_group, description, icon)
+        const channel = await this.channelsService.addChannel(company_id, workspace_id, name, visibility, members, channel_group, description, icon)
         channel.members_count = (await this.channelsService.getMembers(company_id, workspace_id, channel.id)).length
         return __channelFormat(channel)
     }
