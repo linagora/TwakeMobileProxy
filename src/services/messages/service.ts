@@ -52,7 +52,7 @@ export default class MessagesService {
         })
     }
 
-    async addMessage(companyId: string, workspaceId: string, channelId: string, originalString: string, prepared: any, threadId?: string) {
+    async addMessage(companyId: string, workspaceId: string, channelId: string, originalString: string, prepared: any, threadId?: string, messageId?: string) {
 
         assert(companyId)
         assert(workspaceId)
@@ -72,6 +72,11 @@ export default class MessagesService {
                     prepared: prepared
                 }
             }
+        } as any
+
+        if(messageId){
+            params.object.message_id = messageId
+            params.object.id = messageId
         }
 
         return this.api.post('/ajax/discussion/save', params).then(a=>a.data)

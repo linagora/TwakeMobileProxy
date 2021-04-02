@@ -41,7 +41,7 @@ export const messagesPostSchema = {
             "thread_id": {"type": "string"},
             "message_id": {"type": "string"},
             "original_str": {"type": "string"},
-            "prepared": {"type": "object"},
+            "prepared": {"type": "array"},
 
         }
     }
@@ -59,7 +59,7 @@ export const messagesPutSchema = {
             "thread_id": {"type": "string"},
             "message_id": {"type": "string"},
             "original_str": {"type": "string"},
-            "prepared": {"type": "object"},
+            "prepared": {"type": "array"},
 
         }
     }

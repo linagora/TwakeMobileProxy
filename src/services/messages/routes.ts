@@ -22,7 +22,6 @@ import {ChannelsTypes} from "../channels/types";
 
 
 export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
-    fastify.put('/messages', {schema: messagesPutSchema}, async (request) => new Messages(request).updateMessage(request.body as MessagesTypes.UpdateMessageRequest))
     fastify.delete('/messages', {schema: messagesDeleteSchema}, async (request) => new Messages(request).deleteMessage(request.body as MessagesTypes.MessageRequest))
     fastify.post('/reactions', {schema: reactionsSchema}, async (request) => new Messages(request).reactions(request.body as MessagesTypes.ReactionsRequest))
     // fastify.get('/messages/whatsnew', {schema: whatsNewSchema}, async (request) => new Messages(request).whatsNew(request.query as MessagesTypes.UpdateMessageRequest))
@@ -59,6 +58,15 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         method: "POST",
         url: '/messages',
         schema: messagesPostSchema,
+        // preHandler: accessControl,
+        // preValidation: [fastify.authenticate],
+        handler: (request) => ctrl(request).insert(request as FastifyRequest<{ Body: MessagesTypes.InsertMessageRequest }>)
+    });
+
+    fastify.route({
+        method: "PUT",
+        url: '/messages',
+        schema: messagesPutSchema,
         // preHandler: accessControl,
         // preValidation: [fastify.authenticate],
         handler: (request) => ctrl(request).insert(request as FastifyRequest<{ Body: MessagesTypes.InsertMessageRequest }>)

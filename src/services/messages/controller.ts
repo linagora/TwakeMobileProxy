@@ -316,12 +316,13 @@ export class MessagesController {
             throw new BadRequest('Unparseable message')
         }
 
-        const msg = await this.messagesService.addMessage(req.company_id, req.workspace_id, req.channel_id, req.original_str, prepared, req.thread_id).then(a => a.object)
-
+        const msg = await this.messagesService.addMessage(req.company_id, req.workspace_id, req.channel_id, req.original_str, prepared, req.thread_id, req.message_id).then(a => a.object)
 
         return (await this.__formatMessage(req as any as GetMessagesRequest, [msg]))[0]
 
 
     }
+
+
 
 }
