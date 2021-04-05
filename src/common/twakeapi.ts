@@ -282,21 +282,21 @@ export default class {
     }
 
 
-    async updateMessage(companyId: string, workspaceId: string, channelId: string, messageId: string, threadId: string, original_str: string, toTwacode: (str: string) => Object[] | null) {
-
-        const messages = await this.getMessages(companyId, workspaceId, channelId, threadId, messageId)
-
-        const message = messages[0]
-
-        message.content.original_str = original_str
-        message.content.prepared = toTwacode(original_str)
-
-        const params = {
-            object: message
-        }
-        return await this.__post('/ajax/discussion/save', params).then(a => a.object)
-
-    }
+    // async updateMessage(companyId: string, workspaceId: string, channelId: string, messageId: string, threadId: string, original_str: string, toTwacode: (str: string) => Object[] | null) {
+    //
+    //     const messages = await this.getMessages(companyId, workspaceId, channelId, threadId, messageId)
+    //
+    //     const message = messages[0]
+    //
+    //     message.content.original_str = original_str
+    //     message.content.prepared = toTwacode(original_str)
+    //
+    //     const params = {
+    //         object: message
+    //     }
+    //     return await this.__post('/ajax/discussion/save', params).then(a => a.object)
+    //
+    // }
 
 
     async deleteMessage(companyId: string, workspaceId: string, channelId: string, messageId: string, threadId: string) {

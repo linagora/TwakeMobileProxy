@@ -21,11 +21,11 @@ const emojis = require('../../resources/emojis.json')
 export default class extends Base {
 
 
-    async updateMessage(req: MessagesTypes.UpdateMessageRequest) {
-
-        return this.api.updateMessage(req.company_id, req.workspace_id, req.channel_id, req.message_id, req.thread_id, req.original_str, toTwacode)
-
-    }
+    // async updateMessage(req: MessagesTypes.UpdateMessageRequest) {
+    //
+    //     return this.api.updateMessage(req.company_id, req.workspace_id, req.channel_id, req.message_id, req.thread_id, req.original_str, toTwacode)
+    //
+    // }
 
     async deleteMessage(req: MessagesTypes.MessageRequest) {
         assert(req.company_id, 'company_id is required');
@@ -179,59 +179,60 @@ export class MessagesController {
 
             let prepared = a.content.prepared || a.content.formatted || a.content
 
-            // console.log(prepared)
-            if (!Array.isArray(prepared)) {
-                prepared = [prepared]
-            }
+            // // console.log(prepared)
+            // if (!Array.isArray(prepared)) {
+            //     prepared = [prepared]
+            // }
+            //
+            // assert(Array.isArray(prepared), 'wrong message content data')
+            //
+            // try {
+            //
+            //     for (let i = 0; i < prepared.length; i++) {
+            //         const p = prepared[i]
+            //         if (p.type === 'compile') {
+            //             const compiled = parseCompile(p.content)
+            //             compiled.forEach(a => prepared.push(a))
+            //             delete prepared[i]
+            //         }
+            //     }
+            // } catch (e) {
+            //     console.log(e)
+            // }
+            //
+            // const ready = [] as any[]
+            //
+            // prepared.forEach(item => {
+            //     if (Array.isArray(item)) {
+            //         item.forEach(subitem => ready.push(subitem))
+            //     } else {
+            //         // NOP also can contains data ...
+            //         if (item.type == 'nop' && Array.isArray(item.content) && item.content.length) {
+            //             item.content.forEach((s: any) => {
+            //                 ready.push(s)
+            //             })
+            //             // console.log('push', item)
+            //         } else {
+            //             ready.push(item)
+            //         }
+            //     }
+            // })
+            //
+            // for (let idx in ready) {
+            //     try {
+            //
+            //         ready[idx] = await fixIt(ready[idx], getPreview)
+            //     } catch (e) {
+            //         console.error('--- GOT ERROR ---')
+            //         console.log(e)
+            //         console.error(JSON.stringify(a.content, null, 2))
+            //         console.error('---')
+            //         ready[idx] = {"type": "unparseable"}
+            //     }
+            // }
 
-            assert(Array.isArray(prepared), 'wrong message content data')
-
-            try {
-
-                for (let i = 0; i < prepared.length; i++) {
-                    const p = prepared[i]
-                    if (p.type === 'compile') {
-                        const compiled = parseCompile(p.content)
-                        compiled.forEach(a => prepared.push(a))
-                        delete prepared[i]
-                    }
-                }
-            } catch (e) {
-                console.log(e)
-            }
-
-            const ready = [] as any[]
-
-            prepared.forEach(item => {
-                if (Array.isArray(item)) {
-                    item.forEach(subitem => ready.push(subitem))
-                } else {
-                    // NOP also can contains data ...
-                    if (item.type == 'nop' && Array.isArray(item.content) && item.content.length) {
-                        item.content.forEach((s: any) => {
-                            ready.push(s)
-                        })
-                        // console.log('push', item)
-                    } else {
-                        ready.push(item)
-                    }
-                }
-            })
-
-            for (let idx in ready) {
-                try {
-
-                    ready[idx] = await fixIt(ready[idx], getPreview)
-                } catch (e) {
-                    console.error('--- GOT ERROR ---')
-                    console.log(e)
-                    console.error(JSON.stringify(a.content, null, 2))
-                    console.error('---')
-                    ready[idx] = {"type": "unparseable"}
-                }
-            }
-
-            r.content.prepared = ready.filter(r => r)
+            // r.content.prepared = ready.filter(r => r)
+            r.content.prepared = prepared
 
             if (!a.thread_id) {
                 r.responses = []
