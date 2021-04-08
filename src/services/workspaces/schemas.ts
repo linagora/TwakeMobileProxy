@@ -76,3 +76,4 @@ export const workspacesDeleteSchema = {
         "properties": {"company_id": {"type": "string"}, "workspace_id": {type: "string"}}
     }
 }
+

@@ -12,3 +12,10 @@ export const badgesSchema = {
         "properties": {"company_id": {"type": "string"}, "all_companies": {"type":"boolean"}}
     }
 }
+
+
+export const applicationsSchema = {
+    tags: ['Companies'],
+    summary: 'List of workspace applications',
+    querystring: {type: 'object', "required": ['company_id'], "properties": {"company_id": {"type": "string"}}}
+}

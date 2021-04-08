@@ -33,4 +33,11 @@ describe('Info', async function () {
     })
 
 
+    step('Emojis', async function () {
+        const res = await api.getEmojis()
+        console.log(res)
+        assert(res)
+    })
+
+
 });

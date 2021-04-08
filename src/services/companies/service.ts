@@ -10,7 +10,10 @@ export default class CompaniesService {
             '/internal/services/notifications/v1/badges',
             {company_id, all_companies}
         )).resources || []
+    }
 
-
+    async applications(company_id: string) {
+        return this.api.post('/ajax/workspace/group/apps/get', {
+            "group_id": company_id}).then(a=>a.data.map((a:any)=>a.app))
     }
 }

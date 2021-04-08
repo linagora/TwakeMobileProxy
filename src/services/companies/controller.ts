@@ -2,6 +2,7 @@ import {FastifyRequest} from "fastify";
 import UsersService from "../users/service";
 import CompaniesService from "./service";
 import {CompanyTypes} from "./types";
+import {WorkspacesTypes} from "../workspaces/types";
 
 export class CompaniesController {
     
@@ -49,5 +50,11 @@ export class CompaniesController {
 
         return ret
     }
+
+    async applications({query}: FastifyRequest<{ Querystring: CompanyTypes.Applications }>) {
+        return this.companiesService.applications(query.company_id)
+
+    }
+
 
 }

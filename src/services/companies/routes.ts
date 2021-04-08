@@ -10,7 +10,7 @@ import Api from "../../common/twakeapi2";
 import ChannelsService from "../channels/service";
 import UsersService from "../users/service";
 import CompaniesService from "./service";
-import {companiesSchema, badgesSchema} from "./schemas";
+import {companiesSchema, badgesSchema, applicationsSchema} from "./schemas";
 import {CompaniesController} from "./controller";
 import {CompanyTypes} from "./types";
 
@@ -41,6 +41,15 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         // preValidation: [fastify.authenticate],
         handler: (request) =>
             ctrl(request).badges(request as FastifyRequest<{Querystring: CompanyTypes.GetBadges}>)
+    });
+
+    fastify.route({
+        method: "GET",
+        url: '/companies/applications',
+        schema: applicationsSchema,
+        // preHandler: accessControl,
+        // preValidation: [fastify.authenticate],
+        handler: (request) => ctrl(request).applications(request as FastifyRequest<{ Querystring: CompanyTypes.Applications }>)
     });
 
     next()

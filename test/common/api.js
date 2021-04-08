@@ -327,6 +327,17 @@ class Api {
             false
         )
     }
+
+    async getApplications() {
+        return this.request.get('/companies/applications', {
+            company_id: this.company_id
+        })
+
+    }
+
+    async getEmojis() {
+        return this.request.get('/info/emoji')
+    }
 }
 
 module.exports = Api

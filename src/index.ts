@@ -1,7 +1,6 @@
 import Fastify, {FastifyInstance} from 'fastify'
 import {BadRequest, Forbidden, PayloadTooLarge} from './common/errors';
 import {AssertionError} from "assert";
-import Settings from './controllers/settings'
 import config from './common/config'
 
 if(!process.env.CORE_HOST){
@@ -101,18 +100,6 @@ fastify.register(require('fastify-multipart'), {
   }
 });
 
-export const emojiSchema = {
-    tags: ['References'],
-    summary: 'List of available emojis',
-    querystring: {
-        type: 'object', "required": [],
-        properties: {}
-    }
-}
-
-
-
-fastify.get('/settings/emoji', {schema: emojiSchema}, async (request) => new Settings(request).emoji())
 
 
 import channelsServiceRoutes from './services/channels/routes'

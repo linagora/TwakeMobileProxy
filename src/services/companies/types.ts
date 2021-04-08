@@ -16,4 +16,8 @@ export declare namespace CompanyTypes{
         channels: {[id: string]: number}
     }
 
+    export interface Applications{
+        company_id: string
+    }
+
 }

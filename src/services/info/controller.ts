@@ -19,4 +19,10 @@ export class InfoController{
     info() {
         return this.infoService.serverInfo()
     }
+
+    emoji(){
+        return this.infoService.emoji()
+    }
+
+
 }

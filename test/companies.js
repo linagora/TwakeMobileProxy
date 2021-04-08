@@ -30,5 +30,11 @@ describe('Companies', async function () {
         console.log(badges)
     })
 
+    step('Applications', async function(){
+        let applications = await api.getApplications()
+        assert(applications)
+    })
+
+
 
 });

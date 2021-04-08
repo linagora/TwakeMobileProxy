@@ -1,7 +1,7 @@
 import {FastifyInstance, FastifyRequest} from "fastify";
 import Api from "../../common/twakeapi2";
 import {InfoTypes} from "./types";
-import { localizationGetSchema} from "./schemas";
+import {emojiSchema, localizationGetSchema} from "./schemas";
 import { InfoController} from "./controller";
 import InfoService from "./service";
 
@@ -28,6 +28,16 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         handler: (request) =>
             ctrl(request).info()
     });
+
+    fastify.route({
+        method: "GET",
+        url: '/info/emoji',
+        schema: emojiSchema,
+        handler: (request) =>
+            ctrl(request).emoji()
+    });
+
+
 
     next()
 }
