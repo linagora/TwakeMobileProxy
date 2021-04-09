@@ -100,5 +100,22 @@ describe('Messages', async function () {
 
 
 
+    step('Bot messages', async function(){
+
+        await api.selectCompany('LINAGORA')
+        await api.selectWorkspace('Software')
+        await api.selectChannel('FT - SmartSla')
+        const messages = await api.getMessages({limit:100})
+        console.log(messages)
+
+        //
+        // console.log(channels)
+        //
+        // const found = messages.find(a=>a.id === last_inserted_message_id)
+        // assert(!found, 'Message was not deleted')
+    })
+
+
+
 
 });
