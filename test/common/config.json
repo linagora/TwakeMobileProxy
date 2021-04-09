@@ -1,8 +1,10 @@
 {
   "host": "http://localhost:3123",
   "prefix": "/internal/mobile",
-  "username": "testbot",
-  "password": "12345678",
+  "_username": "testbot",
+  "_password": "12345678",
   "token_username": "romanbykovsky",
-  "auth_token": ""
+  "auth_token": "",
+  "username": "rbykovsky@linagora.com",
+  "password": "cazwa8-wawqaq-weVfyn"
 }
