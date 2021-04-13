@@ -26,7 +26,7 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         url: '/',
         schema: {hide: true} as any,
         handler: (request) =>
-            ctrl(request).info()
+            ctrl(request).info(request as FastifyRequest)
     });
 
     fastify.route({
