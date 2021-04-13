@@ -16,8 +16,10 @@ export class InfoController{
         return this.infoService.getLocalizationStrings(request.query.lang)
     }
 
-    info() {
-        return this.infoService.serverInfo()
+    info(request: FastifyRequest) {
+        const r=  this.infoService.serverInfo() as any
+        r.hostname = request.hostname
+        return r;
     }
 
     emoji(){
