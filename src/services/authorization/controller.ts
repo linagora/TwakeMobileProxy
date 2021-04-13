@@ -23,7 +23,7 @@ export class AuthorizationController{
 
     async authorize(request: FastifyRequest<{ Body: AuthTypes.AuthParams }>): Promise<any> {
 
-        const {username, password,device, fcm_token, timezoneoffset} = request.body
+        const {username, password, device, fcm_token, timezoneoffset} = request.body
 
         const types = {'apple': 'apns', 'android': 'fcm'} as any
 
