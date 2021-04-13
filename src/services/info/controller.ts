@@ -16,8 +16,8 @@ export class InfoController{
         return this.infoService.getLocalizationStrings(request.query.lang)
     }
 
-    info(request: FastifyRequest) {
-        const r=  this.infoService.serverInfo() as any
+    async info(request: FastifyRequest) {
+        const r=  await this.infoService.serverInfo() as any
         r.hostname = request.hostname
         return r;
     }
