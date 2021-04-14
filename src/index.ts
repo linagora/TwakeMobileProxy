@@ -15,6 +15,8 @@ import uploadServiceRoutes from './services/uploader/routes'
 if(process.env.CORE_HOST){
     config.core_host = process.env.CORE_HOST.replace(/\/$/, "");
     console.log('Started with CORE_HOST ' + config.core_host)
+} else {
+    console.log('Started without CORE_HOST variable')
 }
 
 
