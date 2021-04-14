@@ -67,6 +67,11 @@ export class UsersController {
     }
 
     async getUsers({query} : FastifyRequest<{ Querystring: UsersTypes.UsersGetRequest }>) {
+
+        if(!Array.isArray(query.id)){
+            query.id = [query.id]
+        }
+
         return (await Promise.all(query.id.map((a:any) => this.getUser(a)))).filter(a=>a)
     }
 
