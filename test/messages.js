@@ -99,11 +99,12 @@ describe('Messages', async function () {
     })
 
 
-    xstep('Bot messages', async function(){
+    step('Bot messages', async function(){
 
         await api.selectCompany('LINAGORA')
         await api.selectWorkspace('Software')
-        await api.selectChannel('FT - SmartSla')
+        // await api.selectChannel('FT - SmartSla')
+        await api.selectChannel('FT - Twake')
         const messages = await api.getMessages({limit:100})
         console.log(messages)
 

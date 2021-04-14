@@ -131,9 +131,14 @@ export class MessagesController {
             } as any
 
             let prepared = a.content.prepared || a.content.formatted || a.content
+
+           if (!Array.isArray(prepared)){
+               prepared = [prepared]
+           }
+
             const last = (prepared as Array<string | {[key: string]: any}>).pop()
             if (last && last instanceof Object && last.type === 'nop') {
-                console.log("LAST : " + last.type);
+                // console.log("LAST : " + last.type);
                 const content = last.content as Array<{[key: string]: any}>
                 for (let item of content) { 
                     if (item.type === 'file') {
@@ -216,7 +221,7 @@ export class MessagesController {
             // }
 
             // r.content.prepared = ready.filter(r => r)
-            r.content.prepared = Array.isArray(prepared) ? prepared : [prepared]
+            r.content.prepared = prepared
 
             if (!a.thread_id) {
                 r.responses = []
