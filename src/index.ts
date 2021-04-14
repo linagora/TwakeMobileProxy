@@ -18,7 +18,7 @@ if(process.env.CORE_HOST){
 }
 
 
-const fastify: FastifyInstance = Fastify({logger: false})
+const fastify: FastifyInstance = Fastify({logger: false,  trustProxy: true })
 
 declare module "fastify" {
     export interface FastifyRequest {
