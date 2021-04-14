@@ -1,23 +1,15 @@
 import {FastifyInstance, FastifyRequest} from "fastify";
-import {
-    workspaceMembersDeleteSchema,
-    workspaceMembersGetSchema,
-    workspaceMembersPostSchema,
-    workspacesDeleteSchema, workspacesSchema
-} from "../workspaces/schemas";
-import {WorkspacesTypes} from "../workspaces/types";
-import Api from "../../common/twakeapi2";
-import ChannelsService from "../channels/service";
+import Api from '../../common/twakeapi'
 import UsersService from "../users/service";
 import CompaniesService from "./service";
-import {companiesSchema, badgesSchema, applicationsSchema} from "./schemas";
+import {applicationsSchema, badgesSchema, companiesSchema} from "./schemas";
 import {CompaniesController} from "./controller";
 import {CompanyTypes} from "./types";
 
 export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
 
     function ctrl(request: FastifyRequest) {
-        const api = new Api(request.jwtToken)
+        const api = new Api(request)
         const service = new CompaniesService(api)
         return new CompaniesController(new UsersService(api), service)
     }

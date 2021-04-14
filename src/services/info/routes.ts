@@ -1,14 +1,14 @@
 import {FastifyInstance, FastifyRequest} from "fastify";
-import Api from "../../common/twakeapi2";
+import Api from '../../common/twakeapi'
 import {InfoTypes} from "./types";
 import {emojiSchema, localizationGetSchema} from "./schemas";
-import { InfoController} from "./controller";
+import {InfoController} from "./controller";
 import InfoService from "./service";
 
 export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
 
     function ctrl(request: FastifyRequest) {
-        const api = new Api(request.jwtToken)
+        const api = new Api(request)
         return new InfoController(new InfoService(api))
     }
 

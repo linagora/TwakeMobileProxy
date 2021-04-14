@@ -7,6 +7,9 @@ const prompt = require('prompt-promise');
 // @ts-ignore
 const config = require('./config.json')
 
+assert(process.env.TWAKE_USERNAME,'env variable TWAKE_USERNAME is missing')
+assert(process.env.TWAKE_PASSWORD,'env variable TWAKE_PASSWORD is missing')
+
 class Request {
 
     constructor({host, prefix}) {
@@ -101,7 +104,7 @@ class Api {
             const params = {
                 "fcm_token": "123",
                 "timezoneoffset": -180,
-                "username": this.auth_config.token_username,
+                "username": process.env.TWAKE_USERNAME,
                 "token": this.auth_config.auth_token
             }
             // console.log(params)
@@ -120,8 +123,8 @@ class Api {
                 "fcm_token": "123",
                 "timezoneoffset": -180,
                 "device": "apple",
-                "username": this.auth_config.username,
-                "password": this.auth_config.password
+                "username": process.env.TWAKE_USERNAME,
+                "password": process.env.TWAKE_PASSWORD
             }
             // console.log(params)
             const res = await this.request.post('/authorize', params)

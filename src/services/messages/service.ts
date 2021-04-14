@@ -1,9 +1,9 @@
 import assert from "assert";
-import Api from "../../common/twakeapi2";
+import Api from "../../common/twakeapi";
 import {MessagesTypes} from "./types";
-import WhatsNewRequest = MessagesTypes.WhatsNewRequest;
 import {required} from "../../common/helpers";
 import {BadRequest} from "../../common/errors";
+import WhatsNewRequest = MessagesTypes.WhatsNewRequest;
 
 export default class MessagesService {
 
@@ -98,4 +98,44 @@ export default class MessagesService {
         }).then(a=>a.data)
     }
 
+    async addReaction(companyId: string, workspaceId: string, channelId: string, messageId: string, reaction: string, threadId?: string) {
+        assert(companyId)
+        assert(workspaceId)
+        assert(channelId)
+        assert(messageId)
+
+        const params = {
+            'object': {
+                company_id: companyId,
+                workspace_id: workspaceId,
+                channel_id: channelId,
+                id: messageId,
+                _user_reaction: reaction,
+                parent_message_id: threadId, // backward compatibility
+                thread_id: threadId
+            }
+        }
+
+        return this.api.post('/ajax/discussion/save', params)
+    }
+
+    async deleteMessage(companyId: string, workspaceId: string, channelId: string, messageId: string, threadId: string) {
+        assert(companyId)
+        assert(workspaceId)
+        assert(channelId)
+        assert(messageId)
+
+        const params = {
+            'object': {
+                company_id: companyId,
+                workspace_id: workspaceId,
+                channel_id: channelId,
+                id: messageId,
+                thread_id: threadId,
+                parent_message_id: threadId, // backward compatibility
+            }
+        }
+
+        return this.api.post('/ajax/discussion/remove', params)
+    }
 }

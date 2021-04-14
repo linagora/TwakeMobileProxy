@@ -1,23 +1,19 @@
 import {FastifyInstance, FastifyRequest} from "fastify";
 import {WorkspaceController} from "./controller";
 import WorkspaceService from "./service";
-import Api from "../../common/twakeapi2";
+import Api from '../../common/twakeapi'
 import {
     workspaceMembersDeleteSchema,
     workspaceMembersGetSchema,
     workspaceMembersPostSchema,
+    workspaceNotificationsSchema,
     workspacesDeleteSchema,
     workspacesPostSchema,
-    workspacesSchema,
-    workspaceNotificationsSchema
+    workspacesSchema
 } from "./schemas";
-
-import Workspaces from './controller'
 import {WorkspacesTypes} from "./types";
 import ChannelsService from "../channels/service";
 import UsersService from "../users/service";
-import {MessagesController} from "../messages/controller";
-import MessagesService from "../messages/service";
 import {ChannelsTypes} from "../channels/types";
 // import Channels, {Test} from './controller'
 // import  {ChannelsTypes} from "./types";
@@ -37,16 +33,11 @@ import {ChannelsTypes} from "../channels/types";
 export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
 
 
-    fastify.delete('/workspaces', {schema: workspacesDeleteSchema}, async (request, reply) => new Workspaces(request).delete(request.body as WorkspacesTypes.WorkspaceRequest))
-
-    fastify.get('/workspaces/members', {schema: workspaceMembersGetSchema}, async (request, reply) => new Workspaces(request).listMembers(request.query as WorkspacesTypes.WorkspaceRequest))
-    fastify.post('/workspaces/members', {schema: workspaceMembersPostSchema}, async (request, reply) => new Workspaces(request).addMembers(request.body as WorkspacesTypes.WorkspaceMembersPostRequest))
-    fastify.delete('/workspaces/members', {schema: workspaceMembersDeleteSchema}, async (request, reply) => new Workspaces(request).removeMembers(request.body as WorkspacesTypes.WorkspaceMembersPostRequest))
 
     // fastify.get('/workspaces/members', {schema: workspaceNotificationsSchema}, async (request, reply) => new Workspaces(request).notifications(request.query as WorkspaceRequest))
 
     function ctrl(request: FastifyRequest) {
-        const api = new Api(request.jwtToken)
+        const api = new Api(request)
         return new WorkspaceController(new WorkspaceService(api), new ChannelsService(api), new UsersService(api))
     }
 
@@ -80,6 +71,47 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         handler: (request) => ctrl(request).add(request as FastifyRequest<{ Body: WorkspacesTypes.WorkspacePostRequest }>)
     });
 
+
+    fastify.route({
+        method: "DELETE",
+        url: '/workspaces',
+        schema: workspacesDeleteSchema,
+        // preHandler: accessControl,
+        // preValidation: [fastify.authenticate],
+        handler: (request) =>
+            ctrl(request).delete(request as FastifyRequest<{ Body: WorkspacesTypes.WorkspaceRequest }>)
+    });
+
+
+    fastify.route({
+        method: "GET",
+        url: '/workspaces/members',
+        schema: workspaceMembersGetSchema,
+        // preHandler: accessControl,
+        // preValidation: [fastify.authenticate],
+        handler: (request) =>
+            ctrl(request).listMembers(request as FastifyRequest<{ Querystring: WorkspacesTypes.WorkspaceRequest }>)
+    });
+
+    fastify.route({
+        method: "POST",
+        url: '/workspaces/members',
+        schema: workspaceMembersPostSchema,
+        // preHandler: accessControl,
+        // preValidation: [fastify.authenticate],
+        handler: (request) =>
+            ctrl(request).addMembers(request as FastifyRequest<{ Body: WorkspacesTypes.WorkspaceMembersPostRequest }>)
+    });
+
+    fastify.route({
+        method: "DELETE",
+        url: '/workspaces/members',
+        schema: workspaceMembersDeleteSchema,
+        // preHandler: accessControl,
+        // preValidation: [fastify.authenticate],
+        handler: (request) =>
+            ctrl(request).removeMembers(request as FastifyRequest<{ Body: WorkspacesTypes.WorkspaceMembersPostRequest }>)
+    });
 
 
     next()

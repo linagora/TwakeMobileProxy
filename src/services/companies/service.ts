@@ -1,5 +1,4 @@
-import Api from "../../common/twakeapi2";
-import {CompanyTypes} from "./types";
+import Api from "../../common/twakeapi";
 
 export default class CompaniesService {
     constructor(protected api: Api) {

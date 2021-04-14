@@ -1,27 +1,26 @@
-import Base from '../../common/base'
-import {authCache, usersCache} from '../../common/simplecache'
-import assert from "assert";
-import WorkspaceService from "../workspaces/service";
-import ChannelsService from "../channels/service";
-import UsersService from "../workspaces/service";
+import {usersCache} from '../../common/simplecache'
+import UsersService from "./service";
 import {UsersTypes} from "./types";
-import UsersSearchRequest = UsersTypes.UsersSearchRequest;
+import {FastifyRequest} from "fastify";
 import User = UsersTypes.User;
-
 
 
 /**
  * Users methods
  */
-export default class extends Base {
-    /**
-     * Get current user /users/current/get
-     * @return {Promise<{firstname: string, thumbnail: string, companies: [], user_id: string, username: string, lastname: string}>}
-     * @param timeZoneOffset
-     */
-    async getCurrent(timeZoneOffset?: number): Promise<User> {
 
-        const data = await this.api.getCurrentUser(timeZoneOffset)
+
+export class UsersController {
+
+    // constructor(protected service: WorkspaceService, protected channelsService: ChannelsService, protected usersService: UsersService) {}
+    constructor(protected usersService: UsersService) {
+    }
+
+
+
+    async getCurrent({query}: FastifyRequest<{ Querystring: UsersTypes.CurrentUserRequest }>): Promise<User> {
+
+        const data = await this.usersService.getCurrent(query.timezoneoffset)
         const user = {
             id: data.id,
             username: data.username,
@@ -37,17 +36,10 @@ export default class extends Base {
         out.status = {"icon": data.status_icon[0], "title": data.status_icon[1]}
         out.notification_rooms  = ['previous:users/' + data.id]
 
-        return this.__transform(out)
+        return out
 
     }
 
-    __transform(user: User) {
-        if (this.versionFrom("2.0.0")) {
-            return user
-        } else {
-            return Object.assign({}, user, {"userId": user.id})
-        }
-    }
 
     /**
      * Get user by Id
@@ -56,9 +48,9 @@ export default class extends Base {
      */
     async getUser(userId: string) {
         if (usersCache[userId]) {
-            return Promise.resolve(this.__transform(usersCache[userId]))
+            return Promise.resolve(usersCache[userId])
         }
-        return this.api.getUserById(userId).then((a) => {
+        return this.usersService.getUserById(userId).then((a) => {
 
             if (!Array.isArray(a)) {
                 const user = {
@@ -69,41 +61,28 @@ export default class extends Base {
                     thumbnail: a.thumbnail
                 }
                 usersCache[a.id] = user
-                return this.__transform(user)
+                return user
             } else return null
         })
     }
 
-    async getUsers(usersIds: string[] | string) {
+    async getUsers({query} : FastifyRequest<{ Querystring: UsersTypes.UsersGetRequest }>) {
+        return (await Promise.all(query.id.map((a:any) => this.getUser(a)))).filter(a=>a)
+    }
 
-        if (!Array.isArray(usersIds)) {
-            usersIds = [usersIds]
+    async searchUsers({query}: FastifyRequest<{ Querystring: UsersTypes.UsersSearchRequest }>) {
+
+    return this.usersService.searchUsers(query.company_id, query.name).then(a => a.users.map((a: any) => {
+        const user = a[0]
+        return {
+            id: user.id,
+            username: user.username,
+            firstname: user.firstname,
+            lastname: user.lastname
         }
-
-        return (await Promise.all(usersIds.map(a => this.getUser(a)))).filter(a=>a)
-    }
-
-    async searchUsers(req: UsersSearchRequest) {
-        return this.api.searchUsers(req.company_id, req.name).then(a => a.users.map((a: any) => {
-            const user = a[0]
-            return {
-                id: user.id,
-                username: user.username,
-                firstname: user.firstname,
-                lastname: user.lastname
-            }
-        }))
+    }))
     }
 
 
-
-
-}
-
-export class UsersController {
-
-    // constructor(protected service: WorkspaceService, protected channelsService: ChannelsService, protected usersService: UsersService) {}
-    constructor(protected usersService: UsersService) {
-    }
 
 }

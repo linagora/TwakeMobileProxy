@@ -1,9 +1,6 @@
 import assert from "assert";
-import Api from "../../common/twakeapi2";
-import {UsersTypes} from "./types";
+import Api from "../../common/twakeapi";
 import {BadRequest} from "../../common/errors";
-
-import {usersCache} from '../../common/simplecache'
 
 export default class UsersService {
 
@@ -44,4 +41,9 @@ export default class UsersService {
         return this
     }
 
+    searchUsers(companyId: string, name: string) {
+        const params = {"options": {"scope": "group", "name": name, "group_id": companyId, "language_preference": "en"}}
+        return this.api.post('/ajax/users/all/search', params).then((a:any) => a)
+
+    }
 }

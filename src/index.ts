@@ -2,12 +2,21 @@ import Fastify, {FastifyInstance} from 'fastify'
 import {BadRequest, Forbidden, PayloadTooLarge} from './common/errors';
 import {AssertionError} from "assert";
 import config from './common/config'
+import {FILE_SIZE} from './services/uploader/types'
+import channelsServiceRoutes from './services/channels/routes'
+import workspacesServiceRoutes from './services/workspaces/routes'
+import usersServiceRoutes from './services/users/routes'
+import messagesServiceRoutes from './services/messages/routes'
+import authorizationServiceRoutes from './services/authorization/routes'
+import infoServiceRoutes from './services/info/routes'
+import companiesServiceRoutes from './services/companies/routes'
+import uploadServiceRoutes from './services/uploader/routes'
 
-if(!process.env.CORE_HOST){
-    console.error('Missing CORE_HOST env variable')
-    process.exit(1)
+if(process.env.CORE_HOST){
+    config.core_host = process.env.CORE_HOST.replace(/\/$/, "");
+    console.log('Started with CORE_HOST ' + config.core_host)
 }
-config.core_host = process.env.CORE_HOST.replace(/\/$/, "");
+
 
 const fastify: FastifyInstance = Fastify({logger: false})
 
@@ -87,8 +96,6 @@ fastify.register(require('fastify-swagger'), {
     }
 })
 
-import {FILE_SIZE} from './services/uploader/types'
-
 // Register fastify plugin to handle multipart uploads
 fastify.register(require('fastify-multipart'), {
   limits: {
@@ -99,17 +106,6 @@ fastify.register(require('fastify-multipart'), {
     files: 1,           // Max number of file fields
   }
 });
-
-
-
-import channelsServiceRoutes from './services/channels/routes'
-import workspacesServiceRoutes from './services/workspaces/routes'
-import usersServiceRoutes from './services/users/routes'
-import messagesServiceRoutes from './services/messages/routes'
-import authorizationServiceRoutes from './services/authorization/routes'
-import infoServiceRoutes from './services/info/routes'
-import companiesServiceRoutes from './services/companies/routes'
-import uploadServiceRoutes from './services/uploader/routes'
 
 
 fastify.register(channelsServiceRoutes, {prefix: '/internal/mobile'})

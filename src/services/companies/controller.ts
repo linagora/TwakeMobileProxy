@@ -2,7 +2,6 @@ import {FastifyRequest} from "fastify";
 import UsersService from "../users/service";
 import CompaniesService from "./service";
 import {CompanyTypes} from "./types";
-import {WorkspacesTypes} from "../workspaces/types";
 
 export class CompaniesController {
     

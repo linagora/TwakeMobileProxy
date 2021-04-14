@@ -1,67 +1,19 @@
-import Base from '../../common/base'
 import {arrayToObject} from '../../common/helpers'
 // import Users from '../../services/users/controller'
 import assert from "assert";
-import {fixIt, parseCompile, toTwacode} from "../../common/twacode"
+import {toTwacode} from "../../common/twacode"
 import {BadRequest} from "../../common/errors";
 import {MessagesTypes} from "./types";
 import UsersService from "../users/service";
 import MessagesService from "./service";
 // import {ChannelsTypes} from "../channels/types";
-
 import {FastifyRequest} from "fastify";
 import ChannelsService from "../channels/service";
 import GetMessagesRequest = MessagesTypes.GetMessagesRequest;
 
 
 const emojis = require('../../resources/emojis.json')
-/**
- * Messages methods
- */
-export default class extends Base {
 
-
-    // async updateMessage(req: MessagesTypes.UpdateMessageRequest) {
-    //
-    //     return this.api.updateMessage(req.company_id, req.workspace_id, req.channel_id, req.message_id, req.thread_id, req.original_str, toTwacode)
-    //
-    // }
-
-    async deleteMessage(req: MessagesTypes.MessageRequest) {
-        assert(req.company_id, 'company_id is required');
-        assert(req.workspace_id, 'workspace_id is required');
-        assert(req.channel_id, 'channel_id is required');
-        assert(req.message_id, 'message_id is required');
-
-        try {
-            const data = await this.api.deleteMessage(req.company_id, req.workspace_id, req.channel_id, req.message_id, req.thread_id)
-            console.log('DONE', data)
-        } catch (e) {
-            //
-            console.log('\n\n-----------\nError deleting message')
-            const res = await this.api.getMessages(req.company_id, req.workspace_id, req.channel_id, req.thread_id, req.message_id, 1)
-            console.log(res)
-            console.log('GOT:', e)
-            assert(false, 'Something went wrong')
-        }
-
-        return {"success": true}
-
-    }
-
-    async reactions(req: MessagesTypes.ReactionsRequest) {
-
-        const res = await this.api.addReaction(req.company_id, req.workspace_id, req.channel_id, req.message_id, req.reaction, req.thread_id)
-
-        return {
-            id: res.object.id,
-            reactions: res.object.reactions
-        }
-
-    }
-
-
-}
 
 export class MessagesController {
 
@@ -232,7 +184,7 @@ export class MessagesController {
             // }
 
             // r.content.prepared = ready.filter(r => r)
-            r.content.prepared = prepared
+            r.content.prepared = Array.isArray(prepared) ? prepared : [prepared]
 
             if (!a.thread_id) {
                 r.responses = []
@@ -328,6 +280,32 @@ export class MessagesController {
 
     }
 
+    async reactions({body}: FastifyRequest<{Body:MessagesTypes.ReactionsRequest}>) {
+
+        const res = await this.messagesService.addReaction(body.company_id, body.workspace_id, body.channel_id, body.message_id, body.reaction, body.thread_id)
+
+        return {
+            id: res.object.id,
+            reactions: res.object.reactions
+        }
+
+    }
 
 
+    async deleteMessage({body}: FastifyRequest<{Body: MessagesTypes.MessageRequest}>) {
+
+        try {
+            const data = await this.messagesService.deleteMessage(body.company_id, body.workspace_id, body.channel_id, body.message_id, body.thread_id)
+            console.log('DONE', data)
+        } catch (e) {
+            //
+            console.log('\n\n-----------\nError deleting message')
+            const res = await this.messagesService.getMessages(body.company_id, body.workspace_id, body.channel_id, body.thread_id, body.message_id, 1)
+            console.log(res)
+            console.log('GOT:', e)
+            assert(false, 'Something went wrong')
+        }
+
+        return {"success": true}
+    }
 }
