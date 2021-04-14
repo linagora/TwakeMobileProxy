@@ -95,7 +95,7 @@ export default class MessagesService {
                 'workspace_id': workspaceId,
                 "public_access_token": null
             },
-        }).then(a=>a.data)
+        }).then(a => a.data)
     }
 
 }
