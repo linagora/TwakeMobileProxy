@@ -18,8 +18,8 @@ export default class UploadService {
             extension: file.filename.split('.').reverse().shift(),
         }) 
 
-        console.log("GOT RESP: " + Object.entries(res))
-        console.log("PATH: " + file.filepath)
+        // console.log("GOT RESP: " + Object.entries(res))
+        // console.log("PATH: " + file.filepath)
         file.upload_id = res.identifier
         const form = this.buildFormData(file)
 
