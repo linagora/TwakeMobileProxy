@@ -23,7 +23,7 @@ export default class Api implements ApiType {
     host: string = ""
 
     constructor(request: FastifyRequest) {
-        this.host = config.core_host ? config.core_host : request.hostname
+        this.host = config.core_host ? config.core_host : 'https://' + request.hostname
         console.log('API: ' + this.host)
         if (request.jwtToken)
             this.token = request.jwtToken
