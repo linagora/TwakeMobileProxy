@@ -10,7 +10,7 @@ export default class MessagesService {
     constructor(protected api: Api) {
     }
 
-    whatsNew(req: WhatsNewRequest){
+    async whatsNew(req: WhatsNewRequest){
         return this.api.get(`/internal/services/notifications/v1/badges`, {"company_id": req.company_id}).then(a=>a.resources)
     }
 
@@ -95,7 +95,7 @@ export default class MessagesService {
                 'workspace_id': workspaceId,
                 "public_access_token": null
             },
-        }).then(a=>a.data)
+        }).then(a => a.data)
     }
 
     async addReaction(companyId: string, workspaceId: string, channelId: string, messageId: string, reaction: string, threadId?: string) {

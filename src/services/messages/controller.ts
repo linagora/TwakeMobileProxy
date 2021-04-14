@@ -89,8 +89,9 @@ export class MessagesController {
     async __formatMessage(req: MessagesTypes.GetMessagesRequest, messages: any[]): Promise<any> {
 
 
-        const getPreview = async (elementId: string) => this.messagesService.getDriveObject(req.company_id, req.workspace_id, elementId).then(a => a.preview_link)
-
+        // const getPreview = async (elementId: string) =>
+        // this.messagesService.getDriveObject(req.company_id,
+        // req.workspace_id, elementId).then(a => a.preview_link)
 
         const formatMessages = async (a: any) => {
             if (a.sender) {
@@ -130,6 +131,37 @@ export class MessagesController {
             } as any
 
             let prepared = a.content.prepared || a.content.formatted || a.content
+            const last = (prepared as Array<string | {[key: string]: any}>).pop()
+            if (last && last instanceof Object && last.type === 'nop') {
+                console.log("LAST : " + last.type);
+                const content = last.content as Array<{[key: string]: any}>
+                for (let item of content) { 
+                    if (item.type === 'file') {
+                        const file = await this.messagesService.getDriveObject(
+                            req.company_id,
+                            req.workspace_id, 
+                            item.content
+                        )
+                        if (!file) return
+
+                        // Grab the latest version of the file
+                        const latest = file.path.pop()
+                        item.metadata = {
+                            name: latest.name,
+                            size: file.size,
+                            preview: latest.preview_has_been_generated
+                                ? latest.preview_link
+                                : null,
+                            download: '/ajax/drive/download?workspace_id=' +
+                                `${file.workspace_id}&element_id=${file.id}` +
+                                '&download=1'
+                        }
+                    }
+                }
+            }
+            prepared.push(last)
+            
+            
 
             // // console.log(prepared)
             // if (!Array.isArray(prepared)) {
