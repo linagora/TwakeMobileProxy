@@ -1,4 +1,4 @@
-import { websocketUsersCache } from './simplecache'
+import {websocketUsersCache} from './simplecache'
 import jwt from 'jsonwebtoken'
 import config from 'config'
 import Users from '../controllers/users'

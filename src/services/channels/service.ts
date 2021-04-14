@@ -1,4 +1,4 @@
-import Api from "../../common/twakeapi2";
+import Api from "../../common/twakeapi";
 import {ChannelsTypes} from "./types";
 import assert from "assert";
 

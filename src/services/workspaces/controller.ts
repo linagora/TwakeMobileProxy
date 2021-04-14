@@ -1,4 +1,3 @@
-import Base from '../../common/base'
 import {WorkspacesTypes} from "./types";
 import ChannelsService from "../channels/service";
 import {ChannelsTypes} from "../channels/types";
@@ -10,45 +9,6 @@ import UsersService from "../users/service";
 import WorkspaceRequest = WorkspacesTypes.WorkspaceRequest;
 import WorkspaceMembersPostRequest = WorkspacesTypes.WorkspaceMembersPostRequest;
 import Workspace = WorkspacesTypes.Workspace;
-
-
-export default class extends Base {
-
-
-
-
-    async delete(request: WorkspaceRequest): Promise<any> {
-        await this.api.deleteWorkspace(request.company_id, request.workspace_id)
-        return {"success": true}
-    }
-
-    async listMembers(request: WorkspaceRequest) {
-        return this.api.listWorkspaceMembers(request.company_id, request.workspace_id)
-            .then(a => a ? a.list : [])
-            .then(a => Object.values(a))
-            .then(a => a.map((u: any) => u.user))
-            .then((u: any) => u.map(({id, username, firstname, lastname}: any) => ({
-                id,
-                username,
-                firstname,
-                lastname
-            })))
-    }
-
-    async addMembers(request: WorkspaceMembersPostRequest): Promise<any> {
-        await this.api.addWorkspaceMember(request.company_id, request.workspace_id, request.members)
-        return {"success": true}
-    }
-
-    async removeMembers(request: WorkspaceMembersPostRequest): Promise<any> {
-        await this.api.deleteWorkspaceMember(request.company_id, request.workspace_id, request.members)
-        return {"success": true}
-    }
-
-    // async notifications(request: )
-
-
-}
 
 
 export class WorkspaceController {
@@ -127,6 +87,33 @@ export class WorkspaceController {
         return rooms
     }
 
+    async delete({body:req}: FastifyRequest<{ Body: WorkspaceRequest}>): Promise<any> {
+        await this.workspaceService.deleteWorkspace(req.company_id, req.workspace_id)
+        return {"success": true}
+    }
+
+    async listMembers({query:req}: FastifyRequest<{ Querystring: WorkspaceRequest}>) {
+        return this.workspaceService.listWorkspaceMembers(req.company_id, req.workspace_id)
+            .then((a:any) => a ? a.list : [])
+            .then((a:any) => Object.values(a))
+            .then((a:any) => a.map((u: any) => u.user))
+            .then((u: any) => u.map(({id, username, firstname, lastname}: any) => ({
+                id,
+                username,
+                firstname,
+                lastname
+            })))
+    }
+
+    async addMembers({body:req}: FastifyRequest<{ Body: WorkspaceMembersPostRequest}>): Promise<any> {
+        await this.workspaceService.addWorkspaceMember(req.company_id, req.workspace_id, req.members)
+        return {"success": true}
+    }
+
+    async removeMembers({body:req}: FastifyRequest<{ Body: WorkspaceMembersPostRequest}>): Promise<any> {
+        await this.workspaceService.deleteWorkspaceMember(req.company_id, req.workspace_id, req.members)
+        return {"success": true}
+    }
 
 
 }

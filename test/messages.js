@@ -99,8 +99,7 @@ describe('Messages', async function () {
     })
 
 
-
-    step('Bot messages', async function(){
+    xstep('Bot messages', async function(){
 
         await api.selectCompany('LINAGORA')
         await api.selectWorkspace('Software')

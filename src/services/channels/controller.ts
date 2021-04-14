@@ -1,14 +1,10 @@
-import Base from '../../common/base'
-import Users from '../users/controller'
 import {arrayToObject} from "../../common/helpers";
 import {authCache} from "../../common/simplecache";
-// import {BadRequest} from "../common/errors";
 import {ChannelsTypes} from "./types";
 import {FastifyRequest} from "fastify";
 import ChannelsService from "./service";
 import UsersService from "../users/service";
 import {BadRequest} from "../../common/errors";
-import assert from "assert";
 
 const emojis = require('../../resources/emojis.json')
 
@@ -85,7 +81,7 @@ export class ChannelsController {
         }
 
         return await this.channelsService.public(company_id, workspace_id, false)
-            .then(data => data
+            .then((data:any) => data
                 .filter((a: any) => a.visibility == visibility)
                 .find((a: any) => {
                         return (name && a.name.toLocaleLowerCase() == name.toLocaleLowerCase())
@@ -113,7 +109,7 @@ export class ChannelsController {
     async add(request: FastifyRequest<{ Body: ChannelsTypes.AddRequest }>): Promise<any> {
         const {company_id, workspace_id, visibility, name, members, channel_group, description, icon} = request.body
         const found = await this.channelsService.public(company_id, workspace_id, false)
-            .then(data => data.find((a: any) => a.visibility === visibility && a.name === name))
+            .then((data:any) => data.find((a: any) => a.visibility === visibility && a.name === name))
         if (found){
             found.members_count = (await this.channelsService.getMembers(company_id, workspace_id, found.id)).length
             return __channelFormat(found)
@@ -153,11 +149,11 @@ export class ChannelsController {
             // const existed_channels_id = channels.reduce((acc, curr) => (acc[curr.id] = true, acc), {});
             const existed_channels_id = new Set(channels.map(a => a.id))
             await this.channelsService.public(company_id, workspace_id, true).then(
-                all_channels => all_channels.filter((a: any) => !existed_channels_id.has(a.id))
+                (all_channels:any) => all_channels.filter((a: any) => !existed_channels_id.has(a.id))
                     .forEach((a: any) => channels.push(a)))
         }
 
-        const counts = await Promise.all(channels.map((c) => this.channelsService.getMembers(company_id, workspace_id, c.id).then(a => a.length)))
+        const counts = await Promise.all(channels.map((c) => this.channelsService.getMembers(company_id, workspace_id, c.id).then((a:any) => a.length)))
 
         const user = await this.usersService.getCurrent()
         channels.forEach((ch: any) => {
@@ -170,20 +166,20 @@ export class ChannelsController {
 
     getMembers(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
         const {company_id, workspace_id, channel_id} = request.query
-        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then(a => this.addEmailsToMembers(a))
+        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then((a:any) => this.addEmailsToMembers(a))
     }
 
     async addMembers(request: FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>): Promise<any> {
         const {company_id, workspace_id, channel_id} = request.body
         await this.channelsService.addMembers(request.body)
-        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then(a => this.addEmailsToMembers(a))
+        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then((a:any) => this.addEmailsToMembers(a))
     }
 
     async removeMembers(request: FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>): Promise<any> {
         const {company_id, workspace_id, channel_id} = request.body
 
         await this.channelsService.removeMembers(request.body)
-        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then(a => this.addEmailsToMembers(a))
+        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then((a:any) => this.addEmailsToMembers(a))
     }
 
     edit(request: FastifyRequest<{ Body: ChannelsTypes.UpdateRequest }>) {

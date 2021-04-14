@@ -6,13 +6,17 @@ import {ChannelsTypes} from "./types";
 import {
     channelsDeleteSchema,
     channelsGetSchema,
+    channelsInitSchema,
+    channelsMarkReadSchema,
+    channelsMembersDeleteSchema,
+    channelsMembersGetSchema,
     channelsMembersPostSchema,
     channelsPostSchema,
+    channelsPutSchema,
     directGetSchema,
-    channelsMembersGetSchema,
-    channelsPutSchema, channelsInitSchema, channelsMembersDeleteSchema, channelsMarkReadSchema, directPostSchema
+    directPostSchema
 } from "./schemas";
-import Api from "../../common/twakeapi2";
+import Api from '../../common/twakeapi'
 import ChannelsService from "./service";
 import UsersService from "../users/service";
 
@@ -21,7 +25,7 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
 
 
     function ctrl(request: FastifyRequest) {
-        const api = new Api(request.jwtToken)
+        const api = new Api(request)
         return new ChannelsController(new ChannelsService(api), new UsersService(api))
     }
 

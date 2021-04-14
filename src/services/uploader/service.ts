@@ -1,6 +1,6 @@
 import FormData from "form-data";
-import Api from "../../common/twakeapi2";
-import {UploadedFile, PreprocessResponse, FILE_SIZE, UploadResponse} from "./types";
+import Api from "../../common/twakeapi";
+import {FILE_SIZE, PreprocessResponse, UploadedFile, UploadResponse} from "./types";
 import {createReadStream, Stats, statSync} from "fs";
 
 

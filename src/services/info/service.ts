@@ -1,5 +1,4 @@
-import Api from "../../common/twakeapi2";
-import {Forbidden} from "../../common/errors";
+import Api from "../../common/twakeapi";
 import assert from "assert";
 import config from "../../common/config";
 import emojiData from '../../resources/emojis.json'
@@ -34,11 +33,11 @@ export default class InfoService {
         return this.api.get('/ajax/core/version', {}).then(a => a.data).then(a => {
 
             if (a.auth && a.auth.console) {
-                a.auth.console.mobile_endpoint_url = config.core_host + "/ajax/users/console/openid?mobile=1"
+                a.auth.console.mobile_endpoint_url = this.api.host + "/ajax/users/console/openid?mobile=1"
             }
-            a.core_endpoint_url = config.core_host
+            a.core_endpoint_url = this.api.host
             a.socket_endpoint = {
-                host: config.core_host,
+                host: this.api.host,
                 path: "/socket"
             }
             return a

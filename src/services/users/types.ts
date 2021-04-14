@@ -4,6 +4,14 @@ export declare namespace UsersTypes {
         "name": string
     }
 
+    export interface CurrentUserRequest{
+        "timezoneoffset": number
+    }
+
+    export interface UsersGetRequest{
+        "id": number[]
+    }
+
     export interface User {
         id: string
         username: string

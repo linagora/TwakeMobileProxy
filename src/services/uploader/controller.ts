@@ -1,6 +1,6 @@
 import {PayloadTooLarge} from "../../common/errors";
 import UploadService from "./service";
-import {UploadResponse, UploadedFile}  from "./types";
+import {UploadedFile, UploadResponse} from "./types";
 
 export default class UploadController {
     constructor (protected uploadService: UploadService) {}

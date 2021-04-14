@@ -1,4 +1,4 @@
-import {BadRequest, Forbidden} from "../../common/errors";
+import {Forbidden} from "../../common/errors";
 import AuthorizationService from "./service";
 import {FastifyRequest} from "fastify";
 import {AuthTypes} from "./types";
