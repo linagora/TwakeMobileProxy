@@ -11,6 +11,12 @@ import authorizationServiceRoutes from './services/authorization/routes'
 import infoServiceRoutes from './services/info/routes'
 import companiesServiceRoutes from './services/companies/routes'
 import uploadServiceRoutes from './services/uploader/routes'
+import * as Sentry from '@sentry/node';
+
+Sentry.init({
+    dsn: "https://1b12ace826794ccda93012ee13d2ba0a@o310327.ingest.sentry.io/5544659",
+    // tracesSampleRate: 1.0,
+});
 
 if(process.env.CORE_HOST){
     config.core_host = process.env.CORE_HOST.replace(/\/$/, "");
@@ -138,6 +144,7 @@ fastify.setErrorHandler(function (error: Error, request, reply) {
     } else if (error instanceof PayloadTooLarge) {
         reply.status(400).send({"error": error.message})
     } else {
+        Sentry.captureException(error);
         console.error(error)
         reply.status(500).send({"error": "something went wrong"})
     }
