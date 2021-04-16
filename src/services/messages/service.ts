@@ -116,7 +116,7 @@ export default class MessagesService {
             }
         }
 
-        return this.api.post('/ajax/discussion/save', params)
+        return this.api.post('/ajax/discussion/save', params).then(a=>a.data)
     }
 
     async deleteMessage(companyId: string, workspaceId: string, channelId: string, messageId: string, threadId: string) {

@@ -131,6 +131,9 @@ export class MessagesController {
             } as any
 
             let prepared = a.content.prepared || a.content.formatted || a.content
+            if (!Array.isArray(prepared)){
+                prepared = [prepared]
+            }
             // const last = (prepared as Array<string | {[key: string]: any}>).pop()
             const fileMetadataAdd = async (prepared: Array<any>) => {
                 for (let item of prepared) {
@@ -164,62 +167,7 @@ export class MessagesController {
             // call the function on prepared
             await fileMetadataAdd(prepared)
             
-            
-
-            // // console.log(prepared)
-            // if (!Array.isArray(prepared)) {
-            //     prepared = [prepared]
-            // }
-            //
-            // assert(Array.isArray(prepared), 'wrong message content data')
-            //
-            // try {
-            //
-            //     for (let i = 0; i < prepared.length; i++) {
-            //         const p = prepared[i]
-            //         if (p.type === 'compile') {
-            //             const compiled = parseCompile(p.content)
-            //             compiled.forEach(a => prepared.push(a))
-            //             delete prepared[i]
-            //         }
-            //     }
-            // } catch (e) {
-            //     console.log(e)
-            // }
-            //
-            // const ready = [] as any[]
-            //
-            // prepared.forEach(item => {
-            //     if (Array.isArray(item)) {
-            //         item.forEach(subitem => ready.push(subitem))
-            //     } else {
-            //         // NOP also can contains data ...
-            //         if (item.type == 'nop' && Array.isArray(item.content) && item.content.length) {
-            //             item.content.forEach((s: any) => {
-            //                 ready.push(s)
-            //             })
-            //             // console.log('push', item)
-            //         } else {
-            //             ready.push(item)
-            //         }
-            //     }
-            // })
-            //
-            // for (let idx in ready) {
-            //     try {
-            //
-            //         ready[idx] = await fixIt(ready[idx], getPreview)
-            //     } catch (e) {
-            //         console.error('--- GOT ERROR ---')
-            //         console.log(e)
-            //         console.error(JSON.stringify(a.content, null, 2))
-            //         console.error('---')
-            //         ready[idx] = {"type": "unparseable"}
-            //     }
-            // }
-
-            // r.content.prepared = ready.filter(r => r)
-            r.content.prepared = Array.isArray(prepared) ? prepared : [prepared]
+            r.content.prepared = prepared
 
             if (!a.thread_id) {
                 r.responses = []
@@ -241,11 +189,13 @@ export class MessagesController {
         // filteredMessages = filteredMessages.filter((a: any) => a.content && a.content.original_str)
 
 
-        // filteredMessages = filteredMessages.filter((a: any) => a.content && a.content.original_str)
 
         filteredMessages = await Promise.all(filteredMessages.map((a: any) => formatMessages(a)))
 
+        filteredMessages = filteredMessages.filter((a: any) => a && a.id)
+
         // const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => this.usersService.getUserById(user_id as string))), 'id')
+
         const messagesHash = arrayToObject(filteredMessages, 'id')
         filteredMessages.forEach((a: any) => {
             delete a.responses
