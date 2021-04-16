@@ -6,7 +6,7 @@ import ChannelsService from "./service";
 import UsersService from "../users/service";
 import {BadRequest} from "../../common/errors";
 
-const emojis = require('../../resources/emojis.json')
+import emojis from '../../resources/emojis'
 
 const trim = (str:string, chr: string) => str.replace(new RegExp("^[" + chr + "]+|[" + chr + "]+$", "g"), "");
 

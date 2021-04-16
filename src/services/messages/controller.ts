@@ -12,7 +12,7 @@ import ChannelsService from "../channels/service";
 import GetMessagesRequest = MessagesTypes.GetMessagesRequest;
 
 
-const emojis = require('../../resources/emojis.json')
+import emojis from '../../resources/emojis';
 
 
 export class MessagesController {
@@ -131,12 +131,11 @@ export class MessagesController {
             } as any
 
             let prepared = a.content.prepared || a.content.formatted || a.content
-            const last = (prepared as Array<string | {[key: string]: any}>).pop()
-            if (last && last instanceof Object && last.type === 'nop') {
-                console.log("LAST : " + last.type);
-                const content = last.content as Array<{[key: string]: any}>
-                for (let item of content) { 
-                    if (item.type === 'file') {
+            // const last = (prepared as Array<string | {[key: string]: any}>).pop()
+            const fileMetadataAdd = async (prepared: Array<any>) => {
+                for (let item of prepared) {
+                    if (item instanceof String) continue;
+                    if (item instanceof Object && item.type === 'file') {
                         const file = await this.messagesService.getDriveObject(
                             req.company_id,
                             req.workspace_id, 
@@ -156,10 +155,14 @@ export class MessagesController {
                                 `${file.workspace_id}&element_id=${file.id}` +
                                 '&download=1'
                         }
+                    } else if (item instanceof Object && item.type === 'nop') {
+                        // if the item is nop which is always in the end, then recurse on its content
+                        await fileMetadataAdd(item.content)
                     }
                 }
             }
-            prepared.push(last)
+            // call the function on prepared
+            await fileMetadataAdd(prepared)
             
             
 

@@ -1,4 +1,4 @@
-import emojiData from './emoji.json';
+import emojiData from './emoji';
 import assert from "assert";
 
 /**
