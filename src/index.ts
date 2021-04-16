@@ -15,7 +15,11 @@ import * as Sentry from '@sentry/node';
 
 Sentry.init({
     dsn: "https://1b12ace826794ccda93012ee13d2ba0a@o310327.ingest.sentry.io/5544659",
-    // tracesSampleRate: 1.0,
+    integrations: [
+        // enable HTTP calls tracing
+        new Sentry.Integrations.Http({ tracing: true }),
+    ],
+    tracesSampleRate: 1.0,
 });
 
 if(process.env.CORE_HOST){

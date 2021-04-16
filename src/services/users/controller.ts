@@ -17,7 +17,6 @@ export class UsersController {
     }
 
 
-
     async getCurrent({query}: FastifyRequest<{ Querystring: UsersTypes.CurrentUserRequest }>): Promise<User> {
 
         const data = await this.usersService.getCurrent(query.timezoneoffset)
@@ -34,7 +33,7 @@ export class UsersController {
         const out = Object.assign({}, user)
 
         out.status = {"icon": data.status_icon[0], "title": data.status_icon[1]}
-        out.notification_rooms  = ['previous:users/' + data.id]
+        out.notification_rooms = ['previous:users/' + data.id]
 
         return out
 
@@ -66,28 +65,29 @@ export class UsersController {
         })
     }
 
-    async getUsers({query} : FastifyRequest<{ Querystring: UsersTypes.UsersGetRequest }>) {
+    async getUsers({query}: FastifyRequest<{ Querystring: UsersTypes.UsersGetRequest }>) {
 
-        if(!Array.isArray(query.id)){
+        if (!Array.isArray(query.id)) {
             query.id = [query.id]
         }
 
-        return (await Promise.all(query.id.map((a:any) => this.getUser(a)))).filter(a=>a)
+        return (await Promise.all(query.id.map((a: any) => this.getUser(a)))).filter(a => a)
     }
 
     async searchUsers({query}: FastifyRequest<{ Querystring: UsersTypes.UsersSearchRequest }>) {
 
-    return this.usersService.searchUsers(query.company_id, query.name).then(a => a.users.map((a: any) => {
-        const user = a[0]
-        return {
-            id: user.id,
-            username: user.username,
-            firstname: user.firstname,
-            lastname: user.lastname
-        }
-    }))
-    }
+        const users = (await this.usersService.searchUsers(query.company_id, query.name)) || []
 
+        return users.map((a: any) => {
+            const user = a[0]
+            return {
+                id: user.id,
+                username: user.username,
+                firstname: user.firstname,
+                lastname: user.lastname
+            }
+        })
+    }
 
 
 }
