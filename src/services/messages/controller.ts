@@ -243,11 +243,13 @@ export class MessagesController {
         // filteredMessages = filteredMessages.filter((a: any) => a.content && a.content.original_str)
 
 
-        // filteredMessages = filteredMessages.filter((a: any) => a.content && a.content.original_str)
 
         filteredMessages = await Promise.all(filteredMessages.map((a: any) => formatMessages(a)))
 
+        filteredMessages = filteredMessages.filter((a: any) => a && a.id)
+
         // const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => this.usersService.getUserById(user_id as string))), 'id')
+
         const messagesHash = arrayToObject(filteredMessages, 'id')
         filteredMessages.forEach((a: any) => {
             delete a.responses

@@ -18,22 +18,22 @@ describe('Messages', async function () {
 
     before(async function () {
         await api.auth()
-    })
-
-
-    step('Select company TestCompany', async function () {
         await api.selectCompany('TestCompany')
-    })
-
-    step('Select workspace Main', async function () {
         await api.selectWorkspace('Main')
     })
 
     step('Direct messages', async function(){
         const directChannels = await api.getDirectChannels()
+
         assert(directChannels.length, 'no direct channels available')
-        const messages = await api.getMessages({workspace_id: 'direct', channel_id:directChannels[0].id})
-        assert(messages.length, 'no messages in direct channels')
+
+        for(const channel of directChannels){
+            const messages = await api.getMessages({workspace_id: 'direct', channel_id: channel.id})
+            // if(!messages.length){
+            //     console.log('no messages in direct channel ' + channel.name)
+            // }
+        }
+
     })
 
 
