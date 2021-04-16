@@ -1,4 +1,4 @@
-{
+export default {
   "hash": "0023-FE0F-20E3",
   "keycap_star": "002A-FE0F-20E3",
   "zero": "0030-FE0F-20E3",
@@ -3633,4 +3633,4 @@
   "woman_mountain_biking": "1f6b5-2640",
   "person_juggling_tone4": "1f939-1f3fe",
   "field_hockey": "1f3d1"
-}
+} as {[key: string]: string}

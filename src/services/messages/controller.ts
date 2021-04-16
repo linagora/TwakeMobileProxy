@@ -12,7 +12,7 @@ import ChannelsService from "../channels/service";
 import GetMessagesRequest = MessagesTypes.GetMessagesRequest;
 
 
-const emojis = require('../../resources/emojis.json')
+import emojis from '../../resources/emojis';
 
 
 export class MessagesController {
@@ -131,17 +131,14 @@ export class MessagesController {
             } as any
 
             let prepared = a.content.prepared || a.content.formatted || a.content
-
-           if (!Array.isArray(prepared)){
-               prepared = [prepared]
-           }
-
-            const last = (prepared as Array<string | {[key: string]: any}>).pop()
-            if (last && last instanceof Object && last.type === 'nop') {
-                // console.log("LAST : " + last.type);
-                const content = last.content as Array<{[key: string]: any}>
-                for (let item of content) { 
-                    if (item.type === 'file') {
+            if (!Array.isArray(prepared)){
+                prepared = [prepared]
+            }
+            // const last = (prepared as Array<string | {[key: string]: any}>).pop()
+            const fileMetadataAdd = async (prepared: Array<any>) => {
+                for (let item of prepared) {
+                    if (item instanceof String) continue;
+                    if (item instanceof Object && item.type === 'file') {
                         const file = await this.messagesService.getDriveObject(
                             req.company_id,
                             req.workspace_id, 
@@ -161,66 +158,15 @@ export class MessagesController {
                                 `${file.workspace_id}&element_id=${file.id}` +
                                 '&download=1'
                         }
+                    } else if (item instanceof Object && item.type === 'nop') {
+                        // if the item is nop which is always in the end, then recurse on its content
+                        await fileMetadataAdd(item.content)
                     }
                 }
             }
-            prepared.push(last)
+            // call the function on prepared
+            await fileMetadataAdd(prepared)
             
-            
-
-            // // console.log(prepared)
-            // if (!Array.isArray(prepared)) {
-            //     prepared = [prepared]
-            // }
-            //
-            // assert(Array.isArray(prepared), 'wrong message content data')
-            //
-            // try {
-            //
-            //     for (let i = 0; i < prepared.length; i++) {
-            //         const p = prepared[i]
-            //         if (p.type === 'compile') {
-            //             const compiled = parseCompile(p.content)
-            //             compiled.forEach(a => prepared.push(a))
-            //             delete prepared[i]
-            //         }
-            //     }
-            // } catch (e) {
-            //     console.log(e)
-            // }
-            //
-            // const ready = [] as any[]
-            //
-            // prepared.forEach(item => {
-            //     if (Array.isArray(item)) {
-            //         item.forEach(subitem => ready.push(subitem))
-            //     } else {
-            //         // NOP also can contains data ...
-            //         if (item.type == 'nop' && Array.isArray(item.content) && item.content.length) {
-            //             item.content.forEach((s: any) => {
-            //                 ready.push(s)
-            //             })
-            //             // console.log('push', item)
-            //         } else {
-            //             ready.push(item)
-            //         }
-            //     }
-            // })
-            //
-            // for (let idx in ready) {
-            //     try {
-            //
-            //         ready[idx] = await fixIt(ready[idx], getPreview)
-            //     } catch (e) {
-            //         console.error('--- GOT ERROR ---')
-            //         console.log(e)
-            //         console.error(JSON.stringify(a.content, null, 2))
-            //         console.error('---')
-            //         ready[idx] = {"type": "unparseable"}
-            //     }
-            // }
-
-            // r.content.prepared = ready.filter(r => r)
             r.content.prepared = prepared
 
             if (!a.thread_id) {

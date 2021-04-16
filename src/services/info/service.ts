@@ -1,7 +1,7 @@
 import Api from "../../common/twakeapi";
 import assert from "assert";
-import config from "../../common/config";
-import emojiData from '../../resources/emojis.json'
+// import config from "../../common/config";
+import emojiData from '../../resources/emojis'
 
 export default class InfoService {
 
