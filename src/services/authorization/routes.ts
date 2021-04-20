@@ -5,11 +5,12 @@ import {initSchema, prolongSchema} from "./schemas";
 import {AuthorizationController} from "./controller";
 import AuthorizationService from "./service";
 import UsersService from "../users/service";
+import InfoService from "../info/service";
 
 export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
     function ctrl(request: FastifyRequest) {
         const api = new Api(request)
-        return new AuthorizationController(new AuthorizationService(api), new UsersService(api))
+        return new AuthorizationController(new AuthorizationService(api), new UsersService(api), new InfoService(api))
     }
 
     fastify.route({
