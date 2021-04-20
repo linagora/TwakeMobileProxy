@@ -18,6 +18,7 @@ describe('Auth', async function () {
         assert(x.expiration)
         assert(x.refresh_token)
         assert(x.refresh_expiration)
+        console.log(x)
         refresh_token = x.refresh_token
     })
 
