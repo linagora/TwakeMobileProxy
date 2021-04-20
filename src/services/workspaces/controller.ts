@@ -64,6 +64,13 @@ export class WorkspaceController {
             type: 'CHANNELS_LIST',
             id: 'PRIVATE'
         }
+
+        rooms[`/companies/${request.query.company_id}/workspaces/direct/channels?type=direct&user=${currentUser.id}`] = {
+            type: 'DIRECTS_LIST',
+            id: 'DIRECT'
+        }
+        
+        // Listen for badge updates
         rooms[`/notifications?type=private&user=${currentUser.id}`] = {
             type: 'NOTIFICATIONS',
             id: 'PRIVATE'
