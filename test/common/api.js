@@ -341,6 +341,11 @@ class Api {
     async getEmojis() {
         return this.request.get('/info/emoji')
     }
+
+    async searchUsers(name){
+        return this.request.get('/users/search', {company_id:this.company_id, name})
+    }
+
 }
 
 module.exports = Api

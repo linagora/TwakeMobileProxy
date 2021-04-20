@@ -41,9 +41,8 @@ export default class UsersService {
         return this
     }
 
-    searchUsers(companyId: string, name: string) {
+    async searchUsers(companyId: string, name: string) {
         const params = {"options": {"scope": "group", "name": name, "group_id": companyId, "language_preference": "en"}}
-        return this.api.post('/ajax/users/all/search', params).then((a:any) => a)
-
+        return await this.api.post('/ajax/users/all/search', params).then((a:any) => a.data.users)
     }
 }
