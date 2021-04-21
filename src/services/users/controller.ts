@@ -3,6 +3,7 @@ import UsersService from "./service";
 import {UsersTypes} from "./types";
 import {FastifyRequest} from "fastify";
 import User = UsersTypes.User;
+import assert from "assert";
 
 
 /**
@@ -90,4 +91,60 @@ export class UsersController {
     }
 
 
+    async getProfile() {
+        const user = await this.usersService.getCurrent()
+
+        const profile = {
+            username: { readonly: true, value: user.username},
+            firstname: { readonly: true, value: user.firstname},
+            lastname: { readonly: true, value: user.lastname},
+            language: { readonly: false, value: user.language, options: [
+                    {value: 'de', title: 'Deutsch'},
+                    {value: 'es', title: 'Español'},
+                    {value: 'en', title: 'English'},
+                    {value: 'fr', title: 'Français'},
+                    {value: 'ja', title: '日本語'},
+                    {value: 'ru', title: 'Русский'},
+                    {value: 'vi', title: 'Tiếng Việt'},
+
+                ]},
+            picture: { readonly: false, value: user.picture},
+            password: {readonly:false, value: {old:'', new:''}}
+        }
+
+        return profile
+
+    }
+
+    async updateProfile({body}: FastifyRequest<{Body: UsersTypes.UpdateProfileRequest}>) {
+
+        if (body.password){
+
+            assert(body.password.old, 'password.old is missing')
+            assert(body.password.new, 'password.new is missing')
+
+            await this.usersService.changePassword(body.password.old, body.password.new)
+        }
+
+        if (body.firstname || body.lastname){
+
+            if(!body.firstname || !body.lastname){
+                const user = await this.usersService.getCurrent()
+                if(!body.firstname) {
+                    body.firstname = user.firstname
+                }
+                if(!body.lastname) {
+                    body.lastname = user.lastname
+                }
+            }
+
+            await this.usersService.updateFirstLastName(body.firstname, body.lastname)
+        }
+
+        if (body.language){
+            await this.usersService.changeLanguage(body.language)
+        }
+
+        return this.getProfile();
+    }
 }

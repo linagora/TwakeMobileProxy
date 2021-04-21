@@ -1,6 +1,7 @@
 import assert from "assert";
 import Api from "../../common/twakeapi";
 import {BadRequest} from "../../common/errors";
+import FormData from "form-data";
 
 export default class UsersService {
 
@@ -45,4 +46,22 @@ export default class UsersService {
         const params = {"options": {"scope": "group", "name": name, "group_id": companyId, "language_preference": "en"}}
         return await this.api.post('/ajax/users/all/search', params).then((a:any) => a.data.users)
     }
+
+    async changeLanguage(language: string) {
+        return this.api.post('/ajax/users/account/language', {"language":language,"sentByLanguageService":true})
+    }
+
+    async updateFirstLastName(firstname: string, lastname: string) {
+        const form = new FormData();
+        form.append('firstname', firstname);
+        form.append('lastname', lastname);
+
+        return  this.api.post('/ajax/users/account/identity', form, form.getHeaders())
+    }
+
+    async changePassword(old_password: string, password: string){
+        const x= await this.api.post('/ajax/users/account/password', {old_password,password})
+        if(x.errors && x.errors.length) throw new BadRequest('Bad password')
+    }
+
 }

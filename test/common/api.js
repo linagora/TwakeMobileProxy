@@ -61,6 +61,11 @@ class Request {
     put(path, params) {
         return this.__action('PUT', path, params)
     }
+
+    patch(path, params) {
+        return this.__action('PATCH', path, params)
+    }
+
 }
 
 class Api {
@@ -346,6 +351,23 @@ class Api {
         return this.request.get('/users/search', {company_id:this.company_id, name})
     }
 
+    getUserProfile() {
+        return this.request.get('/users/profile', {})
+    }
+
+    async updateProfile(obj) {
+        return this.request.patch('/users/profile', obj)
+    }
+
+    async getChannelsMembers(params) {
+
+        const _params = {
+            company_id: this.company_id,
+            workspace_id: this.workspace_id
+        }
+
+        return this.request.get('/channels/members', {..._params, ...params})
+    }
 }
 
 module.exports = Api

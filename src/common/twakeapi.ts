@@ -24,16 +24,10 @@ export default class Api implements ApiType {
 
     constructor(request: FastifyRequest) {
 
-
-
         let host = config.core_host ? config.core_host : ('https://' + request.hostname)
 
-        // host ='https://chat.twake.app'
-
-        console.log(config.core_host, request.hostname, host)
-
         this.host = host
-        console.log('API: ' + this.host)
+        // console.log('API: ' + this.host)
         if (request.jwtToken)
             this.token = request.jwtToken
     }
@@ -57,7 +51,8 @@ export default class Api implements ApiType {
         //
         // console.log(log)
 
-        console.log(method, url, JSON.stringify(params, null, 2))
+        console.log('\x1b[33m' + method, '\x1b[0m', url, '\x1b[2m', Object.keys(params).length ? JSON.stringify(params, null, 1) : '', '\x1b[0m')
+        // console.log(method, url)
 
         let res = null
 
