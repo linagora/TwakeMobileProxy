@@ -1,5 +1,5 @@
 import {FastifyInstance, FastifyRequest} from "fastify";
-import {userSchema, usersSchema, usersSearchSchema} from "./schemas";
+import {getUsersProfileSchema, patchUsersProfileSchema, userSchema, usersSchema, usersSearchSchema} from "./schemas";
 
 import {UsersController} from "./controller";
 
@@ -40,6 +40,22 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         schema: usersSearchSchema,
         handler: (request) =>
             ctrl(request).searchUsers(request as FastifyRequest<{ Querystring: UsersTypes.UsersSearchRequest }>)
+    });
+
+    fastify.route({
+        method: "GET",
+        url: '/users/profile',
+        schema: getUsersProfileSchema,
+        handler: (request) =>
+            ctrl(request).getProfile()
+    });
+
+    fastify.route({
+        method: "PATCH",
+        url: '/users/profile',
+        schema: patchUsersProfileSchema,
+        handler: (request) =>
+            ctrl(request).updateProfile(request as FastifyRequest<{ Body: UsersTypes.UpdateProfileRequest }>)
     });
 
     next()

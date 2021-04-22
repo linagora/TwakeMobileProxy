@@ -31,3 +31,25 @@ export const usersSearchSchema = {
             }
     }
 }
+
+export const getUsersProfileSchema = {
+    tags: ['User related'],
+    summary: 'Get user profile',
+    querystring: {}
+}
+
+
+export const patchUsersProfileSchema = {
+    tags: ['References'],
+    summary: 'Update user profile',
+    querystring: {
+        type: 'object',
+        "properties":
+            {
+                "language": {"type": "string"},
+                "firstname": {"type": "string"},
+                "lastname": {"type": "string"},
+                "password": {"type": "object", "properties": {"old" :{"type":"string"}, "new": {"type":"string"}}},
+            }
+    }
+}

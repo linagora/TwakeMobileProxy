@@ -23,4 +23,11 @@ export declare namespace UsersTypes {
         status?: { "icon": string, "title": string },
         notification_rooms?: string[]
     }
+
+    export interface UpdateProfileRequest {
+        language : string,
+        firstname: string,
+        lastname: string,
+        password: { "old": string, "new": string}
+    }
 }

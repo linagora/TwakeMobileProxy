@@ -10,7 +10,7 @@ const CHANNEL_NAME = 'TestChannel'
 
 
 describe('Messages', async function () {
-    this.timeout(10000);
+    this.timeout(50000);
 
     const api = new Api(host)
 
@@ -28,10 +28,8 @@ describe('Messages', async function () {
         assert(directChannels.length, 'no direct channels available')
 
         for(const channel of directChannels){
-            const messages = await api.getMessages({workspace_id: 'direct', channel_id: channel.id})
-            // if(!messages.length){
-            //     console.log('no messages in direct channel ' + channel.name)
-            // }
+            // const messages = await api.getMessages({workspace_id: 'direct', channel_id: channel.id})
+            await api.getChannelsMembers({workspace_id:'direct', channel_id:channel.id})
         }
 
     })
