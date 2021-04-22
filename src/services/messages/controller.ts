@@ -141,9 +141,12 @@ export class MessagesController {
                     if (item instanceof Object && item.type === 'file') {
                         const file = await this.messagesService.getDriveObject(
                             req.company_id,
-                            req.workspace_id, 
+                            req.workspace_id == 'direct' 
+                                ? req.fallback_ws_id // temporary, will be removed in future API
+                                : req.workspace_id, 
                             item.content
                         )
+                        console.log("FILE:" + JSON.stringify(file))
                         if (!file) return
 
                         // Grab the latest version of the file
