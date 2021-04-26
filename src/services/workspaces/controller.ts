@@ -102,7 +102,6 @@ export class WorkspaceController {
     async listMembers({query:req}: FastifyRequest<{ Querystring: WorkspaceRequest}>) {
         return this.workspaceService.listWorkspaceMembers(req.company_id, req.workspace_id)
             .then((a:any) => {
-                console.log(JSON.stringify(a.data.list))
                 return a?.data?.list || {}
             })
             .then((a:any) => Object.values(a))
