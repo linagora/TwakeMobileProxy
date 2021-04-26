@@ -35,7 +35,7 @@ export default class WorkspaceService {
 
     listWorkspaceMembers(companyId: string, workspaceId: string) {
         assert(companyId, 'company id is required')
-        return this.api.post('/ajax/workspace/members/list', {"limit": 1000, workspaceId})
+        return this.api.post('/ajax/workspace/members/list', {"max": 10000, "workspaceId": workspaceId})
     }
 
     async addWorkspaceMember(companyId: string, workspaceId: string, emails: string[]) {
