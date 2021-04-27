@@ -59,7 +59,7 @@ describe('Users', async function () {
 
     step('User Profile Picture' , async function(){
 
-        const file = fs.createReadStream(path.resolve(__dirname, 'common/yoda2.jpeg'))
+        const file = fs.createReadStream(path.resolve(__dirname, 'common/yoda.jpeg'))
 
         const res = await api.uploadProfilePicture(file)
         assert(res.file)

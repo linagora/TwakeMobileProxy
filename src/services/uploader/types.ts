@@ -3,7 +3,6 @@ import {Readable} from "stream";
 export interface UploadedFile {
     filepath: string,
     filename: string,
-    file: Readable,
     encoding?: string,
     mimetype?: string,
     upload_id?: string,

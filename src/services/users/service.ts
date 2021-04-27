@@ -72,27 +72,19 @@ export default class UsersService {
     async uploadUserPicture(user: User, file: UploadedFile): Promise<UploadProfileResponse> {
         const form = new FormData()
 
-        console.log(file)
-
         form.append("firstname", user.firstname)
         form.append("lastname", user.lastname)
-        form.append("thumbnail", file.file)
+        // form.append("thumbnail", file.file)
 
-        console.log(form)
-        console.log(form.getHeaders())
+        form.append("thumbnail", createReadStream(file.filepath), {filename: file.filename,})
 
         let resp: any;
         try {
-            console.log(1)
             resp = (await this.api.post('/ajax/users/account/identity', form, form.getHeaders()))
-            console.log(2)
-            console.log(resp)
         } catch (e) {
             console.error(e)
             throw new BadRequest(e.message)
         }
-
-        console.log(resp.data)
 
         return {file: resp.data.thumbnail}
     }
