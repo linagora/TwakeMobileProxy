@@ -30,4 +30,8 @@ export declare namespace UsersTypes {
         lastname: string,
         password: { "old": string, "new": string}
     }
+
+    export interface UploadProfileResponse {
+        file: string
+    }
 }

@@ -2,6 +2,11 @@ import assert from "assert";
 import Api from "../../common/twakeapi";
 import {BadRequest} from "../../common/errors";
 import FormData from "form-data";
+import {FILE_SIZE, PreprocessResponse, UploadedFile, UploadResponse} from "../uploader/types";
+import {createReadStream, Stats, statSync} from "fs";
+import {UsersTypes} from "./types";
+import UploadProfileResponse = UsersTypes.UploadProfileResponse;
+import User = UsersTypes.User;
 
 export default class UsersService {
 
@@ -62,6 +67,34 @@ export default class UsersService {
     async changePassword(old_password: string, password: string){
         const x= await this.api.post('/ajax/users/account/password', {old_password,password})
         if(x.errors && x.errors.length) throw new BadRequest('Bad password')
+    }
+
+    async uploadUserPicture(user: User, file: UploadedFile): Promise<UploadProfileResponse> {
+        const form = new FormData()
+
+        console.log(file)
+
+        form.append("firstname", user.firstname)
+        form.append("lastname", user.lastname)
+        form.append("thumbnail", file.file)
+
+        console.log(form)
+        console.log(form.getHeaders())
+
+        let resp: any;
+        try {
+            console.log(1)
+            resp = (await this.api.post('/ajax/users/account/identity', form, form.getHeaders()))
+            console.log(2)
+            console.log(resp)
+        } catch (e) {
+            console.error(e)
+            throw new BadRequest(e.message)
+        }
+
+        console.log(resp.data)
+
+        return {file: resp.data.thumbnail}
     }
 
 }

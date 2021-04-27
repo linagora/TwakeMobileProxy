@@ -1,5 +1,12 @@
 import {FastifyInstance, FastifyRequest} from "fastify";
-import {getUsersProfileSchema, patchUsersProfileSchema, userSchema, usersSchema, usersSearchSchema} from "./schemas";
+import {
+    getUsersProfileSchema,
+    patchUsersProfilePictureSchema,
+    patchUsersProfileSchema,
+    userSchema,
+    usersSchema,
+    usersSearchSchema
+} from "./schemas";
 
 import {UsersController} from "./controller";
 
@@ -56,6 +63,14 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         schema: patchUsersProfileSchema,
         handler: (request) =>
             ctrl(request).updateProfile(request as FastifyRequest<{ Body: UsersTypes.UpdateProfileRequest }>)
+    });
+
+    fastify.route({
+        method: "POST",
+        url: '/users/profile/picture',
+        schema: patchUsersProfilePictureSchema,
+        handler: (request) =>
+            ctrl(request).updateProfilePicture(request)
     });
 
     next()

@@ -4,10 +4,11 @@ const {xstep, step} = require("mocha-steps");
 // @ts-ignore
 const Api = require('./common/api.js')
 
-
+const fs = require("fs");
+const path = require('path')
 
 describe('Users', async function () {
-    this.timeout(10000);
+    this.timeout(100000);
 
     const api = new Api()
 
@@ -53,6 +54,20 @@ describe('Users', async function () {
         await api.updateProfile({'password': {old:'12345678', new:'12345678'}});
 
         await api.updateProfile({firstname:'firstname', lastname:'lastname'});
+    })
+
+
+    step('User Profile Picture' , async function(){
+
+        const file = fs.createReadStream(path.resolve(__dirname, 'common/yoda2.jpeg'))
+
+        const res = await api.uploadProfilePicture(file)
+        assert(res.file)
+        console.log(res)
+            // assert(res.id, 'File was not uploaded')
+            // assert(res.size == size, 'File size mismatch: ' + `${res.size} == ${size}`)
+            // fs.truncate(fileName, 0, () => 0)
+
     })
 
 

@@ -22,13 +22,25 @@ Sentry.init({
     tracesSampleRate: 1.0,
 });
 
-if(process.env.CORE_HOST){
-    config.core_host = process.env.CORE_HOST.replace(/\/$/, "");
-    console.log('Started with CORE_HOST ' + config.core_host)
-} else {
-    console.log('Started without CORE_HOST variable')
+declare global {
+    interface Console {
+        bgred: any,
+        red: any
+    }
+}
+console.bgred = function(data:string){
+    console.log('\x1b[41m' + data + '\x1b[0m')
+}
+console.red = function(data:string){
+    console.log('\x1b[31m' + data + '\x1b[0m')
 }
 
+if(process.env.CORE_HOST){
+    config.core_host = process.env.CORE_HOST.replace(/\/$/, "");
+    console.bgred('Started with CORE_HOST ' + config.core_host, )
+} else {
+    console.bgred('Started without CORE_HOST variable')
+}
 
 const fastify: FastifyInstance = Fastify({logger: false,  trustProxy: true })
 
@@ -174,6 +186,8 @@ io.on('connection', function (socket) {
 
 
 const start = async () => {
+
+
     try {
         await fastify.listen(3123, '::')
 

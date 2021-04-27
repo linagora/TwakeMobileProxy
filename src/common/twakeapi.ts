@@ -85,7 +85,7 @@ export default class Api implements ApiType {
             if(e.response && e.response.status === 404){
                 throw  new BadRequest('Object not found')
             }
-
+            console.log(e)
 
             throw new BadRequest( e.response ? e.response.data.message : e.message)
         }

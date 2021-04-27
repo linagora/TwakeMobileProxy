@@ -4,6 +4,9 @@ import {UsersTypes} from "./types";
 import {FastifyRequest} from "fastify";
 import User = UsersTypes.User;
 import assert from "assert";
+import {UploadedFile, UploadResponse} from "../uploader/types";
+import {PayloadTooLarge} from "../../common/errors";
+import UploadProfileResponse = UsersTypes.UploadProfileResponse;
 
 
 /**
@@ -147,4 +150,22 @@ export class UsersController {
 
         return this.getProfile();
     }
+
+
+    async updateProfilePicture(request: any): Promise<UploadProfileResponse> {
+
+        let file: UploadedFile
+        try {
+            file = (await request.saveRequestFiles())[0]
+        } catch (e) {
+            throw new PayloadTooLarge(e.message)
+        }
+        const user = await this.usersService.getCurrent()
+
+        const upload: UploadProfileResponse = await this.usersService.uploadUserPicture(user, file)
+        await request.cleanRequestFiles()
+
+        return upload
+    }
+
 }

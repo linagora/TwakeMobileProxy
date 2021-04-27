@@ -40,9 +40,9 @@ export const getUsersProfileSchema = {
 
 
 export const patchUsersProfileSchema = {
-    tags: ['References'],
+    tags: ['User related'],
     summary: 'Update user profile',
-    querystring: {
+    body: {
         type: 'object',
         "properties":
             {
@@ -51,5 +51,29 @@ export const patchUsersProfileSchema = {
                 "lastname": {"type": "string"},
                 "password": {"type": "object", "properties": {"old" :{"type":"string"}, "new": {"type":"string"}}},
             }
+    }
+}
+
+export const patchUsersProfilePictureSchema = {
+    description: 'Upload a File, the field name should be "file"',
+    tags: ['User related'],
+    summary: 'Upload user profile picture',
+    consumes: ['multipart/form-data'],
+    // body: {
+    //     type: 'object',
+    //     required: ['file'],
+    //     properties: {
+    //         file: {$ref: '#mySharedSchema'}
+    //     }
+    // },
+    response: {
+        201: {
+            description: 'Upload OK',
+            type: 'object'
+        },
+        400: {
+            description: 'Bad Request',
+            type: 'object'
+        }
     }
 }

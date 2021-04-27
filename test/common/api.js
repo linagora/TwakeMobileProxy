@@ -359,6 +359,17 @@ class Api {
         return this.request.patch('/users/profile', obj)
     }
 
+    async uploadProfilePicture(file) {
+        let form = new FormData()
+        form.append('file', file);
+        return this.request.post(
+            '/users/profile/picture',
+            form,
+            form.getHeaders(),
+            false
+        )
+    }
+
     async getChannelsMembers(params) {
 
         const _params = {
@@ -368,6 +379,8 @@ class Api {
 
         return this.request.get('/channels/members', {..._params, ...params})
     }
+
+
 }
 
 module.exports = Api
