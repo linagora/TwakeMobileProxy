@@ -3,6 +3,7 @@ export namespace MessagesTypes{
     export interface MessageRequest {
         company_id: string,
         workspace_id: string,
+        fallback_ws_id: string, // only neccessary for direct channel attachment (temporary)
         channel_id: string,
         thread_id: string
         message_id: string

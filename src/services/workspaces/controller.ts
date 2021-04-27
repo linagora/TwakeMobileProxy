@@ -101,14 +101,17 @@ export class WorkspaceController {
 
     async listMembers({query:req}: FastifyRequest<{ Querystring: WorkspaceRequest}>) {
         return this.workspaceService.listWorkspaceMembers(req.company_id, req.workspace_id)
-            .then((a:any) => a ? a.list : [])
+            .then((a:any) => {
+                return a?.data?.list || {}
+            })
             .then((a:any) => Object.values(a))
             .then((a:any) => a.map((u: any) => u.user))
-            .then((u: any) => u.map(({id, username, firstname, lastname}: any) => ({
+            .then((u: any) => u.map(({id, username, firstname, lastname, thumbnail}: any) => ({
                 id,
                 username,
                 firstname,
-                lastname
+                lastname,
+                thumbnail
             })))
     }
 
