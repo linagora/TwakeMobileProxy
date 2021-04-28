@@ -9,7 +9,9 @@ export const uploadSchema = {
                 "id": {"type": "string"},
                 "name": {"type": "string"},
                 "extension": {"type": "string"},
-                "size": {"type": "number"}
+                "size": {"type": "number"},
+                "preview": {"type": ["string", "null"]},
+                "download": {"type": "string"},
             }
         }
     }

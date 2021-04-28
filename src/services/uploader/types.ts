@@ -1,5 +1,3 @@
-import {Readable} from "stream";
-
 export interface UploadedFile {
     filepath: string,
     filename: string,
@@ -17,6 +15,8 @@ export interface UploadResponse {
     id: string,
     name: string,
     extension: string,
+    preview: string | null,
+    download: string,
     size: number
 }
 
