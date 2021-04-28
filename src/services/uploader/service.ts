@@ -24,17 +24,17 @@ export default class UploadService {
         const form = this.buildFormData(file)
 
         let resp: any;
-        try {
-        resp = (await this.api.post(
+        resp = await this.api.post(
             '/ajax/driveupload/upload', 
             form,
             form.getHeaders()
-        ))
-
-        } catch (e) {
-            console.error(e)
-        }
-        const upload: UploadResponse = resp.data.object
+        )
+        const f = resp.data.object
+        const upload: UploadResponse = f
+        upload.preview = f.has_preview ? f.preview_link : null
+        upload.download = '/ajax/drive/download?workspace_id=' +
+                          `${f.workspace_id}&element_id=${f.id}` +
+                          '&download=1'
 
         return upload
     }
