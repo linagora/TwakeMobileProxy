@@ -1,8 +1,6 @@
 {
   "host": "http://localhost:3123",
+  "_host": "https://beta.twake.app",
   "prefix": "/internal/mobile",
-  "username": "testbot",
-  "password": "12345678",
-  "token_username": "romanbykovsky",
   "auth_token": ""
 }

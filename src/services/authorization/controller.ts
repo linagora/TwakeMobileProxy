@@ -1,14 +1,27 @@
-import {BadRequest, Forbidden} from "../../common/errors";
+import {Forbidden} from "../../common/errors";
 import AuthorizationService from "./service";
 import {FastifyRequest} from "fastify";
 import {AuthTypes} from "./types";
 import assert from "assert";
 import {authCache} from "../../common/simplecache";
 import UsersService from "../users/service";
+import InfoService from "../info/service";
+import Axios from 'axios'
+import * as https from "https";
+
+const axios = Axios.create({
+    httpsAgent: new https.Agent({
+        rejectUnauthorized: false
+    })
+});
 
 export class AuthorizationController{
 
-    constructor(protected authorizationService: AuthorizationService, protected  userService: UsersService) {
+    constructor(
+        protected authorizationService: AuthorizationService,
+        protected userService: UsersService,
+        protected infoService: InfoService
+    ) {
     }
 
     async init(request: FastifyRequest<{ Body: AuthTypes.InitParams }>): Promise<any> {
@@ -23,15 +36,36 @@ export class AuthorizationController{
 
     async authorize(request: FastifyRequest<{ Body: AuthTypes.AuthParams }>): Promise<any> {
 
-        const {username, password,device, fcm_token, timezoneoffset} = request.body
+        const {username, password, device, fcm_token, timezoneoffset} = request.body
 
         const types = {'apple': 'apns', 'android': 'fcm'} as any
 
         assert(Object.keys(types).includes(device), "device should be in [" + Object.keys(types) + "]");
 
-        const res = await this.authorizationService.loginByPassword(username, password, fcm_token)
+
+        let res = null;
+
+        const info = await this.infoService.serverInfo()
+        if (info.auth.console){
+            console.log(info.auth.console.mobile_endpoint_url)
+            try{
+            const r = await axios.get("http://localhost:8000", {params:{endpoint: info.auth.console.mobile_endpoint_url, login:username, password}})
+                const token = r.data.token
+                res = await this.authorizationService.loginByToken(username, token, fcm_token, request.jwtToken)
+            } catch(e){
+                if (e.response && [401,403].includes(e.response.status)) {
+                    throw new Forbidden('Wrong credentials')
+                } else {
+                    throw e
+                }
+            }
+        } else {
+             res = await this.authorizationService.loginByPassword(username, password, fcm_token)
+
+        }
 
         return this.doAuth(request.jwtToken, res, timezoneoffset)
+
     }
 
     async prolong(request: FastifyRequest<{ Body: AuthTypes.ProlongParams }>): Promise<any> {

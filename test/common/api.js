@@ -1,10 +1,14 @@
 const {URL, URLSearchParams} = require('url');
 const fetch = require('node-fetch');
 const assert = require("assert");
+const FormData = require("form-data");
 const fs = require('fs');
 const prompt = require('prompt-promise');
 // @ts-ignore
 const config = require('./config.json')
+
+assert(process.env.TWAKE_USERNAME,'env variable TWAKE_USERNAME is missing')
+assert(process.env.TWAKE_PASSWORD,'env variable TWAKE_PASSWORD is missing')
 
 class Request {
 
@@ -33,20 +37,21 @@ class Request {
         })
     }
 
-    __action(method, path, params) {
+    __action(method, path, params, headers, stringify = true) {
         // console.log({method: method, headers: this.headers(), body: JSON.stringify(params)})
+        let hdrs = headers ? {...headers, ...this.headers()} : this.headers()
         return fetch(this.host + this.prefix + path, {
             method: method,
-            headers: this.headers(),
-            body: JSON.stringify(params)
+            headers: hdrs,
+            body: stringify ? JSON.stringify(params) : params
         }).then(async response => {
             if (response.status !== 200) throw new Error(await response.json().then(a => a.error))
             return response.json()
         })
     }
 
-    post(path, params) {
-        return this.__action('POST', path, params)
+    post(path, params, headers, stringify = true) {
+        return this.__action('POST', path, params, headers, stringify)
     }
 
     delete(path, params) {
@@ -56,6 +61,11 @@ class Request {
     put(path, params) {
         return this.__action('PUT', path, params)
     }
+
+    patch(path, params) {
+        return this.__action('PATCH', path, params)
+    }
+
 }
 
 class Api {
@@ -99,7 +109,7 @@ class Api {
             const params = {
                 "fcm_token": "123",
                 "timezoneoffset": -180,
-                "username": this.auth_config.token_username,
+                "username": process.env.TWAKE_USERNAME,
                 "token": this.auth_config.auth_token
             }
             // console.log(params)
@@ -118,8 +128,8 @@ class Api {
                 "fcm_token": "123",
                 "timezoneoffset": -180,
                 "device": "apple",
-                "username": this.auth_config.username,
-                "password": this.auth_config.password
+                "username": process.env.TWAKE_USERNAME,
+                "password": process.env.TWAKE_PASSWORD
             }
             // console.log(params)
             const res = await this.request.post('/authorize', params)
@@ -130,7 +140,7 @@ class Api {
     }
 
     async prolong(refresh_token) {
-        return this.request.post('/prolong', {refresh_token, fcm_token: "123", timezoneoffset: -180})
+        return this.request.post('/authorization/prolong', {refresh_token, fcm_token: "123", timezoneoffset: -180})
     }
 
     async logout() {
@@ -146,8 +156,13 @@ class Api {
     }
 
 
-    async selectWorkspace(name) {
-        const workspace = await this.getWorkspaces().then(a => a.find(a => a.name === name))
+    async selectWorkspace(name, add_if_not_exists=false) {
+        let workspace = await this.getWorkspaces().then(a => a.find(a => a.name === name))
+
+        if(!workspace && add_if_not_exists){
+            workspace = await this.addWorkspace({name})
+        }
+
         assert(workspace, `Workspace ${name} not found`)
         this.workspace_id = workspace.id
         return this.workspace_id
@@ -301,6 +316,71 @@ class Api {
     async getServerInfo(){
         return this.request.get('/' , {})
     }
+
+    async getCompanyBadges(company_id, all_companies=false) {
+        return this.request.get('/badges', {
+            company_id: company_id,
+            all_companies: all_companies
+        })
+    }
+
+    async uploadFile(file, workspace_id) {
+        let form = new FormData()
+        form.append('workspace_id', workspace_id);
+        form.append('file', file);
+        return this.request.post(
+            '/media/upload', 
+            form,
+            form.getHeaders(),
+            false
+        )
+    }
+
+    async getApplications() {
+        return this.request.get('/companies/applications', {
+            company_id: this.company_id
+        })
+
+    }
+
+    async getEmojis() {
+        return this.request.get('/info/emoji')
+    }
+
+    async searchUsers(name){
+        return this.request.get('/users/search', {company_id:this.company_id, name})
+    }
+
+    getUserProfile() {
+        return this.request.get('/users/profile', {})
+    }
+
+    async updateProfile(obj) {
+        return this.request.patch('/users/profile', obj)
+    }
+
+    async uploadProfilePicture(file) {
+        let form = new FormData()
+        form.append('file', file);
+        return this.request.post(
+            '/users/profile/picture',
+            form,
+            form.getHeaders(),
+            false
+        )
+    }
+
+    async getChannelsMembers(params) {
+
+        const _params = {
+            company_id: this.company_id,
+            workspace_id: this.workspace_id
+        }
+
+        return this.request.get('/channels/members', {..._params, ...params})
+    }
+
+
 }
 
 module.exports = Api

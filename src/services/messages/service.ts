@@ -1,16 +1,16 @@
 import assert from "assert";
-import Api from "../../common/twakeapi2";
+import Api from "../../common/twakeapi";
 import {MessagesTypes} from "./types";
-import WhatsNewRequest = MessagesTypes.WhatsNewRequest;
 import {required} from "../../common/helpers";
 import {BadRequest} from "../../common/errors";
+import WhatsNewRequest = MessagesTypes.WhatsNewRequest;
 
 export default class MessagesService {
 
     constructor(protected api: Api) {
     }
 
-    whatsNew(req: WhatsNewRequest){
+    async whatsNew(req: WhatsNewRequest){
         return this.api.get(`/internal/services/notifications/v1/badges`, {"company_id": req.company_id}).then(a=>a.resources)
     }
 
@@ -52,7 +52,7 @@ export default class MessagesService {
         })
     }
 
-    async addMessage(companyId: string, workspaceId: string, channelId: string, originalString: string, prepared: any, threadId?: string) {
+    async addMessage(companyId: string, workspaceId: string, channelId: string, originalString: string, prepared: any, threadId?: string, messageId?: string) {
 
         assert(companyId)
         assert(workspaceId)
@@ -72,6 +72,11 @@ export default class MessagesService {
                     prepared: prepared
                 }
             }
+        } as any
+
+        if(messageId){
+            params.object.message_id = messageId
+            params.object.id = messageId
         }
 
         return this.api.post('/ajax/discussion/save', params).then(a=>a.data)
@@ -90,7 +95,47 @@ export default class MessagesService {
                 'workspace_id': workspaceId,
                 "public_access_token": null
             },
-        }).then(a=>a.data)
+        }).then(a => a.data)
     }
 
+    async addReaction(companyId: string, workspaceId: string, channelId: string, messageId: string, reaction: string, threadId?: string) {
+        assert(companyId)
+        assert(workspaceId)
+        assert(channelId)
+        assert(messageId)
+
+        const params = {
+            'object': {
+                company_id: companyId,
+                workspace_id: workspaceId,
+                channel_id: channelId,
+                id: messageId,
+                _user_reaction: reaction,
+                parent_message_id: threadId, // backward compatibility
+                thread_id: threadId
+            }
+        }
+
+        return this.api.post('/ajax/discussion/save', params).then(a=>a.data)
+    }
+
+    async deleteMessage(companyId: string, workspaceId: string, channelId: string, messageId: string, threadId: string) {
+        assert(companyId)
+        assert(workspaceId)
+        assert(channelId)
+        assert(messageId)
+
+        const params = {
+            'object': {
+                company_id: companyId,
+                workspace_id: workspaceId,
+                channel_id: channelId,
+                id: messageId,
+                thread_id: threadId,
+                parent_message_id: threadId, // backward compatibility
+            }
+        }
+
+        return this.api.post('/ajax/discussion/remove', params)
+    }
 }

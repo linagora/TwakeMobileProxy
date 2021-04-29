@@ -1,9 +1,11 @@
+import {FastifyRequest} from "fastify";
 import UsersService from "../users/service";
+import CompaniesService from "./service";
 import {CompanyTypes} from "./types";
 
 export class CompaniesController {
-
-    constructor( protected usersService: UsersService) {
+    
+    constructor( protected usersService: UsersService, protected companiesService: CompaniesService ) {
     }
 
 
@@ -31,4 +33,27 @@ export class CompaniesController {
         return Object.values(companiesHash).sort((a: any, b: any) => a.name.localeCompare(b.name)) as CompanyTypes.Company[]
 
     }
+
+    async badges(request: FastifyRequest<{Querystring: CompanyTypes.GetBadges}>): Promise<CompanyTypes.Badges> {
+        const {company_id, all_companies} = request.query
+
+        const resources =  await this.companiesService.badges(company_id, all_companies)
+
+        const ret = { companies: {},  workspaces: {},  channels: {} } as CompanyTypes.Badges
+
+        for (let {company_id, workspace_id, channel_id} of resources) {
+            ret.companies[company_id] =  (ret.companies[company_id] || 0) + 1
+            ret.workspaces[workspace_id] = (ret.workspaces[workspace_id] || 0) + 1
+            ret.channels[channel_id] = (ret.channels[channel_id] || 0) + 1
+        }
+
+        return ret
+    }
+
+    async applications({query}: FastifyRequest<{ Querystring: CompanyTypes.Applications }>) {
+        return this.companiesService.applications(query.company_id)
+
+    }
+
+
 }

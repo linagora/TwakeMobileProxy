@@ -1,4 +1,4 @@
-import Api from "../../common/twakeapi2";
+import Api from "../../common/twakeapi";
 import {Forbidden} from "../../common/errors";
 import assert from "assert";
 

@@ -1,14 +1,14 @@
 import {FastifyInstance, FastifyRequest} from "fastify";
-import Api from "../../common/twakeapi2";
+import Api from '../../common/twakeapi'
 import {InfoTypes} from "./types";
-import { localizationGetSchema} from "./schemas";
-import { InfoController} from "./controller";
+import {emojiSchema, localizationGetSchema} from "./schemas";
+import {InfoController} from "./controller";
 import InfoService from "./service";
 
 export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
 
     function ctrl(request: FastifyRequest) {
-        const api = new Api(request.jwtToken)
+        const api = new Api(request)
         return new InfoController(new InfoService(api))
     }
 
@@ -26,8 +26,18 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         url: '/',
         schema: {hide: true} as any,
         handler: (request) =>
-            ctrl(request).info()
+            ctrl(request).info(request as FastifyRequest)
     });
+
+    fastify.route({
+        method: "GET",
+        url: '/info/emoji',
+        schema: emojiSchema,
+        handler: (request) =>
+            ctrl(request).emoji()
+    });
+
+
 
     next()
 }

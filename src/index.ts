@@ -1,16 +1,48 @@
 import Fastify, {FastifyInstance} from 'fastify'
-import {BadRequest, Forbidden} from './common/errors';
+import {BadRequest, Forbidden, PayloadTooLarge} from './common/errors';
 import {AssertionError} from "assert";
-import Settings from './controllers/settings'
 import config from './common/config'
+import {FILE_SIZE} from './services/uploader/types'
+import channelsServiceRoutes from './services/channels/routes'
+import workspacesServiceRoutes from './services/workspaces/routes'
+import usersServiceRoutes from './services/users/routes'
+import messagesServiceRoutes from './services/messages/routes'
+import authorizationServiceRoutes from './services/authorization/routes'
+import infoServiceRoutes from './services/info/routes'
+import companiesServiceRoutes from './services/companies/routes'
+import uploadServiceRoutes from './services/uploader/routes'
+import * as Sentry from '@sentry/node';
 
-if(!process.env.CORE_HOST){
-    console.error('Missing CORE_HOST env variable')
-    process.exit(1)
+Sentry.init({
+    dsn: "https://1b12ace826794ccda93012ee13d2ba0a@o310327.ingest.sentry.io/5544659",
+    integrations: [
+        // enable HTTP calls tracing
+        new Sentry.Integrations.Http({ tracing: true }),
+    ],
+    tracesSampleRate: 1.0,
+});
+
+declare global {
+    interface Console {
+        bgred: any,
+        red: any
+    }
 }
-config.core_host = process.env.CORE_HOST.replace(/\/$/, "");
+console.bgred = function(data:string){
+    console.log('\x1b[41m' + data + '\x1b[0m')
+}
+console.red = function(data:string){
+    console.log('\x1b[31m' + data + '\x1b[0m')
+}
 
-const fastify: FastifyInstance = Fastify({logger: false})
+if(process.env.CORE_HOST){
+    config.core_host = process.env.CORE_HOST.replace(/\/$/, "");
+    console.bgred('Started with CORE_HOST ' + config.core_host, )
+} else {
+    console.bgred('Started without CORE_HOST variable')
+}
+
+const fastify: FastifyInstance = Fastify({logger: false,  trustProxy: true })
 
 declare module "fastify" {
     export interface FastifyRequest {
@@ -88,28 +120,16 @@ fastify.register(require('fastify-swagger'), {
     }
 })
 
-
-export const emojiSchema = {
-    tags: ['References'],
-    summary: 'List of available emojis',
-    querystring: {
-        type: 'object', "required": [],
-        properties: {}
-    }
-}
-
-
-
-fastify.get('/settings/emoji', {schema: emojiSchema}, async (request) => new Settings(request).emoji())
-
-
-import channelsServiceRoutes from './services/channels/routes'
-import workspacesServiceRoutes from './services/workspaces/routes'
-import usersServiceRoutes from './services/users/routes'
-import messagesServiceRoutes from './services/messages/routes'
-import authorizationServiceRoutes from './services/authorization/routes'
-import infoServiceRoutes from './services/info/routes'
-import companiesServiceRoutes from './services/companies/routes'
+// Register fastify plugin to handle multipart uploads
+fastify.register(require('fastify-multipart'), {
+  limits: {
+    fieldNameSize: 200, // Max field name size in bytes
+    fieldSize: 10000,   // Max field value size in bytes
+    fields: 10,         // Max number of non-file fields
+    fileSize: FILE_SIZE, // For multipart forms, the max file size
+    files: 1,           // Max number of file fields
+  }
+});
 
 
 fastify.register(channelsServiceRoutes, {prefix: '/internal/mobile'})
@@ -119,6 +139,7 @@ fastify.register(messagesServiceRoutes,{prefix: '/internal/mobile'})
 fastify.register(authorizationServiceRoutes,{prefix: '/internal/mobile'})
 fastify.register(infoServiceRoutes,{prefix: '/internal/mobile'})
 fastify.register(companiesServiceRoutes,{prefix: '/internal/mobile'})
+fastify.register(uploadServiceRoutes,{prefix: '/internal/mobile'})
 
 
 
@@ -136,7 +157,10 @@ fastify.setErrorHandler(function (error: Error, request, reply) {
         reply.status(400).send({"error": error.message})
     } else if ((error as any).validation) {
         reply.status(400).send({"error": error.message})
+    } else if (error instanceof PayloadTooLarge) {
+        reply.status(400).send({"error": error.message})
     } else {
+        Sentry.captureException(error);
         console.error(error)
         reply.status(500).send({"error": "something went wrong"})
     }
@@ -162,6 +186,8 @@ io.on('connection', function (socket) {
 
 
 const start = async () => {
+
+
     try {
         await fastify.listen(3123, '::')
 

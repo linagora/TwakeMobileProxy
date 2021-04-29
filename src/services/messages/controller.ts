@@ -1,67 +1,19 @@
-import Base from '../../common/base'
 import {arrayToObject} from '../../common/helpers'
 // import Users from '../../services/users/controller'
 import assert from "assert";
-import {fixIt, parseCompile, toTwacode} from "../../common/twacode"
+import {toTwacode} from "../../common/twacode"
 import {BadRequest} from "../../common/errors";
 import {MessagesTypes} from "./types";
 import UsersService from "../users/service";
 import MessagesService from "./service";
 // import {ChannelsTypes} from "../channels/types";
-
 import {FastifyRequest} from "fastify";
 import ChannelsService from "../channels/service";
 import GetMessagesRequest = MessagesTypes.GetMessagesRequest;
 
 
-const emojis = require('../../resources/emojis.json')
-/**
- * Messages methods
- */
-export default class extends Base {
+import emojis from '../../resources/emojis';
 
-
-    async updateMessage(req: MessagesTypes.UpdateMessageRequest) {
-
-        return this.api.updateMessage(req.company_id, req.workspace_id, req.channel_id, req.message_id, req.thread_id, req.original_str, toTwacode)
-
-    }
-
-    async deleteMessage(req: MessagesTypes.MessageRequest) {
-        assert(req.company_id, 'company_id is required');
-        assert(req.workspace_id, 'workspace_id is required');
-        assert(req.channel_id, 'channel_id is required');
-        assert(req.message_id, 'message_id is required');
-
-        try {
-            const data = await this.api.deleteMessage(req.company_id, req.workspace_id, req.channel_id, req.message_id, req.thread_id)
-            console.log('DONE', data)
-        } catch (e) {
-            //
-            console.log('\n\n-----------\nError deleting message')
-            const res = await this.api.getMessages(req.company_id, req.workspace_id, req.channel_id, req.thread_id, req.message_id, 1)
-            console.log(res)
-            console.log('GOT:', e)
-            assert(false, 'Something went wrong')
-        }
-
-        return {"success": true}
-
-    }
-
-    async reactions(req: MessagesTypes.ReactionsRequest) {
-
-        const res = await this.api.addReaction(req.company_id, req.workspace_id, req.channel_id, req.message_id, req.reaction, req.thread_id)
-
-        return {
-            id: res.object.id,
-            reactions: res.object.reactions
-        }
-
-    }
-
-
-}
 
 export class MessagesController {
 
@@ -137,8 +89,9 @@ export class MessagesController {
     async __formatMessage(req: MessagesTypes.GetMessagesRequest, messages: any[]): Promise<any> {
 
 
-        const getPreview = async (elementId: string) => this.messagesService.getDriveObject(req.company_id, req.workspace_id, elementId).then(a => a.preview_link)
-
+        // const getPreview = async (elementId: string) =>
+        // this.messagesService.getDriveObject(req.company_id,
+        // req.workspace_id, elementId).then(a => a.preview_link)
 
         const formatMessages = async (a: any) => {
             if (a.sender) {
@@ -178,60 +131,46 @@ export class MessagesController {
             } as any
 
             let prepared = a.content.prepared || a.content.formatted || a.content
-
-            // console.log(prepared)
-            if (!Array.isArray(prepared)) {
+            if (!Array.isArray(prepared)){
                 prepared = [prepared]
             }
+            // const last = (prepared as Array<string | {[key: string]: any}>).pop()
+            const fileMetadataAdd = async (prepared: Array<any>) => {
+                for (let item of prepared) {
+                    if (item instanceof String) continue;
+                    if (item instanceof Object && item.type === 'file') {
+                        const file = await this.messagesService.getDriveObject(
+                            req.company_id,
+                            req.workspace_id == 'direct' 
+                                ? req.fallback_ws_id // temporary, will be removed in future API
+                                : req.workspace_id, 
+                            item.content
+                        )
+                        console.log("FILE:" + JSON.stringify(file))
+                        if (!file) return
 
-            assert(Array.isArray(prepared), 'wrong message content data')
-
-            try {
-
-                for (let i = 0; i < prepared.length; i++) {
-                    const p = prepared[i]
-                    if (p.type === 'compile') {
-                        const compiled = parseCompile(p.content)
-                        compiled.forEach(a => prepared.push(a))
-                        delete prepared[i]
+                        // Grab the latest version of the file
+                        const latest = file.path.pop()
+                        item.metadata = {
+                            name: latest.name,
+                            size: file.size,
+                            preview: latest.preview_has_been_generated
+                                ? latest.preview_link
+                                : null,
+                            download: '/ajax/drive/download?workspace_id=' +
+                                `${file.workspace_id}&element_id=${file.id}` +
+                                '&download=1'
+                        }
+                    } else if (item instanceof Object && item.type === 'nop') {
+                        // if the item is nop which is always in the end, then recurse on its content
+                        await fileMetadataAdd(item.content)
                     }
                 }
-            } catch (e) {
-                console.log(e)
             }
-
-            const ready = [] as any[]
-
-            prepared.forEach(item => {
-                if (Array.isArray(item)) {
-                    item.forEach(subitem => ready.push(subitem))
-                } else {
-                    // NOP also can contains data ...
-                    if (item.type == 'nop' && Array.isArray(item.content) && item.content.length) {
-                        item.content.forEach((s: any) => {
-                            ready.push(s)
-                        })
-                        // console.log('push', item)
-                    } else {
-                        ready.push(item)
-                    }
-                }
-            })
-
-            for (let idx in ready) {
-                try {
-
-                    ready[idx] = await fixIt(ready[idx], getPreview)
-                } catch (e) {
-                    console.error('--- GOT ERROR ---')
-                    console.log(e)
-                    console.error(JSON.stringify(a.content, null, 2))
-                    console.error('---')
-                    ready[idx] = {"type": "unparseable"}
-                }
-            }
-
-            r.content.prepared = ready.filter(r => r)
+            // call the function on prepared
+            await fileMetadataAdd(prepared)
+            
+            r.content.prepared = prepared
 
             if (!a.thread_id) {
                 r.responses = []
@@ -249,11 +188,17 @@ export class MessagesController {
         let filteredMessages =
             messages.filter((a: any) => !(a['hidden_data'] instanceof Object && a['hidden_data']['type'] === 'init_channel'))
 
-        filteredMessages = filteredMessages.filter((a: any) => a.content && a.content.original_str)
+        filteredMessages = filteredMessages.filter((a:any)=>a.application_id || a.sender)
+        // filteredMessages = filteredMessages.filter((a: any) => a.content && a.content.original_str)
+
+
 
         filteredMessages = await Promise.all(filteredMessages.map((a: any) => formatMessages(a)))
 
+        filteredMessages = filteredMessages.filter((a: any) => a && a.id)
+
         // const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => this.usersService.getUserById(user_id as string))), 'id')
+
         const messagesHash = arrayToObject(filteredMessages, 'id')
         filteredMessages.forEach((a: any) => {
             delete a.responses
@@ -316,12 +261,39 @@ export class MessagesController {
             throw new BadRequest('Unparseable message')
         }
 
-        const msg = await this.messagesService.addMessage(req.company_id, req.workspace_id, req.channel_id, req.original_str, prepared, req.thread_id).then(a => a.object)
-
+        const msg = await this.messagesService.addMessage(req.company_id, req.workspace_id, req.channel_id, req.original_str, prepared, req.thread_id, req.message_id).then(a => a.object)
 
         return (await this.__formatMessage(req as any as GetMessagesRequest, [msg]))[0]
 
 
     }
 
+    async reactions({body}: FastifyRequest<{Body:MessagesTypes.ReactionsRequest}>) {
+
+        const res = await this.messagesService.addReaction(body.company_id, body.workspace_id, body.channel_id, body.message_id, body.reaction, body.thread_id)
+
+        return {
+            id: res.object.id,
+            reactions: res.object.reactions
+        }
+
+    }
+
+
+    async deleteMessage({body}: FastifyRequest<{Body: MessagesTypes.MessageRequest}>) {
+
+        try {
+            const data = await this.messagesService.deleteMessage(body.company_id, body.workspace_id, body.channel_id, body.message_id, body.thread_id)
+            console.log('DONE', data)
+        } catch (e) {
+            //
+            console.log('\n\n-----------\nError deleting message')
+            const res = await this.messagesService.getMessages(body.company_id, body.workspace_id, body.channel_id, body.thread_id, body.message_id, 1)
+            console.log(res)
+            console.log('GOT:', e)
+            assert(false, 'Something went wrong')
+        }
+
+        return {"success": true}
+    }
 }

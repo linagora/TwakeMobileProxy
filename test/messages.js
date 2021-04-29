@@ -10,7 +10,7 @@ const CHANNEL_NAME = 'TestChannel'
 
 
 describe('Messages', async function () {
-    this.timeout(10000);
+    this.timeout(50000);
 
     const api = new Api(host)
 
@@ -18,22 +18,20 @@ describe('Messages', async function () {
 
     before(async function () {
         await api.auth()
-    })
-
-
-    step('Select company TestCompany', async function () {
         await api.selectCompany('TestCompany')
-    })
-
-    step('Select workspace Main', async function () {
         await api.selectWorkspace('Main')
     })
 
     step('Direct messages', async function(){
         const directChannels = await api.getDirectChannels()
+
         assert(directChannels.length, 'no direct channels available')
-        const messages = await api.getMessages({workspace_id: 'direct', channel_id:directChannels[0].id})
-        assert(messages.length, 'no messages in direct channels')
+
+        for(const channel of directChannels){
+            // const messages = await api.getMessages({workspace_id: 'direct', channel_id: channel.id})
+            await api.getChannelsMembers({workspace_id:'direct', channel_id:channel.id})
+        }
+
     })
 
 
@@ -96,6 +94,23 @@ describe('Messages', async function () {
         const messages = await api.getMessages({limit:10})
         const found = messages.find(a=>a.id === last_inserted_message_id)
         assert(!found, 'Message was not deleted')
+    })
+
+
+    step('Bot messages', async function(){
+
+        await api.selectCompany('LINAGORA')
+        await api.selectWorkspace('Software')
+        // await api.selectChannel('FT - SmartSla')
+        await api.selectChannel('FT - Twake')
+        const messages = await api.getMessages({limit:100})
+        console.log(messages)
+
+        //
+        // console.log(channels)
+        //
+        // const found = messages.find(a=>a.id === last_inserted_message_id)
+        // assert(!found, 'Message was not deleted')
     })
 
 

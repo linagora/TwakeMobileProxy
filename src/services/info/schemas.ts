@@ -9,3 +9,11 @@ export const localizationGetSchema = {
     }
 
 }
+export const emojiSchema = {
+    tags: ['Info'],
+    summary: 'List of available emojis',
+    querystring: {
+        type: 'object', "required": [],
+        properties: {}
+    }
+}
