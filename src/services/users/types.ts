@@ -18,6 +18,7 @@ export declare namespace UsersTypes {
         firstname: string
         lastname: string
         thumbnail: string
+        console_id?: string
         companies?: any[]
         timeZoneOffset?: number
         status?: { "icon": string, "title": string },

@@ -103,12 +103,29 @@ export class MessagesController {
             }
 
             let processedReactions: Record<string, {users: Array<string>, count: number}> = {}
-            for (const [k, v] of Object.entries(a.reactions)) {
-                let emoji: string = k.startsWith(':') ? emojis[k.substring(1, k.length - 1)] || '👍' : k        
-                processedReactions[emoji] = {
-                    users: (v as any).users, 
-                    count: (v as any).count
+            // Messaging API is changing reactions format, so we now support old formats and new ones
+            // see https://github.com/linagora/Twake-Mobile/issues/508
+            if (!Array.isArray(a.reactions)) {
+                const newReactions = []
+                for (const key in a.reactions) {
+                    let newEntry = {
+                        name: key,
+                        users: a.reactions[key]['users'],
+                        count: a.reactions[key]['count'],
+                    }
+                    newReactions.push(newEntry)
                 }
+
+                // update reactions to new format
+                a.reactions = newReactions
+            }
+            for (const r of (a.reactions as Array<{[key: string]: any}>)) {
+                r.name = r.name.startsWith(':') ? emojis[r.name.substring(1, r.name.length - 1)] || '👍' : r.name        
+
+                // processedReactions[emoji] = {
+                    // users: (v as any).users,
+                    // count: (v as any).count
+                // }
             }
 
             const r = {
@@ -125,7 +142,7 @@ export class MessagesController {
                     prepared: null
                     // files: a.files
                 },
-                reactions: Object.keys(processedReactions).length ? processedReactions : null,
+                reactions: a.reactions,
                 // user_reaction: a._user_reaction
 
             } as any
@@ -146,7 +163,6 @@ export class MessagesController {
                                 : req.workspace_id, 
                             item.content
                         )
-                        console.log("FILE:" + JSON.stringify(file))
                         if (!file) return
 
                         // Grab the latest version of the file

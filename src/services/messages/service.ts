@@ -57,7 +57,7 @@ export default class MessagesService {
         assert(companyId)
         assert(workspaceId)
         assert(channelId)
-        assert(originalString)
+        // assert(originalString)
         assert(prepared)
 
         const params = {
