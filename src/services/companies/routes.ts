@@ -6,7 +6,7 @@ import {applicationsSchema, badgesSchema, companiesSchema} from "./schemas";
 import {CompaniesController} from "./controller";
 import {CompanyTypes} from "./types";
 
-export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
+export default function (fastify: FastifyInstance, opts: any, next: () => void) {
 
     function ctrl(request: FastifyRequest) {
         const api = new Api(request)
@@ -32,7 +32,7 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         // preHandler: accessControl,
         // preValidation: [fastify.authenticate],
         handler: (request) =>
-            ctrl(request).badges(request as FastifyRequest<{Querystring: CompanyTypes.GetBadges}>)
+            ctrl(request).badges(request as FastifyRequest<{ Querystring: CompanyTypes.GetBadges }>)
     });
 
     fastify.route({

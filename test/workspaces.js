@@ -29,10 +29,14 @@ describe('Workspaces', async function () {
     })
 
     step('Creating a workspace', async function () {
-        const workspace = await api.addWorkspace({name: 'AutoTestWorkspace'})
+
+        const workspace = await api.addWorkspace({name: 'AutoTestWorkspace', members: ['rbykovsky@linagora.com']})
         assert(workspace.id, 'workspace is not created')
         assert.strictEqual('AutoTestWorkspace', workspace.name)
-        // assert.strictEqual('wrench', workspace.icon)
+
+        const members = await api.getWorkspaceMembers(workspace.id)
+        console.log(members)
+
         last_created_workspace_id = workspace.id
     })
 
@@ -63,7 +67,6 @@ describe('Workspaces', async function () {
         workspace = workspaces.find(a => a.id === last_created_workspace_id)
         assert(!workspace, 'Workspace was not deleted')
     })
-
 
 
     after(async function () {

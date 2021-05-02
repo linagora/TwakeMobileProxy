@@ -2,8 +2,8 @@ import assert from "assert";
 import Api from "../../common/twakeapi";
 import {BadRequest} from "../../common/errors";
 import FormData from "form-data";
-import {FILE_SIZE, PreprocessResponse, UploadedFile, UploadResponse} from "../uploader/types";
-import {createReadStream, Stats, statSync} from "fs";
+import {UploadedFile} from "../uploader/types";
+import {createReadStream} from "fs";
 import {UsersTypes} from "./types";
 import UploadProfileResponse = UsersTypes.UploadProfileResponse;
 import User = UsersTypes.User;
@@ -13,7 +13,7 @@ export default class UsersService {
     constructor(protected api: Api) {
     }
 
-    getJwtToken(){
+    getJwtToken() {
         return this.api.token
     }
 
@@ -33,8 +33,8 @@ export default class UsersService {
 
         // if (usersCache[id]) return usersCache[id]
 
-        return this.api.post('/ajax/users/all/get', {'id': id}).then(a=>{
-            if (a.errors && a.errors.length){
+        return this.api.post('/ajax/users/all/get', {'id': id}).then(a => {
+            if (a.errors && a.errors.length) {
                 throw new BadRequest(`User id ${id} not found`)
             }
             // usersCache[id] = a.data
@@ -42,18 +42,18 @@ export default class UsersService {
         })
     }
 
-    setJWTToken(token:string){
+    setJWTToken(token: string) {
         this.api.token = token
         return this
     }
 
     async searchUsers(companyId: string, name: string) {
         const params = {"options": {"scope": "group", "name": name, "group_id": companyId, "language_preference": "en"}}
-        return await this.api.post('/ajax/users/all/search', params).then((a:any) => a.data.users)
+        return await this.api.post('/ajax/users/all/search', params).then((a: any) => a.data.users)
     }
 
     async changeLanguage(language: string) {
-        return this.api.post('/ajax/users/account/language', {"language":language,"sentByLanguageService":true})
+        return this.api.post('/ajax/users/account/language', {"language": language, "sentByLanguageService": true})
     }
 
     async updateFirstLastName(firstname: string, lastname: string) {
@@ -61,12 +61,12 @@ export default class UsersService {
         form.append('firstname', firstname);
         form.append('lastname', lastname);
 
-        return  this.api.post('/ajax/users/account/identity', form, form.getHeaders())
+        return this.api.post('/ajax/users/account/identity', form, form.getHeaders())
     }
 
-    async changePassword(old_password: string, password: string){
-        const x= await this.api.post('/ajax/users/account/password', {old_password,password})
-        if(x.errors && x.errors.length) throw new BadRequest('Bad password')
+    async changePassword(old_password: string, password: string) {
+        const x = await this.api.post('/ajax/users/account/password', {old_password, password})
+        if (x.errors && x.errors.length) throw new BadRequest('Bad password')
     }
 
     async uploadUserPicture(user: User, file: UploadedFile): Promise<UploadProfileResponse> {

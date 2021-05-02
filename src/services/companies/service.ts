@@ -13,6 +13,7 @@ export default class CompaniesService {
 
     async applications(company_id: string) {
         return this.api.post('/ajax/workspace/group/apps/get', {
-            "group_id": company_id}).then(a=>a.data.map((a:any)=>a.app))
+            "group_id": company_id
+        }).then(a => a.data.map((a: any) => a.app))
     }
 }

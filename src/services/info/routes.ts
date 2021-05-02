@@ -5,7 +5,7 @@ import {emojiSchema, localizationGetSchema} from "./schemas";
 import {InfoController} from "./controller";
 import InfoService from "./service";
 
-export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
+export default function (fastify: FastifyInstance, opts: any, next: () => void) {
 
     function ctrl(request: FastifyRequest) {
         const api = new Api(request)
@@ -36,7 +36,6 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         handler: (request) =>
             ctrl(request).emoji()
     });
-
 
 
     next()

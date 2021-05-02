@@ -7,8 +7,8 @@ const prompt = require('prompt-promise');
 // @ts-ignore
 const config = require('./config.json')
 
-assert(process.env.TWAKE_USERNAME,'env variable TWAKE_USERNAME is missing')
-assert(process.env.TWAKE_PASSWORD,'env variable TWAKE_PASSWORD is missing')
+assert(process.env.TWAKE_USERNAME, 'env variable TWAKE_USERNAME is missing')
+assert(process.env.TWAKE_PASSWORD, 'env variable TWAKE_PASSWORD is missing')
 
 class Request {
 
@@ -78,10 +78,10 @@ class Api {
 
     }
 
-    __writeConfig(token){
+    __writeConfig(token) {
         delete this.auth_config.token
         delete this.auth_config.auth_token
-        if(token){
+        if (token) {
             this.auth_config.token = token
         }
         this.auth_config.auth_token = ""
@@ -92,12 +92,12 @@ class Api {
         // @ts-ignore
         this.auth_config = require('./config.json')
 
-        if (this.auth_config.token && !this.auth_config.auth_token){
+        if (this.auth_config.token && !this.auth_config.auth_token) {
             this.request.token = this.auth_config.token
 
             try {
                 await this.request.get('/user')
-            } catch(e){
+            } catch (e) {
                 this.__writeConfig(null)
                 throw e
             }
@@ -116,7 +116,7 @@ class Api {
             try {
                 const res = await this.request.post('/init', params)
                 this.request.token = res['token']
-            } catch(e){
+            } catch (e) {
                 this.__writeConfig(null)
                 throw e
             }
@@ -156,10 +156,10 @@ class Api {
     }
 
 
-    async selectWorkspace(name, add_if_not_exists=false) {
+    async selectWorkspace(name, add_if_not_exists = false) {
         let workspace = await this.getWorkspaces().then(a => a.find(a => a.name === name))
 
-        if(!workspace && add_if_not_exists){
+        if (!workspace && add_if_not_exists) {
             workspace = await this.addWorkspace({name})
         }
 
@@ -309,15 +309,15 @@ class Api {
         return this.request.post('/direct', params)
     }
 
-    async getLocalizationStrings(lang){
-        return this.request.get('/info/localization' , {lang})
+    async getLocalizationStrings(lang) {
+        return this.request.get('/info/localization', {lang})
     }
 
-    async getServerInfo(){
-        return this.request.get('/' , {})
+    async getServerInfo() {
+        return this.request.get('/', {})
     }
 
-    async getCompanyBadges(company_id, all_companies=false) {
+    async getCompanyBadges(company_id, all_companies = false) {
         return this.request.get('/badges', {
             company_id: company_id,
             all_companies: all_companies
@@ -329,7 +329,7 @@ class Api {
         form.append('workspace_id', workspace_id);
         form.append('file', file);
         return this.request.post(
-            '/media/upload', 
+            '/media/upload',
             form,
             form.getHeaders(),
             false
@@ -347,8 +347,8 @@ class Api {
         return this.request.get('/info/emoji')
     }
 
-    async searchUsers(name){
-        return this.request.get('/users/search', {company_id:this.company_id, name})
+    async searchUsers(name) {
+        return this.request.get('/users/search', {company_id: this.company_id, name})
     }
 
     getUserProfile() {
@@ -381,6 +381,15 @@ class Api {
     }
 
 
+    async getWorkspaceMembers(workspace_id) {
+
+        const _params = {
+            company_id: this.company_id,
+            workspace_id: workspace_id
+        }
+
+        return this.request.get('/workspaces/members', _params)
+    }
 }
 
 module.exports = Api

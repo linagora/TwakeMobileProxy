@@ -25,7 +25,7 @@ describe('Uploads', async function () {
         const size = 1024 * 100
         write(size)
         const res = await api.uploadFile(
-            fs.createReadStream(fileName), 
+            fs.createReadStream(fileName),
             "ac6c84e0-1dcc-11eb-82c8-0242ac120004", // Main (with cat face)
         )
         assert(res.id, 'File was not uploaded')
@@ -36,11 +36,11 @@ describe('Uploads', async function () {
     step('Upload big file', function () {
         const size = 1024 * 1024 * 51
         write(size)
-        assert.rejects(async function() {
+        assert.rejects(async function () {
             await api.uploadFile(
-            fs.createReadStream(fileName), 
-            "ac6c84e0-1dcc-11eb-82c8-0242ac120004", // Main (with cat face)
-        ), "Shouldn't upload more then 50M bytes"
+                fs.createReadStream(fileName),
+                "ac6c84e0-1dcc-11eb-82c8-0242ac120004", // Main (with cat face)
+            ), "Shouldn't upload more then 50M bytes"
         })
     })
 
@@ -53,14 +53,14 @@ describe('Uploads', async function () {
 
 
 function write(size) {
-    fs.open(fileName, 'w', function(_, fd) {
+    fs.open(fileName, 'w', function (_, fd) {
         const buffer = crypto.randomBytes(size);
         fs.write(
-            fd, 
-            buffer, 
-            0, 
-            buffer.length, 
-            null, 
+            fd,
+            buffer,
+            0,
+            buffer.length,
+            null,
             (_e, _written, _b) => 0
         )
     })

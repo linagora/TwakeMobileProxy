@@ -20,8 +20,9 @@ export default class WorkspaceService {
             "name": name,
             "groupId": companyId,
             "channels": []
-        }).then(a=>a.data.workspace)
+        }).then(a => a.data.workspace)
         if (members && members.length) {
+            console.log('adding members')
             await this.addMember(companyId, ws['id'], members)
         }
         return ws
@@ -30,7 +31,7 @@ export default class WorkspaceService {
     deleteWorkspace(companyId: string, workspaceId: string) {
         assert(companyId, 'company id is required')
         assert(workspaceId, 'workspace id is required')
-        return this.api.post('/ajax/workspace/delete', { "workspaceId": workspaceId})
+        return this.api.post('/ajax/workspace/delete', {"workspaceId": workspaceId})
     }
 
     listWorkspaceMembers(companyId: string, workspaceId: string) {

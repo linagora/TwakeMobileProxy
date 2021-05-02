@@ -7,64 +7,62 @@ import Users from '../controllers/users'
  * SocketProcessor class
  */
 export default class SocketProcessor {
-  #ws
-  #token
+    #ws
+    #token
+    methods = {
+        init: async (sp, data) => {
+            let res = null
 
-  /**
-   * @param {WebSocket.Server} ws
-   */
-  constructor(ws) {
-    this.#ws = ws
-    this.#token = null
-  }
+            try {
+                res = jwt.verify(data.token, config.jwt.secret)
+            } catch (e) {
+                sp.send('error', {message: 'wrong token'})
+            }
 
-  /**
-   * @param {string} message
-   */
-  onMessage(message) {
-    let action;
-    let data
-    try {
-      [action, data] = JSON.parse(message)
-      console.log(`Received action ${action} with data: ${JSON.stringify(data)}`)
-    } catch (e) {
-      if (e instanceof SyntaxError) {
-        this.send('error', { 'message': 'wrong format' })
-        return
-      }
+            const user = await new Users(res).getCurrent(-180) // TODO: remove hardcode
+            websocketUsersCache[user.user_id] = sp
+        },
     }
 
-    if (this.methods[action] && this.methods[action] instanceof Function) {
-      this.methods[action](this, data)
-    } else {
-      this.send('error', 'Unknown action')
+    /**
+     * @param {WebSocket.Server} ws
+     */
+    constructor(ws) {
+        this.#ws = ws
+        this.#token = null
     }
-  }
 
-  methods = {
-    init: async (sp, data) => {
-      let res = null
+    /**
+     * @param {string} message
+     */
+    onMessage(message) {
+        let action;
+        let data
+        try {
+            [action, data] = JSON.parse(message)
+            console.log(`Received action ${action} with data: ${JSON.stringify(data)}`)
+        } catch (e) {
+            if (e instanceof SyntaxError) {
+                this.send('error', {'message': 'wrong format'})
+                return
+            }
+        }
 
-      try {
-        res = jwt.verify(data.token, config.jwt.secret)
-      } catch (e) {
-        sp.send('error', { message: 'wrong token' })
-      }
-
-      const user = await new Users(res).getCurrent(-180) // TODO: remove hardcode
-      websocketUsersCache[user.user_id] = sp
-    },
-  }
-
-
-  /**
-   * @param {string} action
-   * @param {object} payload
-   */
-  send(action, payload) {
-    if (this.#ws.readyState !== 1) {
-      delete websocketUsersCache[this.#token]
+        if (this.methods[action] && this.methods[action] instanceof Function) {
+            this.methods[action](this, data)
+        } else {
+            this.send('error', 'Unknown action')
+        }
     }
-    this.#ws.send(JSON.stringify([action, payload]))
-  }
+
+    /**
+     * @param {string} action
+     * @param {object} payload
+     */
+    send(action, payload) {
+        if (this.#ws.readyState !== 1) {
+            delete websocketUsersCache[this.#token]
+        }
+        this.#ws.send(JSON.stringify([action, payload]))
+    }
 }

@@ -5,11 +5,11 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTA3MjE4N
 Content-Type: application/json
 
 {
- "options":{
-   "scope": "company",
-   "name":"pa",
-   "workspace_id":"0e9337d6-54eb-11eb-9e45-0242ac120004"
- }
+  "options": {
+    "scope": "company",
+    "name": "pa",
+    "workspace_id": "0e9337d6-54eb-11eb-9e45-0242ac120004"
+  }
 }
 
 > {%

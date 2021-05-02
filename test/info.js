@@ -25,11 +25,11 @@ describe('Info', async function () {
     step('Localization', async function () {
         const en = await api.getLocalizationStrings('en')
         assert(Object.keys(en).length > 10, 'no language info')
-        assert.deepStrictEqual(en['CREATE'].toLowerCase(),'create')
+        assert.deepStrictEqual(en['CREATE'].toLowerCase(), 'create')
 
         const ru = await api.getLocalizationStrings('ru')
         assert(Object.keys(ru).length > 10, 'no language info')
-        assert.deepStrictEqual(ru['CREATE'].toLowerCase(),'создать')
+        assert.deepStrictEqual(ru['CREATE'].toLowerCase(), 'создать')
     })
 
 

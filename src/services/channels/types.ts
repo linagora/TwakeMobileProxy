@@ -7,11 +7,11 @@ export declare namespace ChannelsTypes {
         workspace_id: string;
     }
 
-    export interface PublicChannelsListParameters extends BaseChannelsParameters{
+    export interface PublicChannelsListParameters extends BaseChannelsParameters {
         all: boolean
     }
 
-    export interface ChannelParameters extends BaseChannelsParameters{
+    export interface ChannelParameters extends BaseChannelsParameters {
         channel_id: string | DirectChannel
     }
 
@@ -45,7 +45,6 @@ export declare namespace ChannelsTypes {
     export interface AddDirectRequest extends BaseChannelsParameters {
         member: string
     }
-
 
 
     export interface ChangeMembersRequest extends ChannelParameters {

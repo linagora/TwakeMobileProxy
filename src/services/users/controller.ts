@@ -2,10 +2,10 @@ import {usersCache} from '../../common/simplecache'
 import UsersService from "./service";
 import {UsersTypes} from "./types";
 import {FastifyRequest} from "fastify";
-import User = UsersTypes.User;
 import assert from "assert";
-import {UploadedFile, UploadResponse} from "../uploader/types";
+import {UploadedFile} from "../uploader/types";
 import {PayloadTooLarge} from "../../common/errors";
+import User = UsersTypes.User;
 import UploadProfileResponse = UsersTypes.UploadProfileResponse;
 
 
@@ -99,10 +99,11 @@ export class UsersController {
         const user = await this.usersService.getCurrent()
 
         const profile = {
-            username: { readonly: true, value: user.username},
-            firstname: { readonly: true, value: user.firstname},
-            lastname: { readonly: true, value: user.lastname},
-            language: { readonly: false, value: user.language, options: [
+            username: {readonly: true, value: user.username},
+            firstname: {readonly: true, value: user.firstname},
+            lastname: {readonly: true, value: user.lastname},
+            language: {
+                readonly: false, value: user.language, options: [
                     {value: 'de', title: 'Deutsch'},
                     {value: 'es', title: 'Español'},
                     {value: 'en', title: 'English'},
@@ -111,18 +112,19 @@ export class UsersController {
                     {value: 'ru', title: 'Русский'},
                     {value: 'vi', title: 'Tiếng Việt'},
 
-                ]},
-            picture: { readonly: false, value: user.picture},
-            password: {readonly:false, value: {old:'', new:''}}
+                ]
+            },
+            picture: {readonly: false, value: user.picture},
+            password: {readonly: false, value: {old: '', new: ''}}
         }
 
         return profile
 
     }
 
-    async updateProfile({body}: FastifyRequest<{Body: UsersTypes.UpdateProfileRequest}>) {
+    async updateProfile({body}: FastifyRequest<{ Body: UsersTypes.UpdateProfileRequest }>) {
 
-        if (body.password){
+        if (body.password) {
 
             assert(body.password.old, 'password.old is missing')
             assert(body.password.new, 'password.new is missing')
@@ -130,14 +132,14 @@ export class UsersController {
             await this.usersService.changePassword(body.password.old, body.password.new)
         }
 
-        if (body.firstname || body.lastname){
+        if (body.firstname || body.lastname) {
 
-            if(!body.firstname || !body.lastname){
+            if (!body.firstname || !body.lastname) {
                 const user = await this.usersService.getCurrent()
-                if(!body.firstname) {
+                if (!body.firstname) {
                     body.firstname = user.firstname
                 }
-                if(!body.lastname) {
+                if (!body.lastname) {
                     body.lastname = user.lastname
                 }
             }
@@ -145,7 +147,7 @@ export class UsersController {
             await this.usersService.updateFirstLastName(body.firstname, body.lastname)
         }
 
-        if (body.language){
+        if (body.language) {
             await this.usersService.changeLanguage(body.language)
         }
 

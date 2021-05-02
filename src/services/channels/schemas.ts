@@ -4,7 +4,7 @@ export const channelsGetSchema = {
     querystring: {
         type: 'object',
         "required": ['company_id', 'workspace_id'],
-        "properties": {"company_id": {"type": "string"}, "workspace_id": {"type": "string"}, "all": {"type":"boolean"}}
+        "properties": {"company_id": {"type": "string"}, "workspace_id": {"type": "string"}, "all": {"type": "boolean"}}
     }
 }
 
@@ -97,9 +97,6 @@ export const channelsMembersDeleteSchema = {
         }
     }
 }
-
-
-
 
 
 export const directGetSchema = {

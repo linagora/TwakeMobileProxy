@@ -17,7 +17,7 @@ import Api from '../../common/twakeapi'
 import MessagesService from "./service";
 
 
-export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
+export default function (fastify: FastifyInstance, opts: any, next: () => void) {
 
 
     // fastify.get('/messages/whatsnew', {schema: whatsNewSchema}, async (request) => new Messages(request).whatsNew(request.query as MessagesTypes.UpdateMessageRequest))
@@ -76,7 +76,7 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         // preHandler: accessControl,
         // preValidation: [fastify.authenticate],
         handler: (request) =>
-            ctrl(request).reactions(request as FastifyRequest<{Body:MessagesTypes.ReactionsRequest}>)
+            ctrl(request).reactions(request as FastifyRequest<{ Body: MessagesTypes.ReactionsRequest }>)
     });
 
     fastify.route({
@@ -86,7 +86,7 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         // preHandler: accessControl,
         // preValidation: [fastify.authenticate],
         handler: (request) =>
-            ctrl(request).deleteMessage(request as FastifyRequest<{Body:MessagesTypes.MessageRequest}>)
+            ctrl(request).deleteMessage(request as FastifyRequest<{ Body: MessagesTypes.MessageRequest }>)
     });
 
     next()

@@ -9,10 +9,10 @@ import MessagesService from "./service";
 // import {ChannelsTypes} from "../channels/types";
 import {FastifyRequest} from "fastify";
 import ChannelsService from "../channels/service";
-import GetMessagesRequest = MessagesTypes.GetMessagesRequest;
 
 
 import emojis from '../../resources/emojis';
+import GetMessagesRequest = MessagesTypes.GetMessagesRequest;
 
 
 export class MessagesController {
@@ -102,30 +102,13 @@ export class MessagesController {
                 a.content = {}
             }
 
-            let processedReactions: Record<string, {users: Array<string>, count: number}> = {}
-            // Messaging API is changing reactions format, so we now support old formats and new ones
-            // see https://github.com/linagora/Twake-Mobile/issues/508
-            if (!Array.isArray(a.reactions)) {
-                const newReactions = []
-                for (const key in a.reactions) {
-                    let newEntry = {
-                        name: key,
-                        users: a.reactions[key]['users'],
-                        count: a.reactions[key]['count'],
-                    }
-                    newReactions.push(newEntry)
+            let processedReactions: Record<string, { users: Array<string>, count: number }> = {}
+            for (const [k, v] of Object.entries(a.reactions)) {
+                let emoji: string = k.startsWith(':') ? emojis[k.substring(1, k.length - 1)] || '👍' : k
+                processedReactions[emoji] = {
+                    users: (v as any).users,
+                    count: (v as any).count
                 }
-
-                // update reactions to new format
-                a.reactions = newReactions
-            }
-            for (const r of (a.reactions as Array<{[key: string]: any}>)) {
-                r.name = r.name.startsWith(':') ? emojis[r.name.substring(1, r.name.length - 1)] || '👍' : r.name        
-
-                // processedReactions[emoji] = {
-                    // users: (v as any).users,
-                    // count: (v as any).count
-                // }
             }
 
             const r = {
@@ -142,13 +125,13 @@ export class MessagesController {
                     prepared: null
                     // files: a.files
                 },
-                reactions: a.reactions,
+                reactions: Object.keys(processedReactions).length ? processedReactions : null,
                 // user_reaction: a._user_reaction
 
             } as any
 
             let prepared = a.content.prepared || a.content.formatted || a.content
-            if (!Array.isArray(prepared)){
+            if (!Array.isArray(prepared)) {
                 prepared = [prepared]
             }
             // const last = (prepared as Array<string | {[key: string]: any}>).pop()
@@ -158,11 +141,12 @@ export class MessagesController {
                     if (item instanceof Object && item.type === 'file') {
                         const file = await this.messagesService.getDriveObject(
                             req.company_id,
-                            req.workspace_id == 'direct' 
+                            req.workspace_id == 'direct'
                                 ? req.fallback_ws_id // temporary, will be removed in future API
-                                : req.workspace_id, 
+                                : req.workspace_id,
                             item.content
                         )
+                        console.log("FILE:" + JSON.stringify(file))
                         if (!file) return
 
                         // Grab the latest version of the file
@@ -185,7 +169,7 @@ export class MessagesController {
             }
             // call the function on prepared
             await fileMetadataAdd(prepared)
-            
+
             r.content.prepared = prepared
 
             if (!a.thread_id) {
@@ -204,9 +188,8 @@ export class MessagesController {
         let filteredMessages =
             messages.filter((a: any) => !(a['hidden_data'] instanceof Object && a['hidden_data']['type'] === 'init_channel'))
 
-        filteredMessages = filteredMessages.filter((a:any)=>a.application_id || a.sender)
+        filteredMessages = filteredMessages.filter((a: any) => a.application_id || a.sender)
         // filteredMessages = filteredMessages.filter((a: any) => a.content && a.content.original_str)
-
 
 
         filteredMessages = await Promise.all(filteredMessages.map((a: any) => formatMessages(a)))
@@ -284,7 +267,7 @@ export class MessagesController {
 
     }
 
-    async reactions({body}: FastifyRequest<{Body:MessagesTypes.ReactionsRequest}>) {
+    async reactions({body}: FastifyRequest<{ Body: MessagesTypes.ReactionsRequest }>) {
 
         const res = await this.messagesService.addReaction(body.company_id, body.workspace_id, body.channel_id, body.message_id, body.reaction, body.thread_id)
 
@@ -296,7 +279,7 @@ export class MessagesController {
     }
 
 
-    async deleteMessage({body}: FastifyRequest<{Body: MessagesTypes.MessageRequest}>) {
+    async deleteMessage({body}: FastifyRequest<{ Body: MessagesTypes.MessageRequest }>) {
 
         try {
             const data = await this.messagesService.deleteMessage(body.company_id, body.workspace_id, body.channel_id, body.message_id, body.thread_id)

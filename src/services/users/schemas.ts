@@ -49,7 +49,7 @@ export const patchUsersProfileSchema = {
                 "language": {"type": "string"},
                 "firstname": {"type": "string"},
                 "lastname": {"type": "string"},
-                "password": {"type": "object", "properties": {"old" :{"type":"string"}, "new": {"type":"string"}}},
+                "password": {"type": "object", "properties": {"old": {"type": "string"}, "new": {"type": "string"}}},
             }
     }
 }

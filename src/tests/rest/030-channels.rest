@@ -1,4 +1,3 @@
-
 GET {{host}}/channels?company_id={{company_id}}&workspace_id={{workspace_id}}
 Authorization: Bearer {{token}}
 Content-Type: application/json

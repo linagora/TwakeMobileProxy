@@ -4,11 +4,11 @@ export declare namespace UsersTypes {
         "name": string
     }
 
-    export interface CurrentUserRequest{
+    export interface CurrentUserRequest {
         "timezoneoffset": number
     }
 
-    export interface UsersGetRequest{
+    export interface UsersGetRequest {
         "id": number[]
     }
 
@@ -26,10 +26,10 @@ export declare namespace UsersTypes {
     }
 
     export interface UpdateProfileRequest {
-        language : string,
+        language: string,
         firstname: string,
         lastname: string,
-        password: { "old": string, "new": string}
+        password: { "old": string, "new": string }
     }
 
     export interface UploadProfileResponse {

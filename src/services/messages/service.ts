@@ -10,13 +10,15 @@ export default class MessagesService {
     constructor(protected api: Api) {
     }
 
-    async whatsNew(req: WhatsNewRequest){
-        return this.api.get(`/internal/services/notifications/v1/badges`, {"company_id": req.company_id}).then(a=>a.resources)
+    async whatsNew(req: WhatsNewRequest) {
+        return this.api.get(`/internal/services/notifications/v1/badges`, {"company_id": req.company_id}).then(a => a.resources)
     }
 
-    fixDate (date: number): number { return String(date).length > 12 ? date : date * 1000  }
+    fixDate(date: number): number {
+        return String(date).length > 12 ? date : date * 1000
+    }
 
-    async getMessages(companyId: string, workspaceId: string, channelId: string, threadId?: string, messageId?: string,  limit?: number, offset?: string): Promise<any> {
+    async getMessages(companyId: string, workspaceId: string, channelId: string, threadId?: string, messageId?: string, limit?: number, offset?: string): Promise<any> {
         required(companyId, 'string')
         required(workspaceId, 'string')
         required(channelId, 'string')
@@ -37,14 +39,13 @@ export default class MessagesService {
         }
 
 
-
-        return this.api.post('/ajax/discussion/get', params).then(a=>{
-            if (a && a.status == 'error'){
+        return this.api.post('/ajax/discussion/get', params).then(a => {
+            if (a && a.status == 'error') {
                 console.error('GOT ERROR', a)
                 throw new BadRequest("something went wrong")
             }
 
-            return a.data.map((a:any)=>{
+            return a.data.map((a: any) => {
                 a.modification_date = this.fixDate(a.modification_date)
                 a.creation_date = this.fixDate(a.creation_date)
                 return a
@@ -74,12 +75,12 @@ export default class MessagesService {
             }
         } as any
 
-        if(messageId){
+        if (messageId) {
             params.object.message_id = messageId
             params.object.id = messageId
         }
 
-        return this.api.post('/ajax/discussion/save', params).then(a=>a.data)
+        return this.api.post('/ajax/discussion/save', params).then(a => a.data)
     }
 
     async getDriveObject(companyId: string, workspaceId: string, elementId: string) {
@@ -116,7 +117,7 @@ export default class MessagesService {
             }
         }
 
-        return this.api.post('/ajax/discussion/save', params).then(a=>a.data)
+        return this.api.post('/ajax/discussion/save', params).then(a => a.data)
     }
 
     async deleteMessage(companyId: string, workspaceId: string, channelId: string, messageId: string, threadId: string) {

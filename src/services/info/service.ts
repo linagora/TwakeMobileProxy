@@ -45,6 +45,6 @@ export default class InfoService {
     }
 
     emoji() {
-        return new Promise(r=> r(emojiData))
+        return new Promise(r => r(emojiData))
     }
 }

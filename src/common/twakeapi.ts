@@ -32,10 +32,26 @@ export default class Api implements ApiType {
             this.token = request.jwtToken
     }
 
+    async get(url: string, params: any): Promise<any> {
+        return this.__action('GET', url, params)
+    }
 
-    private async __action(method: string, url: string, params: any, headers : any = null): Promise<any> {
+    async post(url: string, params: any, headers: any = null): Promise<any> {
+        return this.__action('POST', url, params, headers)
+    }
 
-        if(!headers){
+    async delete(url: string): Promise<any> {
+        return this.__action('DELETE', url, null)
+    }
+
+    withToken(token: string): Api {
+        this.token = token
+        return this
+    }
+
+    private async __action(method: string, url: string, params: any, headers: any = null): Promise<any> {
+
+        if (!headers) {
             headers = this.token ? {"Authorization": "Bearer " + this.token} : {}
         } else if (this.token) {
             headers["Authorization"] = "Bearer " + this.token
@@ -57,19 +73,18 @@ export default class Api implements ApiType {
         let res = null
 
         try {
-            if (method == 'GET') 
-            res = await axios.get(this.host + url, {params, headers})
+            if (method == 'GET')
+                res = await axios.get(this.host + url, {params, headers})
             else if (method == 'POST') {
                 res = await axios.post(this.host + url, params, {headers})
-            }
-            else if (method == 'DELETE') {
+            } else if (method == 'DELETE') {
 
                 const x = await fetch(this.host + url, {method: 'DELETE', body: params, headers})
                 // console.log(x)
                 if (x.status >= 200 && x.status < 400) {
                     res = {data: {"success": true}}
                 } else {
-                    if (x.status === 404){
+                    if (x.status === 404) {
                         throw new Error('Object not found')
                     }
                     throw new Error('something went wrong')
@@ -82,12 +97,12 @@ export default class Api implements ApiType {
                 throw new Forbidden('Wrong token')
             }
 
-            if(e.response && e.response.status === 404){
+            if (e.response && e.response.status === 404) {
                 throw  new BadRequest('Object not found')
             }
             console.log(e)
 
-            throw new BadRequest( e.response ? e.response.data.message : e.message)
+            throw new BadRequest(e.response ? e.response.data.message : e.message)
         }
 
         if (res.data.errors && res.data.errors.includes('user_not_connected')) {
@@ -96,23 +111,6 @@ export default class Api implements ApiType {
 
         return res.data as any || {}
 
-    }
-
-    async get(url: string, params: any): Promise<any> {
-        return this.__action('GET', url, params)
-    }
-
-    async post(url: string, params: any, headers: any = null): Promise<any> {
-        return this.__action('POST', url, params, headers)
-    }
-
-    async delete(url: string): Promise<any> {
-        return this.__action('DELETE', url, null)
-    }
-
-    withToken(token: string): Api {
-        this.token = token
-        return this
     }
 
 }
