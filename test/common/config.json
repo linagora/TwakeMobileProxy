@@ -1,7 +1,7 @@
 {
   "_host": "http://localhost:3123",
-  "_host": "https://chat.twake.app",
-  "host": "http://51.178.59.71:3123",
+  "host": "https://chat.twake.app",
+  "_host": "http://51.178.59.71:3123",
   "prefix": "/internal/mobile",
   "auth_token": ""
 }
