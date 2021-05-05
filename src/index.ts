@@ -39,7 +39,7 @@ if (process.env.CORE_HOST) {
     config.core_host = process.env.CORE_HOST.replace(/\/$/, "");
     console.bgred('Started with CORE_HOST ' + config.core_host,)
 } else {
-    console.bgred('Started without CORE_HOST variable')
+    console.bgred('Started without CORE_HOST')
 }
 
 const fastify: FastifyInstance = Fastify({logger: false, trustProxy: true})

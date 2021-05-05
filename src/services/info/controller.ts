@@ -12,9 +12,7 @@ export class InfoController {
     }
 
     async info(request: FastifyRequest) {
-        const r = await this.infoService.serverInfo() as any
-        r.hostname = request.hostname
-        return r;
+        return this.infoService.serverInfo()
     }
 
     emoji() {
