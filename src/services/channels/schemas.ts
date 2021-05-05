@@ -19,6 +19,7 @@ export const channelsPostSchema = {
             "workspace_id": {"type": "string"},
             "name": {"type": "string"},
             "visibility": {"type": "string", "enum": ["public", "private"]},
+            "is_default": {"type": "boolean"},
             "icon": {"type": "string"},
             "description": {"type": "string"},
             "channel_group": {"type": "string"},
@@ -50,7 +51,8 @@ export const channelsPutSchema = {
             "workspace_id": {"type": "string"},
             "name": {"type": "string"},
             "icon": {"type": "string"},
-            "description": {"type": "string"}
+            "description": {"type": "string"},
+            "visibility": {"type": "string", "enum": ["private", "public"] }
         }
     }
 }

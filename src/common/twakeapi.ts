@@ -67,7 +67,7 @@ export default class Api implements ApiType {
         //
         // console.log(log)
 
-        console.log('\x1b[33m' + method, '\x1b[0m', url, '\x1b[2m', Object.keys(params).length ? JSON.stringify(params, null, 1) : '', '\x1b[0m')
+        console.log('\x1b[33m' + method, '\x1b[0m', url, '\x1b[2m', params && Object.keys(params).length ? JSON.stringify(params, null, 1) : '', '\x1b[0m')
         // console.log(method, url)
 
         let res = null
@@ -80,7 +80,6 @@ export default class Api implements ApiType {
             } else if (method == 'DELETE') {
 
                 const x = await fetch(this.host + url, {method: 'DELETE', body: params, headers})
-                // console.log(x)
                 if (x.status >= 200 && x.status < 400) {
                     res = {data: {"success": true}}
                 } else {

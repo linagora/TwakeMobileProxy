@@ -77,20 +77,25 @@ export class ChannelsController {
         let channel = await this.channelsService.getDirects(company_id)
             .then(data => data.find((a: any) => !a.name && a.members.length && eqArrays(members, a.members)))
         if (!channel) {
-            channel = await this.channelsService.addChannel(company_id, 'direct', '', 'direct', members, '', '', '')
+            channel = await this.channelsService.addChannel(company_id, 'direct', '', 'direct', members, '', '', '', undefined)
         }
         return this.__formatDirectChannels([__channelFormat(channel)]).then(a => a[0])
     }
 
     async add(request: FastifyRequest<{ Body: ChannelsTypes.AddRequest }>): Promise<any> {
-        const {company_id, workspace_id, visibility, name, members, channel_group, description, icon} = request.body
+        let {company_id, workspace_id, visibility, name, members, channel_group, description, icon, is_default} = request.body
         const found = await this.channelsService.public(company_id, workspace_id, false)
             .then((data: any) => data.find((a: any) => a.visibility === visibility && a.name === name))
         if (found) {
             found.members_count = (await this.channelsService.getMembers(company_id, workspace_id, found.id)).length
             return __channelFormat(found)
         }
-        const channel = await this.channelsService.addChannel(company_id, workspace_id, name, visibility, members, channel_group, description, icon)
+
+        if(visibility === 'public' && is_default === undefined){
+            is_default = false
+        }
+
+        const channel = await this.channelsService.addChannel(company_id, workspace_id, name, visibility, members, channel_group, description, icon, is_default)
         channel.members_count = (await this.channelsService.getMembers(company_id, workspace_id, channel.id)).length
         return __channelFormat(channel)
     }
@@ -163,9 +168,7 @@ export class ChannelsController {
 
     async delete(request: FastifyRequest<{ Body: ChannelsTypes.ChannelParameters }>) {
         // channel deletion has a bug we need to double check the deletion
-
         const res = await this.channelsService.delete(request.body)
-
         let done = false
         let attempts = 0
         while (!done) {

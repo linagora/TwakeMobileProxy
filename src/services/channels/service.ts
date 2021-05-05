@@ -12,6 +12,7 @@ export default class ChannelsService {
     }
 
     update(req: ChannelsTypes.UpdateRequest) {
+
         const params = {
             "resource": {
                 "id": req.channel_id,
@@ -20,8 +21,14 @@ export default class ChannelsService {
                 "icon": req.icon,
                 "description": req.description,
                 "name": req.name,
+                "is_default": req.is_default
             }, "options": {}
+        } as any
+
+        if (req.visibility){
+            params.resource.visibility = req.visibility
         }
+
         return this.api.post(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}`, params).then(a => a.resource)
     }
 
@@ -84,7 +91,7 @@ export default class ChannelsService {
         })
     }
 
-    async addChannel(companyId: string, workspaceId: string, name: string, visibility: string, members?: string[], channelGroup?: string, description?: string, icon?: string) {
+    async addChannel(companyId: string, workspaceId: string, name: string, visibility: string, members?: string[], channelGroup?: string, description?: string, icon?: string, is_default? : boolean) {
 
         assert(companyId, 'company_id is required')
         assert(visibility, 'visibility is required')
@@ -113,12 +120,10 @@ export default class ChannelsService {
                 "channel_group": channelGroup,
                 "archived": false,
                 "visibility": visibility,
-
+                "is_default": is_default
                 // "default": true
-            }
+            } as any
         }
-
-
         if (members) {
             params.options = {"members": members}
         }

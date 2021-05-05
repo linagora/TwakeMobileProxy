@@ -37,7 +37,8 @@ export declare namespace ChannelsTypes {
         name: string
         icon: string
         description: string
-        channel_group: string,
+        channel_group: string
+        is_default: boolean
         visibility: string
         members: string[]
     }
@@ -54,6 +55,8 @@ export declare namespace ChannelsTypes {
     export interface UpdateRequest extends ChannelParameters {
         name: string,
         description: string,
-        icon: string
+        icon: string,
+        visibility: string,
+        is_default: boolean
     }
 }

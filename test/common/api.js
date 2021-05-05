@@ -207,14 +207,14 @@ class Api {
         return await this.request.post('/channels', params)
     }
 
-    async updateChannel(channel_id, name, visibility, members) {
+    async updateChannel(channel_id, name, visibility, members, is_default) {
         assert(!visibility || ['public', 'private', 'direct'].includes(visibility), 'wrong visibility type')
         assert(!members || Array.isArray(members), 'members is not array')
         const params = {
             company_id: this.company_id,
             workspace_id: this.workspace_id,
             channel_id,
-            name, visibility, members
+            name, visibility, members,is_default
         }
         return await this.request.put('/channels', params)
     }
