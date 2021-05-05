@@ -20,7 +20,6 @@ describe('Default behaviour', async function () {
     step('List of workspaces', async function(){
         await api.selectWorkspace('Software')
     })
-
     step('List of channels', async function(){
         await api.getChannels()
     })

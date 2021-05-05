@@ -1,6 +1,6 @@
 {
-  "host": "http://localhost:3123",
-  "_host": "https://chat.twake.app",
+  "_host": "http://localhost:3123",
+  "host": "https://chat.twake.app",
   "prefix": "/internal/mobile",
   "auth_token": ""
 }

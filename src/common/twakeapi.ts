@@ -23,10 +23,8 @@ export default class Api implements ApiType {
     host: string = ""
 
     constructor(request: FastifyRequest) {
-
-        let host = config.core_host ? config.core_host : ('https://' + request.hostname)
-
-        this.host = host
+        const hostname = request.hostname || 'chat.twake.app'
+        this.host = config.core_host ? config.core_host : ('https://' + hostname)
         // console.log('API: ' + this.host)
         if (request.jwtToken)
             this.token = request.jwtToken

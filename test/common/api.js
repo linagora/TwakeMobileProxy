@@ -134,6 +134,7 @@ class Api {
             // console.log(params)
             const res = await this.request.post('/authorize', params)
             this.request.token = res['token']
+            console.log(res)
             return res
         }
 

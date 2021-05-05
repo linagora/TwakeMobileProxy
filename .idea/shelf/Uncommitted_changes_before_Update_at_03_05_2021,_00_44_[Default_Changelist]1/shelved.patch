@@ -1,0 +1,170 @@
+Index: src/services/messages/controller.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import {arrayToObject} from '../../common/helpers'\n// import Users from '../../services/users/controller'\nimport assert from \"assert\";\nimport {toTwacode} from \"../../common/twacode\"\nimport {BadRequest} from \"../../common/errors\";\nimport {MessagesTypes} from \"./types\";\nimport UsersService from \"../users/service\";\nimport MessagesService from \"./service\";\n// import {ChannelsTypes} from \"../channels/types\";\nimport {FastifyRequest} from \"fastify\";\nimport ChannelsService from \"../channels/service\";\n\n\nimport emojis from '../../resources/emojis';\nimport GetMessagesRequest = MessagesTypes.GetMessagesRequest;\n\n\nexport class MessagesController {\n\n    // constructor(protected service: WorkspaceService, protected channelsService: ChannelsService, protected usersService: UsersService) {}\n    constructor(\n        protected messagesService: MessagesService,\n        protected channelsService: ChannelsService,\n        protected usersService: UsersService\n    ) {\n    }\n\n    async get(request: FastifyRequest<{ Querystring: MessagesTypes.GetMessagesRequest }>): Promise<any> {\n        const req = request.query\n\n        assert(req.company_id, 'company_id is required');\n        assert(req.workspace_id, 'workspace_id is required');\n        assert(req.channel_id, 'channel_id is required');\n\n        if (req.after_date)\n            return this.__getAfterDate(req)\n\n        return this.__get(req)\n    }\n\n    async __getAfterDate(req: MessagesTypes.GetMessagesRequest): Promise<any> {\n\n        let messages = [] as any[]\n\n        const getMessages = (offset?: string): Promise<any[]> => this.messagesService.getMessages(req.company_id, req.workspace_id, req.channel_id, undefined, undefined, 20, offset)\n        const minDateMessage = (messages: any[]) =>\n            messages.reduce((previous, current) => previous.modification_date < current.modification_date ? previous : current);\n\n        const getPart = async (offsetMessageId?: string) => {\n            const part = await getMessages(offsetMessageId) // console.log('got', part.length,'messages')\n            if (part.length) {\n                const min_date = minDateMessage(part) // console.log(req.after_date < min_date.modification_date)\n                messages = [...messages, ...part]\n                if (req.after_date < min_date.modification_date)\n                    await getPart(min_date.id)\n            }\n        }\n        await getPart()\n        return this.__formatMessage(req, messages.filter(m => m.modification_date > req.after_date))\n    }\n\n\n    async __get(req: MessagesTypes.GetMessagesRequest): Promise<any> {\n\n        let messages = await this.messagesService.getMessages(req.company_id, req.workspace_id, req.channel_id, req.thread_id, req.message_id, req.limit, req.before_message_id) as any[]\n\n        if (!req.thread_id) {\n            for (const m of messages) {\n                if (m.responses_count) {\n                    const replies = messages.filter(r => r.thread_id === m.id || r.parent_message_id === m.id)\n                    if (replies.length < m.responses_count) {\n                        const existed_replies = replies.reduce((acc, curr) => (acc[curr.id] = true, acc), {});\n                        const all_thread_replies = await this.messagesService.getMessages(req.company_id, req.workspace_id, req.channel_id, m.id, undefined, m.responses_count, undefined) as any[]\n                        messages = [...messages, ...all_thread_replies.filter(a => !existed_replies[a.id])]\n                    }\n                }\n            }\n        }\n\n        if (!messages) {\n            console.log('GOT NO MESSAGES FROM CORE')\n            messages = []\n        }\n\n        return this.__formatMessage(req, messages)\n\n    }\n\n    async __formatMessage(req: MessagesTypes.GetMessagesRequest, messages: any[]): Promise<any> {\n\n\n        // const getPreview = async (elementId: string) =>\n        // this.messagesService.getDriveObject(req.company_id,\n        // req.workspace_id, elementId).then(a => a.preview_link)\n\n        const formatMessages = async (a: any) => {\n            if (a.sender) {\n                usersIds.add(a.sender)\n            }\n\n            if (!a.content) {\n                a.content = {}\n            }\n\n            let processedReactions: Record<string, { users: Array<string>, count: number }> = {}\n            for (const [k, v] of Object.entries(a.reactions)) {\n                let emoji: string = k.startsWith(':') ? emojis[k.substring(1, k.length - 1)] || '\uD83D\uDC4D' : k\n                processedReactions[emoji] = {\n                    users: (v as any).users,\n                    count: (v as any).count\n                }\n            }\n\n            const r = {\n                id: a.id,\n                // parent_message_id: a.thread_id || a.parent_message_id || null, // backward compatibility\n                thread_id: a.thread_id || a.parent_message_id || null,\n                responses_count: a.responses_count || 0,\n                sender: a.sender ? {user_id: a.sender} : {},\n                application_id: a.application_id,\n                creation_date: this.messagesService.fixDate(a.creation_date),\n                modification_date: this.messagesService.fixDate(a.modification_date),\n                content: {\n                    original_str: a.content.original_str,\n                    prepared: null\n                    // files: a.files\n                },\n                reactions: Object.keys(processedReactions).length ? processedReactions : null,\n                // user_reaction: a._user_reaction\n\n            } as any\n\n            let prepared = a.content.prepared || a.content.formatted || a.content\n            if (!Array.isArray(prepared)) {\n                prepared = [prepared]\n            }\n            // const last = (prepared as Array<string | {[key: string]: any}>).pop()\n            const fileMetadataAdd = async (prepared: Array<any>) => {\n                for (let item of prepared) {\n                    if (item instanceof String) continue;\n                    if (item instanceof Object && item.type === 'file') {\n                        const file = await this.messagesService.getDriveObject(\n                            req.company_id,\n                            req.workspace_id == 'direct'\n                                ? req.fallback_ws_id // temporary, will be removed in future API\n                                : req.workspace_id,\n                            item.content\n                        )\n                        console.log(\"FILE:\" + JSON.stringify(file))\n                        if (!file) return\n\n                        // Grab the latest version of the file\n                        const latest = file.path.pop()\n                        item.metadata = {\n                            name: latest.name,\n                            size: file.size,\n                            preview: latest.preview_has_been_generated\n                                ? latest.preview_link\n                                : null,\n                            download: '/ajax/drive/download?workspace_id=' +\n                                `${file.workspace_id}&element_id=${file.id}` +\n                                '&download=1'\n                        }\n                    } else if (item instanceof Object && item.type === 'nop') {\n                        // if the item is nop which is always in the end, then recurse on its content\n                        await fileMetadataAdd(item.content)\n                    }\n                }\n            }\n            // call the function on prepared\n            await fileMetadataAdd(prepared)\n\n            r.content.prepared = prepared\n\n            if (!a.thread_id) {\n                r.responses = []\n            } else {\n                r.thread_id = a.thread_id\n            }\n\n            r.channel_id = req.channel_id\n\n            return r\n        }\n\n\n        const usersIds = new Set()\n        let filteredMessages =\n            messages.filter((a: any) => !(a['hidden_data'] instanceof Object && a['hidden_data']['type'] === 'init_channel'))\n\n        filteredMessages = filteredMessages.filter((a: any) => a.application_id || a.sender)\n        // filteredMessages = filteredMessages.filter((a: any) => a.content && a.content.original_str)\n\n\n        filteredMessages = await Promise.all(filteredMessages.map((a: any) => formatMessages(a)))\n\n        filteredMessages = filteredMessages.filter((a: any) => a && a.id)\n\n        // const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => this.usersService.getUserById(user_id as string))), 'id')\n\n        const messagesHash = arrayToObject(filteredMessages, 'id')\n        filteredMessages.forEach((a: any) => {\n            delete a.responses\n            a.user_id = a.sender.user_id\n            delete a.sender\n\n            if (a.application_id) {\n                a.app_id = a.application_id\n            }\n            delete a.application_id\n\n        })\n\n        if (req.before_message_id) {\n            delete messagesHash[req.before_message_id]\n        }\n\n        return Object.values(messagesHash).sort((a: any, b: any) => a.creation_date - b.creation_date)\n    }\n\n    async whatsnew(request: FastifyRequest<{ Querystring: MessagesTypes.WhatsNewRequest }>): Promise<any> {\n        const req = request.query\n        if (req.workspace_id) {\n            let channels = await this.channelsService.all(req)\n\n            console.log('channel_name\\tlast_channel_activity\\tlast_user_access')\n\n            const stat = [] as any[]\n\n            channels.forEach((channel: any) => {\n                stat.push({\n                    'name': channel.name,\n                    last_channel_activity: +channel.last_activity,\n                    last_user_access: +channel.user_member.last_access,\n                    greater: +channel.last_activity > +channel.user_member.last_access\n                })\n            })\n\n            channels = channels.filter((channel: any) => +channel.last_activity > +channel.user_member.last_access)\n                .map(({company_id, workspace_id, id}: any) => ({company_id, workspace_id, channel_id: id}))\n\n\n            const messages = await this.messagesService.whatsNew(request.query)\n\n            return [...channels, ...messages]\n        } else\n            return await this.messagesService.whatsNew(request.query)\n\n    }\n\n    async insert(request: FastifyRequest<{ Body: MessagesTypes.InsertMessageRequest }>): Promise<any> {\n        const req = request.body\n        assert(req.company_id, 'company_id is required');\n        assert(req.workspace_id, 'workspace_id is required');\n        assert(req.channel_id, 'channel_id is required');\n\n        const prepared = req.prepared || toTwacode(req.original_str)\n\n        if (!prepared || prepared?.length === 0) {\n            throw new BadRequest('Unparseable message')\n        }\n\n        const msg = await this.messagesService.addMessage(req.company_id, req.workspace_id, req.channel_id, req.original_str, prepared, req.thread_id, req.message_id).then(a => a.object)\n\n        return (await this.__formatMessage(req as any as GetMessagesRequest, [msg]))[0]\n\n\n    }\n\n    async reactions({body}: FastifyRequest<{ Body: MessagesTypes.ReactionsRequest }>) {\n\n        const res = await this.messagesService.addReaction(body.company_id, body.workspace_id, body.channel_id, body.message_id, body.reaction, body.thread_id)\n\n        return {\n            id: res.object.id,\n            reactions: res.object.reactions\n        }\n\n    }\n\n\n    async deleteMessage({body}: FastifyRequest<{ Body: MessagesTypes.MessageRequest }>) {\n\n        try {\n            const data = await this.messagesService.deleteMessage(body.company_id, body.workspace_id, body.channel_id, body.message_id, body.thread_id)\n            console.log('DONE', data)\n        } catch (e) {\n            //\n            console.log('\\n\\n-----------\\nError deleting message')\n            const res = await this.messagesService.getMessages(body.company_id, body.workspace_id, body.channel_id, body.thread_id, body.message_id, 1)\n            console.log(res)\n            console.log('GOT:', e)\n            assert(false, 'Something went wrong')\n        }\n\n        return {\"success\": true}\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/services/messages/controller.ts b/src/services/messages/controller.ts
+--- a/src/services/messages/controller.ts	
++++ b/src/services/messages/controller.ts	
+@@ -102,13 +102,39 @@
+                 a.content = {}
+             }
+ 
++<<<<<<< HEAD
+             let processedReactions: Record<string, { users: Array<string>, count: number }> = {}
+             for (const [k, v] of Object.entries(a.reactions)) {
+                 let emoji: string = k.startsWith(':') ? emojis[k.substring(1, k.length - 1)] || '👍' : k
+                 processedReactions[emoji] = {
+                     users: (v as any).users,
+                     count: (v as any).count
++=======
++            let processedReactions: Record<string, {users: Array<string>, count: number}> = {}
++            // Messaging API is changing reactions format, so we now support old formats and new ones
++            // see https://github.com/linagora/Twake-Mobile/issues/508
++            if (!Array.isArray(a.reactions)) {
++                const newReactions = []
++                for (const key in a.reactions) {
++                    let newEntry = {
++                        name: key,
++                        users: a.reactions[key]['users'],
++                        count: a.reactions[key]['count'],
++                    }
++                    newReactions.push(newEntry)
++>>>>>>> origin/main
+                 }
++
++                // update reactions to new format
++                a.reactions = newReactions
++            }
++            for (const r of (a.reactions as Array<{[key: string]: any}>)) {
++                r.name = r.name.startsWith(':') ? emojis[r.name.substring(1, r.name.length - 1)] || '👍' : r.name        
++
++                // processedReactions[emoji] = {
++                    // users: (v as any).users,
++                    // count: (v as any).count
++                // }
+             }
+ 
+             const r = {
+@@ -125,7 +151,7 @@
+                     prepared: null
+                     // files: a.files
+                 },
+-                reactions: Object.keys(processedReactions).length ? processedReactions : null,
++                reactions: a.reactions,
+                 // user_reaction: a._user_reaction
+ 
+             } as any
+@@ -146,7 +172,6 @@
+                                 : req.workspace_id,
+                             item.content
+                         )
+-                        console.log("FILE:" + JSON.stringify(file))
+                         if (!file) return
+ 
+                         // Grab the latest version of the file
+Index: src/services/uploader/schemas.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>export const uploadSchema = {\n    tags: ['Upload'],\n    summary: 'Upload files to drive',\n    response: {\n        \"2xx\": {\n            type: \"object\",\n            required: ['id'],\n            properties: {\n                \"id\": {\"type\": \"string\"},\n                \"name\": {\"type\": \"string\"},\n                \"extension\": {\"type\": \"string\"},\n                \"size\": {\"type\": \"number\"}\n            }\n        }\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/services/uploader/schemas.ts b/src/services/uploader/schemas.ts
+--- a/src/services/uploader/schemas.ts	
++++ b/src/services/uploader/schemas.ts	
+@@ -9,7 +9,9 @@
+                 "id": {"type": "string"},
+                 "name": {"type": "string"},
+                 "extension": {"type": "string"},
+-                "size": {"type": "number"}
++                "size": {"type": "number"},
++                "preview": {"type": ["string", "null"]},
++                "download": {"type": "string"},
+             }
+         }
+     }
+Index: src/services/messages/service.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import assert from \"assert\";\nimport Api from \"../../common/twakeapi\";\nimport {MessagesTypes} from \"./types\";\nimport {required} from \"../../common/helpers\";\nimport {BadRequest} from \"../../common/errors\";\nimport WhatsNewRequest = MessagesTypes.WhatsNewRequest;\n\nexport default class MessagesService {\n\n    constructor(protected api: Api) {\n    }\n\n    async whatsNew(req: WhatsNewRequest) {\n        return this.api.get(`/internal/services/notifications/v1/badges`, {\"company_id\": req.company_id}).then(a => a.resources)\n    }\n\n    fixDate(date: number): number {\n        return String(date).length > 12 ? date : date * 1000\n    }\n\n    async getMessages(companyId: string, workspaceId: string, channelId: string, threadId?: string, messageId?: string, limit?: number, offset?: string): Promise<any> {\n        required(companyId, 'string')\n        required(workspaceId, 'string')\n        required(channelId, 'string')\n\n        // if (id || threadId) {\n\n        const params = {\n            'options': {\n                company_id: companyId,\n                workspace_id: workspaceId,\n                channel_id: channelId,\n                limit: limit || 50,\n                offset: offset,\n                thread_id: threadId,\n                parent_message_id: threadId, // backward compatibility\n                id: messageId\n            },\n        }\n\n\n        return this.api.post('/ajax/discussion/get', params).then(a => {\n            if (a && a.status == 'error') {\n                console.error('GOT ERROR', a)\n                throw new BadRequest(\"something went wrong\")\n            }\n\n            return a.data.map((a: any) => {\n                a.modification_date = this.fixDate(a.modification_date)\n                a.creation_date = this.fixDate(a.creation_date)\n                return a\n            })\n        })\n    }\n\n    async addMessage(companyId: string, workspaceId: string, channelId: string, originalString: string, prepared: any, threadId?: string, messageId?: string) {\n\n        assert(companyId)\n        assert(workspaceId)\n        assert(channelId)\n        assert(originalString)\n        assert(prepared)\n\n        const params = {\n            'object': {\n                company_id: companyId,\n                workspace_id: workspaceId,\n                channel_id: channelId,\n                thread_id: threadId,\n                parent_message_id: threadId, // backward compatibility\n                content: {\n                    original_str: originalString,\n                    prepared: prepared\n                }\n            }\n        } as any\n\n        if (messageId) {\n            params.object.message_id = messageId\n            params.object.id = messageId\n        }\n\n        return this.api.post('/ajax/discussion/save', params).then(a => a.data)\n    }\n\n    async getDriveObject(companyId: string, workspaceId: string, elementId: string) {\n        assert(companyId)\n        assert(workspaceId)\n        assert(elementId)\n\n\n        return this.api.post('/ajax/drive/v2/find', {\n            'options': {\n                'element_id': elementId,\n                'company_id': companyId,\n                'workspace_id': workspaceId,\n                \"public_access_token\": null\n            },\n        }).then(a => a.data)\n    }\n\n    async addReaction(companyId: string, workspaceId: string, channelId: string, messageId: string, reaction: string, threadId?: string) {\n        assert(companyId)\n        assert(workspaceId)\n        assert(channelId)\n        assert(messageId)\n\n        const params = {\n            'object': {\n                company_id: companyId,\n                workspace_id: workspaceId,\n                channel_id: channelId,\n                id: messageId,\n                _user_reaction: reaction,\n                parent_message_id: threadId, // backward compatibility\n                thread_id: threadId\n            }\n        }\n\n        return this.api.post('/ajax/discussion/save', params).then(a => a.data)\n    }\n\n    async deleteMessage(companyId: string, workspaceId: string, channelId: string, messageId: string, threadId: string) {\n        assert(companyId)\n        assert(workspaceId)\n        assert(channelId)\n        assert(messageId)\n\n        const params = {\n            'object': {\n                company_id: companyId,\n                workspace_id: workspaceId,\n                channel_id: channelId,\n                id: messageId,\n                thread_id: threadId,\n                parent_message_id: threadId, // backward compatibility\n            }\n        }\n\n        return this.api.post('/ajax/discussion/remove', params)\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/services/messages/service.ts b/src/services/messages/service.ts
+--- a/src/services/messages/service.ts	
++++ b/src/services/messages/service.ts	
+@@ -58,7 +58,7 @@
+         assert(companyId)
+         assert(workspaceId)
+         assert(channelId)
+-        assert(originalString)
++        // assert(originalString)
+         assert(prepared)
+ 
+         const params = {
+Index: src/services/users/controller.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import {usersCache} from '../../common/simplecache'\nimport UsersService from \"./service\";\nimport {UsersTypes} from \"./types\";\nimport {FastifyRequest} from \"fastify\";\nimport assert from \"assert\";\nimport {UploadedFile} from \"../uploader/types\";\nimport {PayloadTooLarge} from \"../../common/errors\";\nimport User = UsersTypes.User;\nimport UploadProfileResponse = UsersTypes.UploadProfileResponse;\n\n\n/**\n * Users methods\n */\n\n\nexport class UsersController {\n\n    // constructor(protected service: WorkspaceService, protected channelsService: ChannelsService, protected usersService: UsersService) {}\n    constructor(protected usersService: UsersService) {\n    }\n\n\n    async getCurrent({query}: FastifyRequest<{ Querystring: UsersTypes.CurrentUserRequest }>): Promise<User> {\n\n        const data = await this.usersService.getCurrent(query.timezoneoffset)\n        const user = {\n            id: data.id,\n            username: data.username,\n            firstname: data.firstname,\n            lastname: data.lastname,\n            thumbnail: data.thumbnail\n        } as User\n\n        usersCache[user.id] = user\n\n        const out = Object.assign({}, user)\n\n        out.status = {\"icon\": data.status_icon[0], \"title\": data.status_icon[1]}\n        out.notification_rooms = ['previous:users/' + data.id]\n\n        return out\n\n    }\n\n\n    /**\n     * Get user by Id\n     * @param {string} userId\n     * @return {Promise<Object>}\n     */\n    async getUser(userId: string) {\n        if (usersCache[userId]) {\n            return Promise.resolve(usersCache[userId])\n        }\n        return this.usersService.getUserById(userId).then((a) => {\n\n            if (!Array.isArray(a)) {\n                const user = {\n                    id: a.id,\n                    username: a.username.trim(),\n                    firstname: (a.firstname || \"\").trim(),\n                    lastname: (a.lastname || \"\").trim(),\n                    thumbnail: a.thumbnail\n                }\n                usersCache[a.id] = user\n                return user\n            } else return null\n        })\n    }\n\n    async getUsers({query}: FastifyRequest<{ Querystring: UsersTypes.UsersGetRequest }>) {\n\n        if (!Array.isArray(query.id)) {\n            query.id = [query.id]\n        }\n\n        return (await Promise.all(query.id.map((a: any) => this.getUser(a)))).filter(a => a)\n    }\n\n    async searchUsers({query}: FastifyRequest<{ Querystring: UsersTypes.UsersSearchRequest }>) {\n\n        const users = (await this.usersService.searchUsers(query.company_id, query.name)) || []\n\n        return users.map((a: any) => {\n            const user = a[0]\n            return {\n                id: user.id,\n                username: user.username,\n                firstname: user.firstname,\n                lastname: user.lastname\n            }\n        })\n    }\n\n\n    async getProfile() {\n        const user = await this.usersService.getCurrent()\n\n        const profile = {\n            username: {readonly: true, value: user.username},\n            firstname: {readonly: true, value: user.firstname},\n            lastname: {readonly: true, value: user.lastname},\n            language: {\n                readonly: false, value: user.language, options: [\n                    {value: 'de', title: 'Deutsch'},\n                    {value: 'es', title: 'Español'},\n                    {value: 'en', title: 'English'},\n                    {value: 'fr', title: 'Français'},\n                    {value: 'ja', title: '日本語'},\n                    {value: 'ru', title: 'Русский'},\n                    {value: 'vi', title: 'Tiếng Việt'},\n\n                ]\n            },\n            picture: {readonly: false, value: user.picture},\n            password: {readonly: false, value: {old: '', new: ''}}\n        }\n\n        return profile\n\n    }\n\n    async updateProfile({body}: FastifyRequest<{ Body: UsersTypes.UpdateProfileRequest }>) {\n\n        if (body.password) {\n\n            assert(body.password.old, 'password.old is missing')\n            assert(body.password.new, 'password.new is missing')\n\n            await this.usersService.changePassword(body.password.old, body.password.new)\n        }\n\n        if (body.firstname || body.lastname) {\n\n            if (!body.firstname || !body.lastname) {\n                const user = await this.usersService.getCurrent()\n                if (!body.firstname) {\n                    body.firstname = user.firstname\n                }\n                if (!body.lastname) {\n                    body.lastname = user.lastname\n                }\n            }\n\n            await this.usersService.updateFirstLastName(body.firstname, body.lastname)\n        }\n\n        if (body.language) {\n            await this.usersService.changeLanguage(body.language)\n        }\n\n        return this.getProfile();\n    }\n\n\n    async updateProfilePicture(request: any): Promise<UploadProfileResponse> {\n\n        let file: UploadedFile\n        try {\n            file = (await request.saveRequestFiles())[0]\n        } catch (e) {\n            throw new PayloadTooLarge(e.message)\n        }\n        const user = await this.usersService.getCurrent()\n\n        const upload: UploadProfileResponse = await this.usersService.uploadUserPicture(user, file)\n        await request.cleanRequestFiles()\n\n        return upload\n    }\n\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/services/users/controller.ts b/src/services/users/controller.ts
+--- a/src/services/users/controller.ts	
++++ b/src/services/users/controller.ts	
+@@ -29,7 +29,8 @@
+             username: data.username,
+             firstname: data.firstname,
+             lastname: data.lastname,
+-            thumbnail: data.thumbnail
++            thumbnail: data.thumbnail,
++            console_id: data.provider_id
+         } as User
+ 
+         usersCache[user.id] = user
+@@ -170,4 +171,4 @@
+         return upload
+     }
+ 
+-}
+\ No newline at end of file
++}
+Index: src/services/users/schemas.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>export const userSchema = {\n    tags: ['User related'],\n    summary: 'Get current user',\n    querystring: {type: 'object', \"required\": [], \"properties\": {\"timezoneoffset\": {\"type\": \"integer\"}}}\n}\n\nexport const usersSchema = {\n    tags: ['References'],\n    summary: 'Get users by id',\n    querystring: {\n        type: 'object', \"required\": [\"id\"], \"properties\": {\n            \"id\":\n                {\n                    \"anyOf\": [\n                        {\"type\": \"string\"},\n                        {\"type\": \"array\", \"items\": {\"type\": \"string\"}}\n                    ]\n                }\n        }\n    }\n}\n\nexport const usersSearchSchema = {\n    tags: ['References'],\n    summary: 'Get users by name',\n    querystring: {\n        type: 'object', \"required\": [\"company_id\", \"name\"], \"properties\":\n            {\n                \"company_id\": {\"type\": \"string\"},\n                \"name\": {\"type\": \"string\"},\n            }\n    }\n}\n\nexport const getUsersProfileSchema = {\n    tags: ['User related'],\n    summary: 'Get user profile',\n    querystring: {}\n}\n\n\nexport const patchUsersProfileSchema = {\n    tags: ['User related'],\n    summary: 'Update user profile',\n    body: {\n        type: 'object',\n        \"properties\":\n            {\n                \"language\": {\"type\": \"string\"},\n                \"firstname\": {\"type\": \"string\"},\n                \"lastname\": {\"type\": \"string\"},\n                \"password\": {\"type\": \"object\", \"properties\": {\"old\": {\"type\": \"string\"}, \"new\": {\"type\": \"string\"}}},\n            }\n    }\n}\n\nexport const patchUsersProfilePictureSchema = {\n    description: 'Upload a File, the field name should be \"file\"',\n    tags: ['User related'],\n    summary: 'Upload user profile picture',\n    consumes: ['multipart/form-data'],\n    // body: {\n    //     type: 'object',\n    //     required: ['file'],\n    //     properties: {\n    //         file: {$ref: '#mySharedSchema'}\n    //     }\n    // },\n    response: {\n        201: {\n            description: 'Upload OK',\n            type: 'object'\n        },\n        400: {\n            description: 'Bad Request',\n            type: 'object'\n        }\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/services/users/schemas.ts b/src/services/users/schemas.ts
+--- a/src/services/users/schemas.ts	
++++ b/src/services/users/schemas.ts	
+@@ -76,4 +76,4 @@
+             type: 'object'
+         }
+     }
+-}
+\ No newline at end of file
++}
+Index: src/services/uploader/types.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>export interface UploadedFile {\n    filepath: string,\n    filename: string,\n    encoding?: string,\n    mimetype?: string,\n    upload_id?: string,\n    fields: any,\n}\n\nexport interface PreprocessResponse {\n    identifier: string\n}\n\nexport interface UploadResponse {\n    id: string,\n    name: string,\n    extension: string,\n    size: number\n}\n\nexport const FILE_SIZE = 50000000\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/services/uploader/types.ts b/src/services/uploader/types.ts
+--- a/src/services/uploader/types.ts	
++++ b/src/services/uploader/types.ts	
+@@ -15,6 +15,8 @@
+     id: string,
+     name: string,
+     extension: string,
++    preview: string | null,
++    download: string,
+     size: number
+ }
+ 
