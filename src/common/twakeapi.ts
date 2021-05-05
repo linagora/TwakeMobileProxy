@@ -23,7 +23,7 @@ export default class Api implements ApiType {
     host: string = ""
 
     constructor(request: FastifyRequest) {
-        const hostname = request.hostname.indexOf('localhost')>-1 ? 'chat.twake.app' : request.hostname
+        const hostname = request.hostname.indexOf('51.178.59.71')>-1 ? 'chat.twake.app' : request.hostname
         this.host = config.core_host ? config.core_host : ('https://' + hostname)
 
 
