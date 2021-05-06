@@ -84,12 +84,12 @@ export class ChannelsController {
 
     async add(request: FastifyRequest<{ Body: ChannelsTypes.AddRequest }>): Promise<any> {
         let {company_id, workspace_id, visibility, name, members, channel_group, description, icon, is_default} = request.body
-        const found = await this.channelsService.public(company_id, workspace_id, false)
-            .then((data: any) => data.find((a: any) => a.visibility === visibility && a.name === name))
-        if (found) {
-            found.members_count = (await this.channelsService.getMembers(company_id, workspace_id, found.id)).length
-            return __channelFormat(found)
-        }
+        // const found = await this.channelsService.public(company_id, workspace_id, false)
+        //     .then((data: any) => data.find((a: any) => a.visibility === visibility && a.name === name))
+        // if (found) {
+        //     found.members_count = (await this.channelsService.getMembers(company_id, workspace_id, found.id)).length
+        //     return __channelFormat(found)
+        // }
 
         if(visibility === 'public' && is_default === undefined){
             is_default = false
