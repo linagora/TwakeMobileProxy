@@ -134,7 +134,7 @@ class Api {
             // console.log(params)
             const res = await this.request.post('/authorize', params)
             this.request.token = res['token']
-            console.log(res)
+            // console.log(res)
             return res
         }
 
@@ -158,6 +158,7 @@ class Api {
 
 
     async selectWorkspace(name, add_if_not_exists = false) {
+
         let workspace = await this.getWorkspaces().then(a => a.find(a => a.name === name))
 
         if (!workspace && add_if_not_exists) {
@@ -166,6 +167,7 @@ class Api {
 
         assert(workspace, `Workspace ${name} not found`)
         this.workspace_id = workspace.id
+
         return this.workspace_id
     }
 

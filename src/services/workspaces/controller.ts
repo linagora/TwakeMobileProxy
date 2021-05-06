@@ -20,7 +20,6 @@ export class WorkspaceController {
     async list(request: FastifyRequest<{ Querystring: WorkspacesTypes.WorkspaceBaseRequest }>): Promise<Workspace[]> {
         const data = await this.usersService.getCurrent()
 
-
         return data.workspaces
             .filter((a: any) => a.group.id == request.query.company_id)
             .map((a: any) => {
