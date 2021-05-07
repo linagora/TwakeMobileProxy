@@ -1,17 +1,17 @@
-import { arrayToObject } from "../../common/helpers"
+import { arrayToObject } from '../../common/helpers'
 // import Users from '../../services/users/controller'
-import assert from "assert"
-import { toTwacode } from "../../common/twacode"
-import { BadRequest } from "../../common/errors"
-import { MessagesTypes } from "./types"
-import UsersService from "../users/service"
-import MessagesService from "./service"
+import assert from 'assert'
+import { toTwacode } from '../../common/twacode'
+import { BadRequest } from '../../common/errors'
+import { MessagesTypes } from './types'
+import UsersService from '../users/service'
+import MessagesService from './service'
 // import {ChannelsTypes} from "../channels/types";
-import { FastifyRequest } from "fastify"
-import ChannelsService from "../channels/service"
+import { FastifyRequest } from 'fastify'
+import ChannelsService from '../channels/service'
 import GetMessagesRequest = MessagesTypes.GetMessagesRequest
 
-import emojis from "../../resources/emojis"
+import emojis from '../../resources/emojis'
 
 export class MessagesController {
     // constructor(protected service: WorkspaceService, protected channelsService: ChannelsService, protected usersService: UsersService) {}
@@ -28,9 +28,9 @@ export class MessagesController {
     ): Promise<any> {
         const req = request.query
 
-        assert(req.company_id, "company_id is required")
-        assert(req.workspace_id, "workspace_id is required")
-        assert(req.channel_id, "channel_id is required")
+        assert(req.company_id, 'company_id is required')
+        assert(req.workspace_id, 'workspace_id is required')
+        assert(req.channel_id, 'channel_id is required')
 
         if (req.after_date) return this.__getAfterDate(req)
 
@@ -117,7 +117,7 @@ export class MessagesController {
         }
 
         if (!messages) {
-            console.log("GOT NO MESSAGES FROM CORE")
+            console.log('GOT NO MESSAGES FROM CORE')
             messages = []
         }
 
@@ -148,8 +148,8 @@ export class MessagesController {
                 for (const key in a.reactions) {
                     let newEntry = {
                         name: key,
-                        users: a.reactions[key]["users"],
-                        count: a.reactions[key]["count"],
+                        users: a.reactions[key]['users'],
+                        count: a.reactions[key]['count'],
                     }
                     newReactions.push(newEntry)
                 }
@@ -158,8 +158,8 @@ export class MessagesController {
                 a.reactions = newReactions
             }
             for (const r of a.reactions as Array<{ [key: string]: any }>) {
-                r.name = r.name.startsWith(":")
-                    ? emojis[r.name.substring(1, r.name.length - 1)] || "👍"
+                r.name = r.name.startsWith(':')
+                    ? emojis[r.name.substring(1, r.name.length - 1)] || '👍'
                     : r.name
             }
 
@@ -191,10 +191,10 @@ export class MessagesController {
             const fileMetadataAdd = async (prepared: Array<any>) => {
                 for (let item of prepared) {
                     if (item instanceof String) continue
-                    if (item instanceof Object && item.type === "file") {
+                    if (item instanceof Object && item.type === 'file') {
                         const file = await this.messagesService.getDriveObject(
                             req.company_id,
-                            req.workspace_id == "direct"
+                            req.workspace_id == 'direct'
                                 ? req.fallback_ws_id // temporary, will be removed in future API
                                 : req.workspace_id,
                             item.content
@@ -210,11 +210,11 @@ export class MessagesController {
                                 ? latest.preview_link
                                 : null,
                             download:
-                                "/ajax/drive/download?workspace_id=" +
+                                '/ajax/drive/download?workspace_id=' +
                                 `${file.workspace_id}&element_id=${file.id}` +
-                                "&download=1",
+                                '&download=1',
                         }
-                    } else if (item instanceof Object && item.type === "nop") {
+                    } else if (item instanceof Object && item.type === 'nop') {
                         // if the item is nop which is always in the end, then recurse on its content
                         await fileMetadataAdd(item.content)
                     }
@@ -240,8 +240,8 @@ export class MessagesController {
         let filteredMessages = messages.filter(
             (a: any) =>
                 !(
-                    a["hidden_data"] instanceof Object &&
-                    a["hidden_data"]["type"] === "init_channel"
+                    a['hidden_data'] instanceof Object &&
+                    a['hidden_data']['type'] === 'init_channel'
                 )
         )
 
@@ -258,7 +258,7 @@ export class MessagesController {
 
         // const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => this.usersService.getUserById(user_id as string))), 'id')
 
-        const messagesHash = arrayToObject(filteredMessages, "id")
+        const messagesHash = arrayToObject(filteredMessages, 'id')
         filteredMessages.forEach((a: any) => {
             delete a.responses
             a.user_id = a.sender.user_id
@@ -286,7 +286,7 @@ export class MessagesController {
         if (req.workspace_id) {
             let channels = await this.channelsService.all(req)
 
-            console.log("channel_name\tlast_channel_activity\tlast_user_access")
+            console.log('channel_name\tlast_channel_activity\tlast_user_access')
 
             const stat = [] as any[]
 
@@ -323,14 +323,14 @@ export class MessagesController {
         request: FastifyRequest<{ Body: MessagesTypes.InsertMessageRequest }>
     ): Promise<any> {
         const req = request.body
-        assert(req.company_id, "company_id is required")
-        assert(req.workspace_id, "workspace_id is required")
-        assert(req.channel_id, "channel_id is required")
+        assert(req.company_id, 'company_id is required')
+        assert(req.workspace_id, 'workspace_id is required')
+        assert(req.channel_id, 'channel_id is required')
 
         const prepared = req.prepared || toTwacode(req.original_str)
 
         if (!prepared || prepared?.length === 0) {
-            throw new BadRequest("Unparseable message")
+            throw new BadRequest('Unparseable message')
         }
 
         const msg = await this.messagesService
@@ -381,10 +381,10 @@ export class MessagesController {
                 body.message_id,
                 body.thread_id
             )
-            console.log("DONE", data)
+            console.log('DONE', data)
         } catch (e) {
             //
-            console.log("\n\n-----------\nError deleting message")
+            console.log('\n\n-----------\nError deleting message')
             const res = await this.messagesService.getMessages(
                 body.company_id,
                 body.workspace_id,
@@ -394,8 +394,8 @@ export class MessagesController {
                 1
             )
             console.log(res)
-            console.log("GOT:", e)
-            assert(false, "Something went wrong")
+            console.log('GOT:', e)
+            assert(false, 'Something went wrong')
         }
 
         return { success: true }
