@@ -8,7 +8,7 @@ export default class ChannelsService {
     }
 
     getMembers(companyId: string, workspaceId: string, channelId: string) {
-        return this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}/members`, {"limit": 1000}).then(a => a.resources)
+        return this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}/members`, {"limit": 100}).then(a => a.resources)
     }
 
     update(req: ChannelsTypes.UpdateRequest) {
