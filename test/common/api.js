@@ -354,6 +354,10 @@ class Api {
         return this.request.get('/users/search', {company_id: this.company_id, name})
     }
 
+    async getCurrentUser() {
+        return this.request.get('/user', {})
+    }
+
     getUserProfile() {
         return this.request.get('/users/profile', {})
     }

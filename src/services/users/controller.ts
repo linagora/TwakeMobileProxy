@@ -30,7 +30,8 @@ export class UsersController {
             firstname: data.firstname,
             lastname: data.lastname,
             thumbnail: data.thumbnail,
-            console_id: data.provider_id
+            console_id: data.provider_id,
+            email: data.email
         } as User
 
         usersCache[user.id] = user

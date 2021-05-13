@@ -17,6 +17,13 @@ describe('Users', async function () {
         await api.selectCompany('TestCompany')
     })
 
+    step('Current user', async function () {
+        const user = await api.getCurrentUser()
+        console.log(user)
+
+    })
+
+
     step('Search users', async function () {
         const info = await api.searchUsers('test')
         assert(info.length, 'no users found')
