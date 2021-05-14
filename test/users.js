@@ -19,8 +19,13 @@ describe('Users', async function () {
 
     step('Current user', async function () {
         const user = await api.getCurrentUser()
-        console.log(user)
-
+        assert(user.id)
+        assert(user.username)
+        assert(user.firstname)
+        assert(user.lastname)
+        assert(user.thumbnail)
+        assert(user.email)
+        assert(user.status)
     })
 
 

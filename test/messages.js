@@ -62,7 +62,7 @@ describe('Messages', async function () {
         await api.selectChannel(CHANNEL_NAME)
         const messages = await api.getMessages()
         assert(messages.length > 0, 'No messages in the channel')
-        console.log(api.request)
+
         const lastMessage = messages[messages.length-1]
         assert(lastMessage, 'no messages')
         const messagesAfterLast = await api.getMessages({after_date: lastMessage.modification_date})

@@ -41,6 +41,7 @@ export default class InfoService {
                 path: "/socket"
             }
             a.hostname = this.api.host.substr(this.api.host.indexOf("//")+2)
+            a.ver = '123'
             return a
         })
     }
