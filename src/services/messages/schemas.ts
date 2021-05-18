@@ -96,15 +96,3 @@ export const reactionsSchema = {
         }
     }
 }
-
-
-export const whatsNewSchema = {
-    tags: ['Messages'],
-    summary: 'List of unretrieved messages',
-    querystring: {
-        type: 'object', "required": ['company_id'],
-        properties:
-            {"company_id": {type: "string"}, "workspace_id": {type: "string"}},
-    }
-}
-
