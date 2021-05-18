@@ -238,32 +238,30 @@ export class MessagesController {
             (a: any) => a.user_id || (a.application_id && appsCache[a.application_id])
         )
         const usersCache: {[key: string]: any} = {}
-        console.log('Filtered messages before: ' + filteredMessages)
-        filteredMessages = await Promise.all(
-            filteredMessages.map(async (a: any) => {
-                const message = await formatMessages(a)
-                let user: {[key: string]: any} = {}
-                if (message.user_id) {
-                    if (!usersCache[message.user_id]) {
-                        const cachable = await this.usersService.getUserById(message.user_id)
-                        usersCache[message.user_id] = cachable 
-                    }
-                    user = usersCache[message.user_id]
-                } else { // else it's an application
-                    user = appsCache[message.application_id]
-                }
-                message.username = user.username
-                message.thumbnail = user.thumbnail
-                message.firstname = user.firstname
-                message.lastname = user.lastname
-            })
-        )
+        const users = Array.from(new Set(filteredMessages.map(m => m.sender).filter(s => s)))
+        await Promise.all(users.map(async u => {
+            const cachable = await this.usersService.getUserById(u)
+            usersCache[u] = cachable 
+        }))
+        filteredMessages = await Promise.all(filteredMessages.map(async (a: any) => {
+            const message = await formatMessages(a)
+            let user: {[key: string]: any} = {}
+            if (message.user_id) {
+                user = usersCache[message.user_id]
+            } else { // else it's an application
+                user = appsCache[message.application_id]
+            }
+            message.username = user.username
+            message.thumbnail = user.thumbnail
+            message.firstname = user.firstname
+            message.lastname = user.lastname
+            return message
+        }))
 
         filteredMessages.forEach((a: any) => {
             delete a.responses
             delete a.application_id
         })
-        console.log('Filtered messages after: ' + filteredMessages)
         if (req.before_message_id) {
             const i = filteredMessages.findIndex((v) => v.id == req.before_message_id);
             filteredMessages.splice(i, 1);
