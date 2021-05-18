@@ -232,7 +232,7 @@ export class MessagesController {
         )
 
 
-        let appsCache: {[key: string]: any};
+        let appsCache: {[key: string]: any} = {};
         const apps = await this.companiesService.applications(req.company_id)
         apps.forEach((app: {[key: string]: any}) => {
             appsCache[app.id] = {
