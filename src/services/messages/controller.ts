@@ -128,12 +128,6 @@ export class MessagesController {
         messages: any[]
     ): Promise<any> {
         const formatMessages = async (a: any) => {
-            const usersIds = new Set()
-
-            if (a.sender) {
-                usersIds.add(a.sender)
-            }
-
             // Messaging API is changing reactions format, so we now support old formats and new ones
             // see https://github.com/linagora/Twake-Mobile/issues/508
             if (!Array.isArray(a.reactions)) {
@@ -232,7 +226,7 @@ export class MessagesController {
         )
 
 
-        let appsCache: {[key: string]: any} = {};
+        let appsCache: {[key: string]: any} = {}
         const apps = await this.companiesService.applications(req.company_id)
         apps.forEach((app: {[key: string]: any}) => {
             appsCache[app.id] = {
@@ -246,13 +240,14 @@ export class MessagesController {
         const usersCache: {[key: string]: any} = {}
         filteredMessages = await Promise.all(
             filteredMessages.map(async (a: any) => {
-                const message = await formatMessages(a);
+                const message = await formatMessages(a)
                 let user: {[key: string]: any} = {}
                 if (message.user_id) {
-                    if (!usersCache[message.sender]) {
-                        usersCache[message.sender] = await this.usersService.getUserById(message.sender) 
+                    if (!usersCache[message.user_id]) {
+                        const user = await this.usersService.getUserById(message.user_id)
+                        usersCache[message.user_id] = user 
                     }
-                    user = usersCache[message.sender]
+                    user = usersCache[message.user_id]
                 } else { // else it's an application
                     user = appsCache[message.application_id]
                 }
