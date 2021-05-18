@@ -235,9 +235,10 @@ export class MessagesController {
             }
         })
         filteredMessages = filteredMessages.filter(
-            (a: any) => a.sender || (a.application_id && appsCache[a.application_id])
+            (a: any) => a.user_id || (a.application_id && appsCache[a.application_id])
         )
         const usersCache: {[key: string]: any} = {}
+        console.log('Filtered messages before: ' + filteredMessages)
         filteredMessages = await Promise.all(
             filteredMessages.map(async (a: any) => {
                 const message = await formatMessages(a)
@@ -262,8 +263,9 @@ export class MessagesController {
             delete a.responses
             delete a.application_id
         })
+        console.log('Filtered messages after: ' + filteredMessages)
         if (req.before_message_id) {
-            const i = filteredMessages.findIndex((v, _i, _) => v.id == req.before_message_id);
+            const i = filteredMessages.findIndex((v) => v.id == req.before_message_id);
             filteredMessages.splice(i, 1);
 
         }
