@@ -224,7 +224,9 @@ export class MessagesController {
                     a['hidden_data']['type'] === 'init_channel'
                 )
         )
-
+        filteredMessages = filteredMessages.filter(
+            (a: any) => a && a.id
+        )
 
         let appsCache: {[key: string]: any} = {}
         const apps = await this.companiesService.applications(req.company_id)
