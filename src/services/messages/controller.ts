@@ -1,5 +1,3 @@
-import { arrayToObject } from '../../common/helpers'
-// import Users from '../../services/users/controller'
 import assert from 'assert'
 import { toTwacode } from '../../common/twacode'
 import { BadRequest } from '../../common/errors'
@@ -246,8 +244,8 @@ export class MessagesController {
                 let user: {[key: string]: any} = {}
                 if (message.user_id) {
                     if (!usersCache[message.user_id]) {
-                        const user = await this.usersService.getUserById(message.user_id)
-                        usersCache[message.user_id] = user 
+                        const cachable = await this.usersService.getUserById(message.user_id)
+                        usersCache[message.user_id] = cachable 
                     }
                     user = usersCache[message.user_id]
                 } else { // else it's an application
@@ -260,18 +258,17 @@ export class MessagesController {
             })
         )
 
-        const messagesHash = arrayToObject(filteredMessages, 'id')
-
         filteredMessages.forEach((a: any) => {
             delete a.responses
             delete a.application_id
         })
-
         if (req.before_message_id) {
-            delete messagesHash[req.before_message_id]
+            const i = filteredMessages.findIndex((v, _i, _) => v.id == req.before_message_id);
+            filteredMessages.splice(i, 1);
+
         }
 
-        return Object.values(messagesHash).sort(
+        return filteredMessages.sort(
             (a: any, b: any) => a.creation_date - b.creation_date
         )
     }
