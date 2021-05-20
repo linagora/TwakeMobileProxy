@@ -24,6 +24,9 @@ export const userSchema = {
                 thumbnail: {
                     type: 'string',
                 },
+                last_activity: {
+                    type: 'number',
+                },
                 console_id: {
                     type: 'string',
                 },

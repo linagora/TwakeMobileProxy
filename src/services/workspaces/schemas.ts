@@ -21,6 +21,49 @@ export const workspacesPostSchema = {
 export const workspaceMembersGetSchema = {
     tags: ['Workspaces'],
     summary: 'List of workspaces members',
+    response: {
+        200: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                    },
+                    email: {
+                        type: 'string',
+                    },
+                    username: {
+                        type: 'string',
+                    },
+                    firstname: {
+                        type: 'string',
+                    },
+                    lastname: {
+                        type: 'string',
+                    },
+                    thumbnail: {
+                        type: 'string',
+                    },
+                    last_activity: {
+                        type: 'number',
+                    },
+                    console_id: {
+                        type: 'string',
+                    },
+                    status_icon: {
+                        type: 'string',
+                    },
+                    status: {
+                        type: 'string',
+                    },
+                    language: {
+                        type: 'string',
+                    },
+                }
+            }
+        }
+    },
     querystring: {
         type: 'object',
         "required": ['company_id', 'workspace_id'],

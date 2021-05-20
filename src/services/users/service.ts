@@ -34,6 +34,7 @@ export default class UsersService {
             status_icon: data.status_icon[0],
             status: data.status_icon[1],
             language: data.preference.locale,
+            last_activity: data.last_activity,
             is_admin: data.is_admin,
             workspaces: data.workspaces,
         }
@@ -57,6 +58,7 @@ export default class UsersService {
             thumbnail: data.thumbnail,
             console_id: data.provider_id,
             status_icon: data.status_icon[0],
+            last_activity: data.last_activity,
             status: data.status_icon[1],
             language: data.preference.locale,
             is_admin: false,

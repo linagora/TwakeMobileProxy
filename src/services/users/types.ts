@@ -20,6 +20,7 @@ export interface User {
     status?: string
     language: string
     is_admin: boolean
+    last_activity: number
     workspaces?: {[key: string]: any}[]
 }
 
