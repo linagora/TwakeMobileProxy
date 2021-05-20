@@ -13,15 +13,13 @@ import Workspace = WorkspacesTypes.Workspace;
 
 export class WorkspaceController {
 
-    // constructor(protected service: WorkspaceService, protected channelsService: ChannelsService, protected usersService: UsersService) {}
     constructor(protected workspaceService: WorkspaceService, protected channelsService: ChannelsService, protected usersService: UsersService) {
     }
 
     async list(request: FastifyRequest<{ Querystring: WorkspacesTypes.WorkspaceBaseRequest }>): Promise<Workspace[]> {
         const data = await this.usersService.getCurrent()
 
-        return data.workspaces
-            .filter((a: any) => a.group.id == request.query.company_id)
+        return data.workspaces?.filter((a: any) => a.group.id == request.query.company_id)
             .map((a: any) => {
                 // console.log(a)
                 let tm = a.total_members || a.stats?.total_members || 0
@@ -36,7 +34,7 @@ export class WorkspaceController {
                     is_archived: a.is_archived,
                     user_last_access: a._user_last_access,
                     // user_is_admin: a._user_is_admin
-                    permissions: data.user_is_organization_administrator ? ['EDIT_WORKSPACE'] : []
+                    permissions: data.is_admin ? ['EDIT_WORKSPACE'] : []
                 } as Workspace
             }).sort((a: Workspace, b: Workspace) => a.name.localeCompare(b.name)) as Workspace[]
 

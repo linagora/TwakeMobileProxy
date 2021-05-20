@@ -84,12 +84,6 @@ export class ChannelsController {
 
     async add(request: FastifyRequest<{ Body: ChannelsTypes.AddRequest }>): Promise<any> {
         let {company_id, workspace_id, visibility, name, members, channel_group, description, icon, is_default} = request.body
-        // const found = await this.channelsService.public(company_id, workspace_id, false)
-        //     .then((data: any) => data.find((a: any) => a.visibility === visibility && a.name === name))
-        // if (found) {
-        //     found.members_count = (await this.channelsService.getMembers(company_id, workspace_id, found.id)).length
-        //     return __channelFormat(found)
-        // }
 
         if(visibility === 'public' && is_default === undefined){
             is_default = false
@@ -139,12 +133,12 @@ export class ChannelsController {
         const user = await this.usersService.getCurrent()
         channels.forEach((ch: any) => {
             ch.members_count = counts.shift()
-            ch.user_is_organization_administrator = user.user_is_organization_administrator
+            ch.user_is_organization_administrator = user.is_admin
         })
         return __channelsFormat(channels).sort((a: any, b: any) => a.name.localeCompare(b.name))
     }
 
-    getMembers(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
+    async getMembers(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
         const {company_id, workspace_id, channel_id} = request.query
         return this.channelsService.getMembers(company_id, workspace_id, channel_id).then((a: any) => this.addEmailsToMembers(a))
     }
@@ -201,28 +195,6 @@ export class ChannelsController {
     async markRead(request: FastifyRequest<{ Body: ChannelsTypes.ChannelParameters }>) {
         const req = request.body
         return this.channelsService.markRead(req.company_id, req.workspace_id, req.channel_id)
-    }
-
-    private async __findChannel(company_id: string, workspace_id: string, visibility: string, name?: string, members?: string[]) {
-
-        function eqArrays(as: string[], bs: string[]) {
-            if (as.length !== bs.length) return false;
-            const bsSet = new Set(bs)
-            for (let a of as) if (!bsSet.has(a)) return false;
-            return true;
-        }
-
-        return await this.channelsService.public(company_id, workspace_id, false)
-            .then((data: any) => data
-                .filter((a: any) => a.visibility == visibility)
-                .find((a: any) => {
-                        return (name && a.name.toLocaleLowerCase() == name.toLocaleLowerCase())
-                            || (!a.name && a.members.length && eqArrays(members || [], a.members))
-
-                    }
-                )
-            )
-
     }
 
     private async __formatDirectChannels(items: any[]) {

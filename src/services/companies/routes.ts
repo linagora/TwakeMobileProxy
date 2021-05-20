@@ -6,7 +6,7 @@ import {applicationsSchema, badgesSchema, companiesSchema} from "./schemas";
 import {CompaniesController} from "./controller";
 import {CompanyTypes} from "./types";
 
-export default function (fastify: FastifyInstance, opts: any, next: () => void) {
+export default function (fastify: FastifyInstance, _opts: any, next: () => void) {
 
     function ctrl(request: FastifyRequest) {
         const api = new Api(request)

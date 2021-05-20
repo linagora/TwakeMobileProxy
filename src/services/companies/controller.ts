@@ -13,7 +13,7 @@ export class CompaniesController {
         const data = await this.usersService.getCurrent()
 
         const companiesHash = {} as any
-        data.workspaces.forEach((ws: any) => {
+        data.workspaces?.forEach((ws: any) => {
             if (!companiesHash[ws.group.id]) {
                 companiesHash[ws.group.id] = {
                     id: ws.group.id,
