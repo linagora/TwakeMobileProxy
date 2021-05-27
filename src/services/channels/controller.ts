@@ -43,7 +43,6 @@ function __channelFormat(a: any): ChannelsTypes.Channel {
         has_unread: a.user_member ? +a.last_activity > +a.user_member.last_access : false,
         user_last_access: a.user_member ? +a.user_member.last_access : undefined,
         members: a.members,
-        members_count: a.members_count,
         visibility: a.visibility,
         is_member: Boolean(a.user_member),
         permissions: permissions
@@ -90,7 +89,8 @@ export class ChannelsController {
         }
 
         const channel = await this.channelsService.addChannel(company_id, workspace_id, name, visibility, members, channel_group, description, icon, is_default)
-        channel.members_count = (await this.channelsService.getMembers(company_id, workspace_id, channel.id)).length
+        channel.members = await this.channelsService.getMembers(company_id, workspace_id, channel.id)
+                                .then((mms: {[key: string]: any}[]) => mms.map((m) => m.id))
         return __channelFormat(channel)
     }
 
@@ -128,11 +128,18 @@ export class ChannelsController {
                     .forEach((a: any) => channels.push(a)))
         }
 
-        const counts = await Promise.all(channels.map((c) => this.channelsService.getMembers(company_id, workspace_id, c.id).then((a: any) => a.length)))
+        await Promise.all(
+            channels.map((c) => 
+                this.channelsService.getMembers(company_id, workspace_id, c.id)
+                .then((mms: {[key: string]: any}[]) => {
+                    const members = mms.map((m) => m.id)
+                    c.members = members
+                })
+            )
+        )
 
         const user = await this.usersService.getCurrent()
         channels.forEach((ch: any) => {
-            ch.members_count = counts.shift()
             ch.user_is_organization_administrator = user.is_admin
         })
         return __channelsFormat(channels).sort((a: any, b: any) => a.name.localeCompare(b.name))

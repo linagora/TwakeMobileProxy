@@ -28,7 +28,6 @@ export declare namespace ChannelsTypes {
         company_id: string
         visibility: string,
         members: [],
-        members_count: number,
         is_member: boolean
     }
 
