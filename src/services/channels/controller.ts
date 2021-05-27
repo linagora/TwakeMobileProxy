@@ -146,21 +146,21 @@ export class ChannelsController {
     }
 
     async getMembers(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
-        const {company_id, workspace_id, channel_id} = request.query
-        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then((a: any) => this.addEmailsToMembers(a))
+        const {company_id, workspace_id, id} = request.query
+        return this.channelsService.getMembers(company_id, workspace_id, id).then((a: any) => this.addEmailsToMembers(a))
     }
 
     async addMembers(request: FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>): Promise<any> {
-        const {company_id, workspace_id, channel_id} = request.body
+        const {company_id, workspace_id, id} = request.body
         await this.channelsService.addMembers(request.body)
-        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then((a: any) => this.addEmailsToMembers(a))
+        return this.channelsService.getMembers(company_id, workspace_id, id).then((a: any) => this.addEmailsToMembers(a))
     }
 
     async removeMembers(request: FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>): Promise<any> {
-        const {company_id, workspace_id, channel_id} = request.body
+        const {company_id, workspace_id, id} = request.body
 
         await this.channelsService.removeMembers(request.body)
-        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then((a: any) => this.addEmailsToMembers(a))
+        return this.channelsService.getMembers(company_id, workspace_id, id).then((a: any) => this.addEmailsToMembers(a))
     }
 
     edit(request: FastifyRequest<{ Body: ChannelsTypes.UpdateRequest }>) {
@@ -174,7 +174,7 @@ export class ChannelsController {
         let attempts = 0
         while (!done) {
             const channels = await this.channelsService.all(request.body)
-            const found = channels.find(a => a.id === request.body.channel_id)
+            const found = channels.find(a => a.id === request.body.id)
             if (found) {
                 if (attempts > 2) throw new BadRequest("Can't delete channel after 3 requests")
                 await this.channelsService.delete(request.body)
@@ -201,7 +201,7 @@ export class ChannelsController {
 
     async markRead(request: FastifyRequest<{ Body: ChannelsTypes.ChannelParameters }>) {
         const req = request.body
-        return this.channelsService.markRead(req.company_id, req.workspace_id, req.channel_id)
+        return this.channelsService.markRead(req.company_id, req.workspace_id, req.id)
     }
 
     private async __formatDirectChannels(items: any[]) {

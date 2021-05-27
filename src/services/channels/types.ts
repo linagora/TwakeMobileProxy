@@ -12,7 +12,7 @@ export declare namespace ChannelsTypes {
     }
 
     export interface ChannelParameters extends BaseChannelsParameters {
-        channel_id: string | DirectChannel
+        id: string | DirectChannel
     }
 
 
