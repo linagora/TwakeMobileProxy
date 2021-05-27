@@ -50,27 +50,31 @@ export class WorkspaceController {
 
         const currentUser = await this.usersService.getCurrent()
 
-        const rooms = {} as { [key: string]: { type: string, id: string } }
+        const rooms = [] as {  type: string, id: string, key: string }[]
 
-        rooms[`/companies/${request.query.company_id}/workspaces/${request.query.workspace_id}/channels?type=public`] = {
+        rooms.push({
+            key: `/companies/${request.query.company_id}/workspaces/${request.query.workspace_id}/channels?type=public`,
             type: "CHANNELS_LIST",
             id: 'PUBLIC'
-        }
-        rooms[`/companies/${request.query.company_id}/workspaces/${request.query.workspace_id}/channels?type=private&user=${currentUser.id}`] = {
+        })
+        rooms.push({
+            key: `/companies/${request.query.company_id}/workspaces/${request.query.workspace_id}/channels?type=private&user=${currentUser.id}`,
             type: 'CHANNELS_LIST',
             id: 'PRIVATE'
-        }
+        })
 
-        rooms[`/companies/${request.query.company_id}/workspaces/direct/channels?type=direct&user=${currentUser.id}`] = {
+        rooms.push({
+            key: `/companies/${request.query.company_id}/workspaces/direct/channels?type=direct&user=${currentUser.id}`,
             type: 'DIRECTS_LIST',
             id: 'DIRECT'
-        }
+        })
 
         // Listen for badge updates
-        rooms[`/notifications?type=private&user=${currentUser.id}`] = {
+        rooms.push({
+            key: `/notifications?type=private&user=${currentUser.id}`,
             type: 'NOTIFICATIONS',
             id: 'PRIVATE'
-        }
+        })
 
         const allChannelsIds = await this.channelsService.all(request.query as ChannelsTypes.BaseChannelsParameters).then(channel => {
             return channel.map((a: any) => {
@@ -80,10 +84,11 @@ export class WorkspaceController {
 
 
         allChannelsIds.forEach((channel: { id: string, direct: boolean }) => {
-            rooms[`previous::channels/${channel.id}/messages/updates`] = {
+            rooms.push({
+                key: `previous::channels/${channel.id}/messages/updates`,
                 type: channel.direct ? 'DIRECT' : 'CHANNEL',
                 id: channel.id
-            }
+            })
         })
 
 
