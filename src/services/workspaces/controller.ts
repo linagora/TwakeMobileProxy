@@ -54,26 +54,26 @@ export class WorkspaceController {
 
         rooms.push({
             key: `/companies/${request.query.company_id}/workspaces/${request.query.workspace_id}/channels?type=public`,
-            type: "CHANNELS_LIST",
-            id: 'PUBLIC'
+            type: 'channels_list',
+            id: 'public'
         })
         rooms.push({
             key: `/companies/${request.query.company_id}/workspaces/${request.query.workspace_id}/channels?type=private&user=${currentUser.id}`,
-            type: 'CHANNELS_LIST',
-            id: 'PRIVATE'
+            type: 'channels_list',
+            id: 'private'
         })
 
         rooms.push({
             key: `/companies/${request.query.company_id}/workspaces/direct/channels?type=direct&user=${currentUser.id}`,
-            type: 'DIRECTS_LIST',
-            id: 'DIRECT'
+            type: 'directs_list',
+            id: 'direct'
         })
 
         // Listen for badge updates
         rooms.push({
             key: `/notifications?type=private&user=${currentUser.id}`,
-            type: 'NOTIFICATIONS',
-            id: 'PRIVATE'
+            type: 'notifications',
+            id: 'private'
         })
 
         const allChannelsIds = await this.channelsService.all(request.query as ChannelsTypes.BaseChannelsParameters).then(channel => {
@@ -86,7 +86,7 @@ export class WorkspaceController {
         allChannelsIds.forEach((channel: { id: string, direct: boolean }) => {
             rooms.push({
                 key: `previous::channels/${channel.id}/messages/updates`,
-                type: channel.direct ? 'DIRECT' : 'CHANNEL',
+                type: channel.direct ? 'direct' : 'channel',
                 id: channel.id
             })
         })
