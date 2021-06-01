@@ -183,6 +183,7 @@ export class MessagesController {
                         // Grab the latest version of the file
                         const latest = file.path.pop()
                         item.metadata = {
+                            id: item.content,
                             name: latest.name,
                             size: file.size,
                             preview: latest.preview_has_been_generated
