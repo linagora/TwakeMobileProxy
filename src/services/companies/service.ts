@@ -5,10 +5,41 @@ export default class CompaniesService {
     }
 
     async badges(company_id: string, all_companies: boolean): Promise<Array<{ [key: string]: string }>> {
-        return (await this.api.get(
+        let response = (await this.api.get(
             '/internal/services/notifications/v1/badges',
             {company_id, all_companies}
-        )).resources || []
+        )).resources || {}
+
+        const companies = response.companies
+        const workspaces = response.workspaces
+        const channels = response.channels
+
+        const badges: { [key: string]: any }[] = []
+
+        for (const [k, v] of Object.entries(companies)) {
+            badges.push({
+                type: 'company',
+                id: k,
+                count: v,
+            })
+        }
+        for (const [k, v] of Object.entries(workspaces)) {
+            badges.push({
+                type: 'workspace',
+                id: k,
+                count: v,
+            })
+        }
+        for (const [k, v] of Object.entries(channels)) {
+            badges.push({
+                type: 'channel',
+                id: k,
+                count: v,
+            })
+        }
+
+        return badges
+
     }
 
     async applications(company_id: string) {
