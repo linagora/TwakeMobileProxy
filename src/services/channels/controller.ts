@@ -38,7 +38,7 @@ function __channelFormat(a: any): ChannelsTypes.Channel {
         workspace_id: a.workspace_id,
         description: a.description,
         channel_group: a.channel_group,
-        last_message: a.last_message,
+        last_message: a.last_message && Object.keys(a.last_message).length > 0 ? a.last_message : null,
         last_activity: +a.last_activity,
         has_unread: a.user_member ? +a.last_activity > +a.user_member.last_access : false,
         user_last_access: a.user_member ? +a.user_member.last_access : undefined,
