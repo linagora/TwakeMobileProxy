@@ -11,10 +11,10 @@ export declare namespace CompanyTypes {
         all_companies: boolean,
     }
 
-    export interface Badges {
-        companies: { [id: string]: number }
-        workspaces: { [id: string]: number }
-        channels: { [id: string]: number }
+    export interface Badge {
+        type: string
+        id: string
+        count: number 
     }
 
     export interface Applications {
