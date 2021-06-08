@@ -236,10 +236,11 @@ export class MessagesController {
             }
         })
         filteredMessages = filteredMessages.filter(
-            (a: any) => a.user_id || (a.application_id && appsCache[a.application_id])
+            (a: any) => a.user_id && a.user_id != 'null' 
+            || (a.application_id && appsCache[a.application_id])
         )
         const usersCache: {[key: string]: any} = {}
-        const users = Array.from(new Set(filteredMessages.map(m => m.sender).filter(s => s && s != 'null')))
+        const users = Array.from(new Set(filteredMessages.map(m => m.sender).filter(s => s)))
         await Promise.all(users.map(async u => {
             const cachable = await this.usersService.getUserById(u)
             usersCache[u] = cachable 
