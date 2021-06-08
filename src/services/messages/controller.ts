@@ -239,7 +239,7 @@ export class MessagesController {
             (a: any) => a.user_id || (a.application_id && appsCache[a.application_id])
         )
         const usersCache: {[key: string]: any} = {}
-        const users = Array.from(new Set(filteredMessages.map(m => m.sender).filter(s => s)))
+        const users = Array.from(new Set(filteredMessages.map(m => m.sender).filter(s => s && s != 'null')))
         await Promise.all(users.map(async u => {
             const cachable = await this.usersService.getUserById(u)
             usersCache[u] = cachable 
