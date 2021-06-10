@@ -44,6 +44,8 @@ export default class MessagesService {
                 throw new BadRequest("something went wrong")
             }
 
+            if (!a.data) return []
+
             return a.data.map((a: any) => {
                 a.modification_date = this.fixDate(a.modification_date)
                 a.creation_date = this.fixDate(a.creation_date)
