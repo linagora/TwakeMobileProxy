@@ -33,7 +33,6 @@ export default class MessagesService {
                 limit: limit || 50,
                 offset: offset,
                 thread_id: threadId,
-                parent_message_id: threadId, // backward compatibility
                 id: messageId
             },
         }
@@ -44,6 +43,8 @@ export default class MessagesService {
                 console.error('GOT ERROR', a)
                 throw new BadRequest("something went wrong")
             }
+
+            if (!a.data) return []
 
             return a.data.map((a: any) => {
                 a.modification_date = this.fixDate(a.modification_date)
@@ -67,7 +68,6 @@ export default class MessagesService {
                 workspace_id: workspaceId,
                 channel_id: channelId,
                 thread_id: threadId,
-                parent_message_id: threadId, // backward compatibility
                 content: {
                     original_str: originalString,
                     prepared: prepared
@@ -112,7 +112,6 @@ export default class MessagesService {
                 channel_id: channelId,
                 id: messageId,
                 _user_reaction: reaction,
-                parent_message_id: threadId, // backward compatibility
                 thread_id: threadId
             }
         }
@@ -133,7 +132,6 @@ export default class MessagesService {
                 channel_id: channelId,
                 id: messageId,
                 thread_id: threadId,
-                parent_message_id: threadId, // backward compatibility
             }
         }
 

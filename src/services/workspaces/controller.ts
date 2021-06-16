@@ -13,15 +13,13 @@ import Workspace = WorkspacesTypes.Workspace;
 
 export class WorkspaceController {
 
-    // constructor(protected service: WorkspaceService, protected channelsService: ChannelsService, protected usersService: UsersService) {}
     constructor(protected workspaceService: WorkspaceService, protected channelsService: ChannelsService, protected usersService: UsersService) {
     }
 
     async list(request: FastifyRequest<{ Querystring: WorkspacesTypes.WorkspaceBaseRequest }>): Promise<Workspace[]> {
         const data = await this.usersService.getCurrent()
 
-        return data.workspaces
-            .filter((a: any) => a.group.id == request.query.company_id)
+        return data.workspaces?.filter((a: any) => a.group.id == request.query.company_id)
             .map((a: any) => {
                 // console.log(a)
                 let tm = a.total_members || a.stats?.total_members || 0
@@ -36,7 +34,7 @@ export class WorkspaceController {
                     is_archived: a.is_archived,
                     user_last_access: a._user_last_access,
                     // user_is_admin: a._user_is_admin
-                    permissions: data.user_is_organization_administrator ? ['EDIT_WORKSPACE'] : []
+                    permissions: data.is_admin ? ['EDIT_WORKSPACE'] : []
                 } as Workspace
             }).sort((a: Workspace, b: Workspace) => a.name.localeCompare(b.name)) as Workspace[]
 
@@ -52,27 +50,31 @@ export class WorkspaceController {
 
         const currentUser = await this.usersService.getCurrent()
 
-        const rooms = {} as { [key: string]: { type: string, id: string } }
+        const rooms = [] as {  type: string, id: string, key: string }[]
 
-        rooms[`/companies/${request.query.company_id}/workspaces/${request.query.workspace_id}/channels?type=public`] = {
-            type: "CHANNELS_LIST",
-            id: 'PUBLIC'
-        }
-        rooms[`/companies/${request.query.company_id}/workspaces/${request.query.workspace_id}/channels?type=private&user=${currentUser.id}`] = {
-            type: 'CHANNELS_LIST',
-            id: 'PRIVATE'
-        }
+        rooms.push({
+            key: `/companies/${request.query.company_id}/workspaces/${request.query.workspace_id}/channels?type=public`,
+            type: 'channels_list',
+            id: 'public'
+        })
+        rooms.push({
+            key: `/companies/${request.query.company_id}/workspaces/${request.query.workspace_id}/channels?type=private&user=${currentUser.id}`,
+            type: 'channels_list',
+            id: 'private'
+        })
 
-        rooms[`/companies/${request.query.company_id}/workspaces/direct/channels?type=direct&user=${currentUser.id}`] = {
-            type: 'DIRECTS_LIST',
-            id: 'DIRECT'
-        }
+        rooms.push({
+            key: `/companies/${request.query.company_id}/workspaces/direct/channels?type=direct&user=${currentUser.id}`,
+            type: 'directs_list',
+            id: 'direct'
+        })
 
         // Listen for badge updates
-        rooms[`/notifications?type=private&user=${currentUser.id}`] = {
-            type: 'NOTIFICATIONS',
-            id: 'PRIVATE'
-        }
+        rooms.push({
+            key: `/notifications?type=private&user=${currentUser.id}`,
+            type: 'notifications',
+            id: 'private'
+        })
 
         const allChannelsIds = await this.channelsService.all(request.query as ChannelsTypes.BaseChannelsParameters).then(channel => {
             return channel.map((a: any) => {
@@ -82,10 +84,11 @@ export class WorkspaceController {
 
 
         allChannelsIds.forEach((channel: { id: string, direct: boolean }) => {
-            rooms[`previous::channels/${channel.id}/messages/updates`] = {
-                type: channel.direct ? 'DIRECT' : 'CHANNEL',
+            rooms.push({
+                key: `previous::channels/${channel.id}/messages/updates`,
+                type: channel.direct ? 'direct' : 'channel',
                 id: channel.id
-            }
+            })
         })
 
 
@@ -98,19 +101,11 @@ export class WorkspaceController {
     }
 
     async listMembers({query: req}: FastifyRequest<{ Querystring: WorkspaceRequest }>) {
-        return this.workspaceService.listWorkspaceMembers(req.company_id, req.workspace_id)
-            .then((a: any) => {
-                return a?.data?.list || {}
-            })
-            .then((a: any) => Object.values(a))
-            .then((a: any) => a.map((u: any) => u.user))
-            .then((u: any) => u.map(({id, username, firstname, lastname, thumbnail}: any) => ({
-                id,
-                username,
-                firstname,
-                lastname,
-                thumbnail
-            })))
+        const users = await this.workspaceService.listWorkspaceMembers(
+            req.company_id, 
+            req.workspace_id
+        )
+        return users
     }
 
     async addMembers({body: req}: FastifyRequest<{ Body: WorkspaceMembersPostRequest }>): Promise<any> {

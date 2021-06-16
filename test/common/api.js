@@ -210,23 +210,23 @@ class Api {
         return await this.request.post('/channels', params)
     }
 
-    async updateChannel(channel_id, name, visibility, members, is_default) {
+    async updateChannel(id, name, visibility, members, is_default) {
         assert(!visibility || ['public', 'private', 'direct'].includes(visibility), 'wrong visibility type')
         assert(!members || Array.isArray(members), 'members is not array')
         const params = {
             company_id: this.company_id,
             workspace_id: this.workspace_id,
-            channel_id,
+            id,
             name, visibility, members,is_default
         }
         return await this.request.put('/channels', params)
     }
 
-    async deleteChannel(channel_id) {
+    async deleteChannel(id) {
         const params = {
             company_id: this.company_id,
             workspace_id: this.workspace_id,
-            channel_id
+            id
         }
         return await this.request.delete('/channels', params)
     }
@@ -289,7 +289,7 @@ class Api {
         const params = {
             company_id: this.company_id,
             workspace_id: this.workspace_id,
-            channel_id: channel_id,
+            id: channel_id,
         }
         return this.request.post('/channels/read', params)
     }

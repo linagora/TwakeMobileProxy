@@ -38,12 +38,11 @@ function __channelFormat(a: any): ChannelsTypes.Channel {
         workspace_id: a.workspace_id,
         description: a.description,
         channel_group: a.channel_group,
-        last_message: a.last_message,
+        last_message: a.last_message && Object.keys(a.last_message).length > 0 ? a.last_message : null,
         last_activity: +a.last_activity,
         has_unread: a.user_member ? +a.last_activity > +a.user_member.last_access : false,
         user_last_access: a.user_member ? +a.user_member.last_access : undefined,
         members: a.members,
-        members_count: a.members_count,
         visibility: a.visibility,
         is_member: Boolean(a.user_member),
         permissions: permissions
@@ -84,19 +83,14 @@ export class ChannelsController {
 
     async add(request: FastifyRequest<{ Body: ChannelsTypes.AddRequest }>): Promise<any> {
         let {company_id, workspace_id, visibility, name, members, channel_group, description, icon, is_default} = request.body
-        // const found = await this.channelsService.public(company_id, workspace_id, false)
-        //     .then((data: any) => data.find((a: any) => a.visibility === visibility && a.name === name))
-        // if (found) {
-        //     found.members_count = (await this.channelsService.getMembers(company_id, workspace_id, found.id)).length
-        //     return __channelFormat(found)
-        // }
 
         if(visibility === 'public' && is_default === undefined){
             is_default = false
         }
 
         const channel = await this.channelsService.addChannel(company_id, workspace_id, name, visibility, members, channel_group, description, icon, is_default)
-        channel.members_count = (await this.channelsService.getMembers(company_id, workspace_id, channel.id)).length
+        channel.members = await this.channelsService.getMembers(company_id, workspace_id, channel.id)
+                                .then((mms: {[key: string]: any}[]) => mms.map((m) => m.id))
         return __channelFormat(channel)
     }
 
@@ -134,32 +128,39 @@ export class ChannelsController {
                     .forEach((a: any) => channels.push(a)))
         }
 
-        const counts = await Promise.all(channels.map((c) => this.channelsService.getMembers(company_id, workspace_id, c.id).then((a: any) => a.length)))
+        await Promise.all(
+            channels.map((c) => 
+                this.channelsService.getMembers(company_id, workspace_id, c.id)
+                .then((mms: {[key: string]: any}[]) => {
+                    const members = mms.map((m) => m.id)
+                    c.members = members
+                })
+            )
+        )
 
         const user = await this.usersService.getCurrent()
         channels.forEach((ch: any) => {
-            ch.members_count = counts.shift()
-            ch.user_is_organization_administrator = user.user_is_organization_administrator
+            ch.user_is_organization_administrator = user.is_admin
         })
         return __channelsFormat(channels).sort((a: any, b: any) => a.name.localeCompare(b.name))
     }
 
-    getMembers(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
-        const {company_id, workspace_id, channel_id} = request.query
-        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then((a: any) => this.addEmailsToMembers(a))
+    async getMembers(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
+        const {company_id, workspace_id, id} = request.query
+        return this.channelsService.getMembers(company_id, workspace_id, id).then((a: any) => this.addEmailsToMembers(a))
     }
 
     async addMembers(request: FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>): Promise<any> {
-        const {company_id, workspace_id, channel_id} = request.body
+        const {company_id, workspace_id, id} = request.body
         await this.channelsService.addMembers(request.body)
-        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then((a: any) => this.addEmailsToMembers(a))
+        return this.channelsService.getMembers(company_id, workspace_id, id).then((a: any) => this.addEmailsToMembers(a))
     }
 
     async removeMembers(request: FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>): Promise<any> {
-        const {company_id, workspace_id, channel_id} = request.body
+        const {company_id, workspace_id, id} = request.body
 
         await this.channelsService.removeMembers(request.body)
-        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then((a: any) => this.addEmailsToMembers(a))
+        return this.channelsService.getMembers(company_id, workspace_id, id).then((a: any) => this.addEmailsToMembers(a))
     }
 
     edit(request: FastifyRequest<{ Body: ChannelsTypes.UpdateRequest }>) {
@@ -173,7 +174,7 @@ export class ChannelsController {
         let attempts = 0
         while (!done) {
             const channels = await this.channelsService.all(request.body)
-            const found = channels.find(a => a.id === request.body.channel_id)
+            const found = channels.find(a => a.id === request.body.id)
             if (found) {
                 if (attempts > 2) throw new BadRequest("Can't delete channel after 3 requests")
                 await this.channelsService.delete(request.body)
@@ -200,29 +201,7 @@ export class ChannelsController {
 
     async markRead(request: FastifyRequest<{ Body: ChannelsTypes.ChannelParameters }>) {
         const req = request.body
-        return this.channelsService.markRead(req.company_id, req.workspace_id, req.channel_id)
-    }
-
-    private async __findChannel(company_id: string, workspace_id: string, visibility: string, name?: string, members?: string[]) {
-
-        function eqArrays(as: string[], bs: string[]) {
-            if (as.length !== bs.length) return false;
-            const bsSet = new Set(bs)
-            for (let a of as) if (!bsSet.has(a)) return false;
-            return true;
-        }
-
-        return await this.channelsService.public(company_id, workspace_id, false)
-            .then((data: any) => data
-                .filter((a: any) => a.visibility == visibility)
-                .find((a: any) => {
-                        return (name && a.name.toLocaleLowerCase() == name.toLocaleLowerCase())
-                            || (!a.name && a.members.length && eqArrays(members || [], a.members))
-
-                    }
-                )
-            )
-
+        return this.channelsService.markRead(req.company_id, req.workspace_id, req.id)
     }
 
     private async __formatDirectChannels(items: any[]) {

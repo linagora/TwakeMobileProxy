@@ -12,7 +12,7 @@ export declare namespace ChannelsTypes {
     }
 
     export interface ChannelParameters extends BaseChannelsParameters {
-        channel_id: string | DirectChannel
+        id: string | DirectChannel
     }
 
 
@@ -28,7 +28,6 @@ export declare namespace ChannelsTypes {
         company_id: string
         visibility: string,
         members: [],
-        members_count: number,
         is_member: boolean
     }
 

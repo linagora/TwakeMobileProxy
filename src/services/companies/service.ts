@@ -5,10 +5,12 @@ export default class CompaniesService {
     }
 
     async badges(company_id: string, all_companies: boolean): Promise<Array<{ [key: string]: string }>> {
-        return (await this.api.get(
+        let response = (await this.api.get(
             '/internal/services/notifications/v1/badges',
             {company_id, all_companies}
-        )).resources || []
+        )).resources || {}
+
+        return response
     }
 
     async applications(company_id: string) {

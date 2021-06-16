@@ -15,7 +15,7 @@ export default class ChannelsService {
 
         const params = {
             "resource": {
-                "id": req.channel_id,
+                "id": req.id,
                 "company_id": req.company_id,
                 "workspace_id": req.workspace_id,
                 "icon": req.icon,
@@ -29,18 +29,18 @@ export default class ChannelsService {
             params.resource.visibility = req.visibility
         }
 
-        return this.api.post(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}`, params).then(a => a.resource)
+        return this.api.post(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.id}`, params).then(a => a.resource)
     }
 
     async delete(req: ChannelsTypes.ChannelParameters) {
-        await this.api.delete(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}`)
+        await this.api.delete(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.id}`)
         return {success: true}
     }
 
     init(req: ChannelsTypes.ChannelParameters) {
         const params = {
             "multiple": [{
-                "collection_id": `updates/${req.channel_id}`,
+                "collection_id": `updates/${req.id}`,
                 "options": {"type": "updates"},
                 "_grouped": true
             }]
@@ -68,7 +68,7 @@ export default class ChannelsService {
 
 
     async addMembers(req: ChannelsTypes.ChangeMembersRequest) {
-        const promises = req.members.map(user_id => this.api.post(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}/members`,
+        const promises = req.members.map(user_id => this.api.post(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.id}/members`,
             {"resource": {"user_id": user_id, "type": "member"}}
         ))
 
@@ -76,7 +76,7 @@ export default class ChannelsService {
     }
 
     async removeMembers(req: ChannelsTypes.ChangeMembersRequest) {
-        const promises = req.members.map(user_id => this.api.delete(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}/members/${user_id}`))
+        const promises = req.members.map(user_id => this.api.delete(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.id}/members/${user_id}`))
         return Promise.all(promises.map(p => p.catch(e => e)))
     }
 

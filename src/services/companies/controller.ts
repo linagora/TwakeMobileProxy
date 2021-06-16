@@ -13,7 +13,7 @@ export class CompaniesController {
         const data = await this.usersService.getCurrent()
 
         const companiesHash = {} as any
-        data.workspaces.forEach((ws: any) => {
+        data.workspaces?.forEach((ws: any) => {
             if (!companiesHash[ws.group.id]) {
                 companiesHash[ws.group.id] = {
                     id: ws.group.id,
@@ -34,20 +34,51 @@ export class CompaniesController {
 
     }
 
-    async badges(request: FastifyRequest<{ Querystring: CompanyTypes.GetBadges }>): Promise<CompanyTypes.Badges> {
+    async badges(request: FastifyRequest<{ Querystring: CompanyTypes.GetBadges }>): Promise<CompanyTypes.Badge[]> {
         const {company_id, all_companies} = request.query
 
         const resources = await this.companiesService.badges(company_id, all_companies)
 
-        const ret = {companies: {}, workspaces: {}, channels: {}} as CompanyTypes.Badges
+        const ret: {companies: {[key: string]: any}, workspaces: {[key: string]: any}, channels: {[key: string]: any}} = {
+            companies: {},
+            workspaces: {},
+            channels: {},
+        }
 
         for (let {company_id, workspace_id, channel_id} of resources) {
             ret.companies[company_id] = (ret.companies[company_id] || 0) + 1
             ret.workspaces[workspace_id] = (ret.workspaces[workspace_id] || 0) + 1
             ret.channels[channel_id] = (ret.channels[channel_id] || 0) + 1
         }
+        const companies = ret.companies
+        const workspaces = ret.workspaces
+        const channels = ret.channels
 
-        return ret
+        const badges: CompanyTypes.Badge[] = []
+
+        for (const [k, v] of Object.entries(companies)) {
+            badges.push({
+                type: 'company',
+                id: k,
+                count: v,
+            })
+        }
+        for (const [k, v] of Object.entries(workspaces)) {
+            badges.push({
+                type: 'workspace',
+                id: k,
+                count: v,
+            })
+        }
+        for (const [k, v] of Object.entries(channels)) {
+            badges.push({
+                type: 'channel',
+                id: k,
+                count: v,
+            })
+        }
+
+        return badges
     }
 
     async applications({query}: FastifyRequest<{ Querystring: CompanyTypes.Applications }>) {

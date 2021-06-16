@@ -1,12 +1,10 @@
-import { arrayToObject } from '../../common/helpers'
-// import Users from '../../services/users/controller'
 import assert from 'assert'
 import { toTwacode } from '../../common/twacode'
 import { BadRequest } from '../../common/errors'
 import { MessagesTypes } from './types'
 import UsersService from '../users/service'
+import CompaniesService from '../companies/service'
 import MessagesService from './service'
-// import {ChannelsTypes} from "../channels/types";
 import { FastifyRequest } from 'fastify'
 import ChannelsService from '../channels/service'
 import GetMessagesRequest = MessagesTypes.GetMessagesRequest
@@ -14,11 +12,11 @@ import GetMessagesRequest = MessagesTypes.GetMessagesRequest
 import emojis from '../../resources/emojis'
 
 export class MessagesController {
-    // constructor(protected service: WorkspaceService, protected channelsService: ChannelsService, protected usersService: UsersService) {}
     constructor(
         protected messagesService: MessagesService,
         protected channelsService: ChannelsService,
-        protected usersService: UsersService
+        protected usersService: UsersService,
+        protected companiesService: CompaniesService // to get applications
     ) {}
 
     async get(
@@ -88,8 +86,7 @@ export class MessagesController {
             for (const m of messages) {
                 if (m.responses_count) {
                     const replies = messages.filter(
-                        (r) =>
-                            r.thread_id === m.id || r.parent_message_id === m.id
+                        (r) => r.thread_id === m.id
                     )
                     if (replies.length < m.responses_count) {
                         const existed_replies = replies.reduce(
@@ -128,19 +125,7 @@ export class MessagesController {
         req: MessagesTypes.GetMessagesRequest,
         messages: any[]
     ): Promise<any> {
-        // const getPreview = async (elementId: string) =>
-        // this.messagesService.getDriveObject(req.company_id,
-        // req.workspace_id, elementId).then(a => a.preview_link)
-
         const formatMessages = async (a: any) => {
-            if (a.sender) {
-                usersIds.add(a.sender)
-            }
-
-            if (!a.content) {
-                a.content = {}
-            }
-
             // Messaging API is changing reactions format, so we now support old formats and new ones
             // see https://github.com/linagora/Twake-Mobile/issues/508
             if (!Array.isArray(a.reactions)) {
@@ -165,29 +150,23 @@ export class MessagesController {
 
             const r = {
                 id: a.id,
-                // parent_message_id: a.thread_id || a.parent_message_id || null, // backward compatibility
-                thread_id: a.thread_id || a.parent_message_id || null,
+                thread_id: a.thread_id || null,
                 responses_count: a.responses_count || 0,
-                sender: a.sender ? { user_id: a.sender } : {},
+                user_id: a.sender,
                 application_id: a.application_id,
                 creation_date: this.messagesService.fixDate(a.creation_date),
-                modification_date: this.messagesService.fixDate(
-                    a.modification_date
-                ),
+                modification_date: this.messagesService.fixDate(a.modification_date),
                 content: {
                     original_str: a.content.original_str,
                     prepared: null,
-                    // files: a.files
                 },
                 reactions: a.reactions,
             } as any
 
-            let prepared =
-                a.content.prepared || a.content.formatted || a.content
+            let prepared = a.content.prepared || a.content.formatted || a.content
             if (!Array.isArray(prepared)) {
                 prepared = [prepared]
             }
-            // const last = (prepared as Array<string | {[key: string]: any}>).pop()
             const fileMetadataAdd = async (prepared: Array<any>) => {
                 for (let item of prepared) {
                     if (item instanceof String) continue
@@ -204,6 +183,7 @@ export class MessagesController {
                         // Grab the latest version of the file
                         const latest = file.path.pop()
                         item.metadata = {
+                            id: item.content,
                             name: latest.name,
                             size: file.size,
                             preview: latest.preview_has_been_generated
@@ -236,7 +216,6 @@ export class MessagesController {
             return r
         }
 
-        const usersIds = new Set()
         let filteredMessages = messages.filter(
             (a: any) =>
                 !(
@@ -244,37 +223,54 @@ export class MessagesController {
                     a['hidden_data']['type'] === 'init_channel'
                 )
         )
-
         filteredMessages = filteredMessages.filter(
-            (a: any) => a.application_id || a.sender
-        )
-        // filteredMessages = filteredMessages.filter((a: any) => a.content && a.content.original_str)
-
-        filteredMessages = await Promise.all(
-            filteredMessages.map((a: any) => formatMessages(a))
+            (a: any) => a && a.id
         )
 
-        filteredMessages = filteredMessages.filter((a: any) => a && a.id)
+        let appsCache: {[key: string]: any} = {}
+        const apps = await this.companiesService.applications(req.company_id)
+        apps.forEach((app: {[key: string]: any}) => {
+            appsCache[app.id] = {
+                username: app.name,
+                thumbnail: app.icon_url
+            }
+        })
+        filteredMessages = filteredMessages.filter(
+            (a: any) => a.user_id && a.user_id != 'null' 
+            || (a.application_id && appsCache[a.application_id])
+        )
+        const usersCache: {[key: string]: any} = {}
+        const users = Array.from(new Set(filteredMessages.map(m => m.sender).filter(s => s)))
+        await Promise.all(users.map(async u => {
+            const cachable = await this.usersService.getUserById(u)
+            usersCache[u] = cachable 
+        }))
+        filteredMessages = await Promise.all(filteredMessages.map(async (a: any) => {
+            const message = await formatMessages(a)
+            let user: {[key: string]: any} = {}
+            if (message.user_id) {
+                user = usersCache[message.user_id]
+            } else { // else it's an application
+                user = appsCache[message.application_id]
+            }
+            message.username = user.username
+            message.thumbnail = user.thumbnail
+            message.firstname = user.firstname
+            message.lastname = user.lastname
+            return message
+        }))
 
-        // const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values()).map((user_id) => this.usersService.getUserById(user_id as string))), 'id')
-
-        const messagesHash = arrayToObject(filteredMessages, 'id')
         filteredMessages.forEach((a: any) => {
             delete a.responses
-            a.user_id = a.sender.user_id
-            delete a.sender
-
-            if (a.application_id) {
-                a.app_id = a.application_id
-            }
             delete a.application_id
         })
-
         if (req.before_message_id) {
-            delete messagesHash[req.before_message_id]
+            const i = filteredMessages.findIndex((v) => v.id == req.before_message_id);
+            filteredMessages.splice(i, 1);
+
         }
 
-        return Object.values(messagesHash).sort(
+        return filteredMessages.sort(
             (a: any, b: any) => a.creation_date - b.creation_date
         )
     }

@@ -21,7 +21,7 @@ import ChannelsService from "./service";
 import UsersService from "../users/service";
 
 
-export default function (fastify: FastifyInstance, opts: any, next: () => void) {
+export default function (fastify: FastifyInstance, _opts: any, next: () => void) {
 
 
     function ctrl(request: FastifyRequest) {
