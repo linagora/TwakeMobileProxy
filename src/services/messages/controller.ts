@@ -150,7 +150,7 @@ export class MessagesController {
 
             const r = {
                 id: a.id,
-                thread_id: a.thread_id || null,
+                thread_id: a.parent_message_id || null,
                 responses_count: a.responses_count || 0,
                 user_id: a.sender,
                 application_id: a.application_id,
