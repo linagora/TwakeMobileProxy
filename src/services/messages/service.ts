@@ -32,7 +32,7 @@ export default class MessagesService {
                 channel_id: channelId,
                 limit: limit || 50,
                 offset: offset,
-                thread_id: threadId,
+                parent_message_id: threadId,
                 id: messageId
             },
         }
@@ -67,7 +67,7 @@ export default class MessagesService {
                 company_id: companyId,
                 workspace_id: workspaceId,
                 channel_id: channelId,
-                thread_id: threadId,
+                parent_message_id: threadId,
                 content: {
                     original_str: originalString,
                     prepared: prepared
@@ -112,7 +112,7 @@ export default class MessagesService {
                 channel_id: channelId,
                 id: messageId,
                 _user_reaction: reaction,
-                thread_id: threadId
+                parent_message_id: threadId
             }
         }
 
@@ -131,7 +131,7 @@ export default class MessagesService {
                 workspace_id: workspaceId,
                 channel_id: channelId,
                 id: messageId,
-                thread_id: threadId,
+                parent_message_id: threadId,
             }
         }
 
