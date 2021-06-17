@@ -53,11 +53,11 @@ export class AuthorizationController {
                     params: {
                         endpoint: info.auth.console.mobile_endpoint_url,
                         login: username,
-                        password
+                        password: password
                     }
                 })
-                const token = r.data.token
-                res = await this.authorizationService.loginByToken(username, token, fcm_token, request.jwtToken)
+                res = r.data.jwt
+                // res = await this.authorizationService.loginByToken(username, token, fcm_token, request.jwtToken)
             } catch (e) {
                 if (e.response && [401, 403].includes(e.response.status)) {
                     throw new Forbidden('Wrong credentials')
