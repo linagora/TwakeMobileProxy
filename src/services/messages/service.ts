@@ -46,7 +46,8 @@ export default class MessagesService {
 
             if (!a.data) return []
 
-            return a.data.map((a: any) => {
+
+            return a.data.filter((a: any) => a).map((a: any) => {
                 a.modification_date = this.fixDate(a.modification_date)
                 a.creation_date = this.fixDate(a.creation_date)
                 return a
