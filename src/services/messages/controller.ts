@@ -152,7 +152,7 @@ export class MessagesController {
                 id: a.id,
                 thread_id: a.parent_message_id || null,
                 responses_count: a.responses_count || 0,
-                user_id: a.sender,
+                user_id: a.sender || a.application_id,
                 application_id: a.application_id,
                 creation_date: this.messagesService.fixDate(a.creation_date),
                 modification_date: this.messagesService.fixDate(a.modification_date),
