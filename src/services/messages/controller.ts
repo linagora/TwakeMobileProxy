@@ -152,7 +152,7 @@ export class MessagesController {
                 id: a.id,
                 thread_id: a.parent_message_id || null,
                 responses_count: a.responses_count || 0,
-                user_id: a.sender || a.application_id,
+                user_id: a.sender,
                 application_id: a.application_id,
                 creation_date: this.messagesService.fixDate(a.creation_date),
                 modification_date: this.messagesService.fixDate(a.modification_date),
@@ -257,6 +257,7 @@ export class MessagesController {
             message.thumbnail = user.thumbnail
             message.firstname = user.firstname
             message.lastname = user.lastname
+            message.user_id = message.user_id || message.application_id
             return message
         }))
 
