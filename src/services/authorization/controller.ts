@@ -49,7 +49,7 @@ export class AuthorizationController {
         if (info.auth.console) {
             console.log(info.auth.console.mobile_endpoint_url)
             try {
-                const r = await axios.get("http://localhost:8000", {
+                const r = await axios.get(process.env.AUTHORIZER_URL || "http://localhost:8000", {
                     params: {
                         endpoint: info.auth.console.mobile_endpoint_url,
                         login: username,
