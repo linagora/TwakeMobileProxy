@@ -4,7 +4,7 @@ export const channelsGetSchema = {
     querystring: {
         type: 'object',
         "required": ['company_id', 'workspace_id'],
-        "properties": {"company_id": {"type": "string"}, "workspace_id": {"type": "string"}, "all": {"type":"boolean"}}
+        "properties": {"company_id": {"type": "string"}, "workspace_id": {"type": "string"}, "all": {"type": "boolean"}}
     }
 }
 
@@ -19,6 +19,7 @@ export const channelsPostSchema = {
             "workspace_id": {"type": "string"},
             "name": {"type": "string"},
             "visibility": {"type": "string", "enum": ["public", "private"]},
+            "is_default": {"type": "boolean"},
             "icon": {"type": "string"},
             "description": {"type": "string"},
             "channel_group": {"type": "string"},
@@ -50,7 +51,8 @@ export const channelsPutSchema = {
             "workspace_id": {"type": "string"},
             "name": {"type": "string"},
             "icon": {"type": "string"},
-            "description": {"type": "string"}
+            "description": {"type": "string"},
+            "visibility": {"type": "string", "enum": ["private", "public"] }
         }
     }
 }
@@ -60,11 +62,11 @@ export const channelsDeleteSchema = {
     tags: ['Channels'],
     summary: 'Delete a channel',
     body: {
-        type: 'object', "required": ['company_id', 'workspace_id', "channel_id"],
+        type: 'object', "required": ['company_id', 'workspace_id', "id"],
         properties: {
             "company_id": {"type": "string"},
             "workspace_id": {"type": "string"},
-            "channel_id": {"type": "string"},
+            "id": {"type": "string"},
         }
     }
 }
@@ -74,11 +76,11 @@ export const channelsMembersPostSchema = {
     tags: ['Channels'],
     summary: 'Add members to a channel',
     body: {
-        type: 'object', "required": ['company_id', 'workspace_id', "channel_id", "members"],
+        type: 'object', "required": ['company_id', 'workspace_id', "id", "members"],
         properties: {
             "company_id": {"type": "string"},
             "workspace_id": {"type": "string"},
-            "channel_id": {"type": "string"},
+            "id": {"type": "string"},
             "members": {"type": "array", "items": {"type": "string"}}
         }
     }
@@ -88,18 +90,15 @@ export const channelsMembersDeleteSchema = {
     tags: ['Channels'],
     summary: 'Remove members from a channel',
     body: {
-        type: 'object', "required": ['company_id', 'workspace_id', "channel_id", "members"],
+        type: 'object', "required": ['company_id', 'workspace_id', "id", "members"],
         properties: {
             "company_id": {"type": "string"},
             "workspace_id": {"type": "string"},
-            "channel_id": {"type": "string"},
+            "id": {"type": "string"},
             "members": {"type": "array", "items": {"type": "string"}}
         }
     }
 }
-
-
-
 
 
 export const directGetSchema = {
@@ -113,11 +112,11 @@ export const channelsMembersGetSchema = {
     summary: 'List of the channel members',
     querystring: {
         type: 'object',
-        "required": ['company_id', 'workspace_id', 'channel_id'],
+        "required": ['company_id', 'workspace_id', 'id'],
         "properties": {
             "company_id": {"type": "string"},
             "workspace_id": {"type": "string"},
-            "channel_id": {"type": "string"},
+            "id": {"type": "string"},
         }
     }
 }
@@ -126,11 +125,11 @@ export const channelsMarkReadSchema = {
     tags: ['Channels'],
     summary: 'Mark messages in channel as read',
     body: {
-        type: 'object', "required": ['company_id', 'workspace_id', 'channel_id'],
+        type: 'object', "required": ['company_id', 'workspace_id', 'id'],
         properties: {
             "company_id": {"type": "string"},
             "workspace_id": {"type": "string"},
-            "channel_id": {"type": "string"},
+            "id": {"type": "string"},
         }
     }
 }
@@ -141,11 +140,11 @@ export const channelsInitSchema = {
     summary: 'Init channel and get the notification rooms',
     querystring: {
         type: 'object',
-        "required": ['company_id', 'workspace_id', 'channel_id'],
+        "required": ['company_id', 'workspace_id', 'id'],
         "properties": {
             "company_id": {"type": "string"},
             "workspace_id": {"type": "string"},
-            "channel_id": {"type": "string"},
+            "id": {"type": "string"},
         }
     }
 }

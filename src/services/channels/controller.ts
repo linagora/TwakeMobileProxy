@@ -8,7 +8,7 @@ import {BadRequest} from "../../common/errors";
 
 import emojis from '../../resources/emojis'
 
-const trim = (str:string, chr: string) => str.replace(new RegExp("^[" + chr + "]+|[" + chr + "]+$", "g"), "");
+const trim = (str: string, chr: string) => str.replace(new RegExp("^[" + chr + "]+|[" + chr + "]+$", "g"), "");
 
 function __channelFormat(a: any): ChannelsTypes.Channel {
 
@@ -16,13 +16,13 @@ function __channelFormat(a: any): ChannelsTypes.Channel {
 
     let permissions = []
 
-    switch(userRole){
+    switch (userRole) {
         case "ADMIN":
         case "CREATOR":
-            permissions = ['UPDATE_NAME','UPDATE_DESCRIPTION','ADD_MEMBER','REMOVE_MEMBER', 'UPDATE_PRIVACY','DELETE_CHANNEL']
+            permissions = ['UPDATE_NAME', 'UPDATE_DESCRIPTION', 'ADD_MEMBER', 'REMOVE_MEMBER', 'UPDATE_PRIVACY', 'DELETE_CHANNEL']
             break
         case "OTHER":
-            permissions = ['UPDATE_NAME','UPDATE_DESCRIPTION','ADD_MEMBER','REMOVE_MEMBER']
+            permissions = ['UPDATE_NAME', 'UPDATE_DESCRIPTION', 'ADD_MEMBER', 'REMOVE_MEMBER']
             break
         // case "GUEST":
         //     permissions = []
@@ -32,18 +32,17 @@ function __channelFormat(a: any): ChannelsTypes.Channel {
     return {
         id: a.id,
         name: a.name ? a.name.charAt(0).toUpperCase() + a.name.slice(1) : a.name,
-        icon: a.icon && a.icon.startsWith(':') ? emojis[trim(a.icon,':')] || '' : a.icon,
+        icon: a.icon && a.icon.startsWith(':') ? emojis[trim(a.icon, ':')] || '' : a.icon,
         // icon: a.icon,
         company_id: a.company_id,
         workspace_id: a.workspace_id,
         description: a.description,
         channel_group: a.channel_group,
-        last_message: a.last_message,
+        last_message: a.last_message && Object.keys(a.last_message).length > 0 ? a.last_message : null,
         last_activity: +a.last_activity,
         has_unread: a.user_member ? +a.last_activity > +a.user_member.last_access : false,
         user_last_access: a.user_member ? +a.user_member.last_access : undefined,
         members: a.members,
-        members_count: a.members_count,
         visibility: a.visibility,
         is_member: Boolean(a.user_member),
         permissions: permissions
@@ -65,57 +64,33 @@ function eqArrays(as: string[], bs: string[]) {
 }
 
 
-
 export class ChannelsController {
 
     constructor(protected channelsService: ChannelsService, protected usersService: UsersService) {
     }
 
-    private async __findChannel(company_id: string, workspace_id: string, visibility: string, name?: string, members?: string[]) {
-
-        function eqArrays(as: string[], bs: string[]) {
-            if (as.length !== bs.length) return false;
-            const bsSet = new Set(bs)
-            for (let a of as) if (!bsSet.has(a)) return false;
-            return true;
-        }
-
-        return await this.channelsService.public(company_id, workspace_id, false)
-            .then((data:any) => data
-                .filter((a: any) => a.visibility == visibility)
-                .find((a: any) => {
-                        return (name && a.name.toLocaleLowerCase() == name.toLocaleLowerCase())
-                            || (!a.name && a.members.length && eqArrays(members || [], a.members))
-
-                    }
-                )
-            )
-
-    }
-
-
     async addDirect(request: FastifyRequest<{ Body: ChannelsTypes.AddDirectRequest }>) {
-        const {company_id, member } = request.body
+        const {company_id, member} = request.body
         const current_user = await this.usersService.getCurrent()
         const members = [member, current_user.id]
         let channel = await this.channelsService.getDirects(company_id)
             .then(data => data.find((a: any) => !a.name && a.members.length && eqArrays(members, a.members)))
-        if(!channel){
-            channel = await this.channelsService.addChannel(company_id, 'direct', '', 'direct', members, '', '', '')
+        if (!channel) {
+            channel = await this.channelsService.addChannel(company_id, 'direct', '', 'direct', members, '', '', '', undefined)
         }
-        return  this.__formatDirectChannels([__channelFormat(channel)]).then(a=>a[0])
+        return this.__formatDirectChannels([__channelFormat(channel)]).then(a => a[0])
     }
 
     async add(request: FastifyRequest<{ Body: ChannelsTypes.AddRequest }>): Promise<any> {
-        const {company_id, workspace_id, visibility, name, members, channel_group, description, icon} = request.body
-        const found = await this.channelsService.public(company_id, workspace_id, false)
-            .then((data:any) => data.find((a: any) => a.visibility === visibility && a.name === name))
-        if (found){
-            found.members_count = (await this.channelsService.getMembers(company_id, workspace_id, found.id)).length
-            return __channelFormat(found)
+        let {company_id, workspace_id, visibility, name, members, channel_group, description, icon, is_default} = request.body
+
+        if(visibility === 'public' && is_default === undefined){
+            is_default = false
         }
-        const channel = await this.channelsService.addChannel(company_id, workspace_id, name, visibility, members, channel_group, description, icon)
-        channel.members_count = (await this.channelsService.getMembers(company_id, workspace_id, channel.id)).length
+
+        const channel = await this.channelsService.addChannel(company_id, workspace_id, name, visibility, members, channel_group, description, icon, is_default)
+        channel.members = await this.channelsService.getMembers(company_id, workspace_id, channel.id)
+                                .then((mms: {[key: string]: any}[]) => mms.map((m) => m.id))
         return __channelFormat(channel)
     }
 
@@ -149,37 +124,43 @@ export class ChannelsController {
             // const existed_channels_id = channels.reduce((acc, curr) => (acc[curr.id] = true, acc), {});
             const existed_channels_id = new Set(channels.map(a => a.id))
             await this.channelsService.public(company_id, workspace_id, true).then(
-                (all_channels:any) => all_channels.filter((a: any) => !existed_channels_id.has(a.id))
+                (all_channels: any) => all_channels.filter((a: any) => !existed_channels_id.has(a.id))
                     .forEach((a: any) => channels.push(a)))
         }
 
-        const counts = await Promise.all(channels.map((c) => this.channelsService.getMembers(company_id, workspace_id, c.id).then((a:any) => a.length)))
+        await Promise.all(
+            channels.map((c) => 
+                this.channelsService.getMembers(company_id, workspace_id, c.id)
+                .then((mms: {[key: string]: any}[]) => {
+                    const members = mms.map((m) => m.id)
+                    c.members = members
+                })
+            )
+        )
 
         const user = await this.usersService.getCurrent()
         channels.forEach((ch: any) => {
-            ch.members_count = counts.shift()
-            ch.user_is_organization_administrator = user.user_is_organization_administrator
+            ch.user_is_organization_administrator = user.is_admin
         })
         return __channelsFormat(channels).sort((a: any, b: any) => a.name.localeCompare(b.name))
     }
 
-
-    getMembers(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
-        const {company_id, workspace_id, channel_id} = request.query
-        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then((a:any) => this.addEmailsToMembers(a))
+    async getMembers(request: FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>) {
+        const {company_id, workspace_id, id} = request.query
+        return this.channelsService.getMembers(company_id, workspace_id, id).then((a: any) => this.addEmailsToMembers(a))
     }
 
     async addMembers(request: FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>): Promise<any> {
-        const {company_id, workspace_id, channel_id} = request.body
+        const {company_id, workspace_id, id} = request.body
         await this.channelsService.addMembers(request.body)
-        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then((a:any) => this.addEmailsToMembers(a))
+        return this.channelsService.getMembers(company_id, workspace_id, id).then((a: any) => this.addEmailsToMembers(a))
     }
 
     async removeMembers(request: FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>): Promise<any> {
-        const {company_id, workspace_id, channel_id} = request.body
+        const {company_id, workspace_id, id} = request.body
 
         await this.channelsService.removeMembers(request.body)
-        return this.channelsService.getMembers(company_id, workspace_id, channel_id).then((a:any) => this.addEmailsToMembers(a))
+        return this.channelsService.getMembers(company_id, workspace_id, id).then((a: any) => this.addEmailsToMembers(a))
     }
 
     edit(request: FastifyRequest<{ Body: ChannelsTypes.UpdateRequest }>) {
@@ -188,14 +169,12 @@ export class ChannelsController {
 
     async delete(request: FastifyRequest<{ Body: ChannelsTypes.ChannelParameters }>) {
         // channel deletion has a bug we need to double check the deletion
-
         const res = await this.channelsService.delete(request.body)
-
         let done = false
         let attempts = 0
         while (!done) {
             const channels = await this.channelsService.all(request.body)
-            const found = channels.find(a => a.id === request.body.channel_id)
+            const found = channels.find(a => a.id === request.body.id)
             if (found) {
                 if (attempts > 2) throw new BadRequest("Can't delete channel after 3 requests")
                 await this.channelsService.delete(request.body)
@@ -212,8 +191,20 @@ export class ChannelsController {
         return this.channelsService.init(request.query)
     }
 
+    async direct(request: FastifyRequest<{ Querystring: ChannelsTypes.BaseChannelsParameters }>) {
+        const data = await this.channelsService.getDirects(request.query.company_id)
+        const res = __channelsFormat(data)
+            .filter(a => a.members.length > 0)
+            .sort((d1, d2) => d2.last_activity - d1.last_activity)
+        return this.__formatDirectChannels(res)
+    }
 
-    private async __formatDirectChannels(items: any[]){
+    async markRead(request: FastifyRequest<{ Body: ChannelsTypes.ChannelParameters }>) {
+        const req = request.body
+        return this.channelsService.markRead(req.company_id, req.workspace_id, req.id)
+    }
+
+    private async __formatDirectChannels(items: any[]) {
         const usersIds = new Set()
 
         items.forEach((c: any) => {
@@ -223,8 +214,8 @@ export class ChannelsController {
         })
         const usersHash = arrayToObject(await Promise.all(Array.from(usersIds.values())
             .map((user_id) => this.usersService.getUserById(user_id as string))), 'id')
-        const currentUserToken = authCache[this.usersService.getJwtToken()] 
-            ? authCache[this.usersService.getJwtToken()]['id'] 
+        const currentUserToken = authCache[this.usersService.getJwtToken()]
+            ? authCache[this.usersService.getJwtToken()]['id']
             : await this.usersService.getCurrent().then(a => a.id)
 
         return items.map((a: ChannelsTypes.Channel) => {
@@ -238,20 +229,6 @@ export class ChannelsController {
             }
             return a
         })
-    }
-
-    async direct(request: FastifyRequest<{ Querystring: ChannelsTypes.BaseChannelsParameters }>) {
-        const data = await this.channelsService.getDirects(request.query.company_id)
-        const res = __channelsFormat(data)
-            .filter(a => a.members.length > 0)
-            .sort((d1, d2) => d2.last_activity - d1.last_activity)
-        return this.__formatDirectChannels(res)
-    }
-
-
-    async markRead(request: FastifyRequest<{ Body: ChannelsTypes.ChannelParameters }>) {
-        const req = request.body
-        return this.channelsService.markRead(req.company_id, req.workspace_id, req.channel_id)
     }
 
 

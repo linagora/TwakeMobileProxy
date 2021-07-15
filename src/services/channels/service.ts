@@ -8,32 +8,39 @@ export default class ChannelsService {
     }
 
     getMembers(companyId: string, workspaceId: string, channelId: string) {
-        return this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}/members`, {"limit": 1000}).then(a => a.resources)
+        return this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}/members`, {"limit": 100}).then(a => a.resources)
     }
 
-    update( req: ChannelsTypes.UpdateRequest) {
+    update(req: ChannelsTypes.UpdateRequest) {
+
         const params = {
             "resource": {
-                "id": req.channel_id,
+                "id": req.id,
                 "company_id": req.company_id,
                 "workspace_id": req.workspace_id,
                 "icon": req.icon,
                 "description": req.description,
                 "name": req.name,
+                "is_default": req.is_default
             }, "options": {}
+        } as any
+
+        if (req.visibility){
+            params.resource.visibility = req.visibility
         }
-        return this.api.post(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}`, params).then(a => a.resource)
+
+        return this.api.post(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.id}`, params).then(a => a.resource)
     }
 
-    async delete( req: ChannelsTypes.ChannelParameters) {
-        await this.api.delete(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}`)
+    async delete(req: ChannelsTypes.ChannelParameters) {
+        await this.api.delete(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.id}`)
         return {success: true}
     }
 
-    init( req: ChannelsTypes.ChannelParameters) {
+    init(req: ChannelsTypes.ChannelParameters) {
         const params = {
             "multiple": [{
-                "collection_id": `updates/${req.channel_id}`,
+                "collection_id": `updates/${req.id}`,
                 "options": {"type": "updates"},
                 "_grouped": true
             }]
@@ -46,46 +53,45 @@ export default class ChannelsService {
     }
 
 
-    public( companyId: string, workspaceId: string, all:boolean) {
+    public(companyId: string, workspaceId: string, all: boolean) {
         const params = all ? {} : {"mine": true}
-        return this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`, params).then(a=>a['resources'])
+        return this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels`, params).then(a => a['resources'])
     }
 
-    direct( req: ChannelsTypes.BaseChannelsParameters) {
-        return this.api.get(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/direct/channels`, {"mine": true}).then(a=>a['resources'])
+    direct(req: ChannelsTypes.BaseChannelsParameters) {
+        return this.api.get(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/direct/channels`, {"mine": true}).then(a => a['resources'])
     }
 
-    all( req: ChannelsTypes.BaseChannelsParameters) {
-        return Promise.all([this.public(req.company_id, req.workspace_id, false),this.direct(req)]).then(res =>[...res[0], ...res[1]])
+    all(req: ChannelsTypes.BaseChannelsParameters) {
+        return Promise.all([this.public(req.company_id, req.workspace_id, false), this.direct(req)]).then(res => [...res[0], ...res[1]])
     }
-
 
 
     async addMembers(req: ChannelsTypes.ChangeMembersRequest) {
-        const promises = req.members.map(user_id => this.api.post(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}/members`,
+        const promises = req.members.map(user_id => this.api.post(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.id}/members`,
             {"resource": {"user_id": user_id, "type": "member"}}
         ))
 
-        return Promise.all(promises.map(p=>p.catch(e=>e)))
+        return Promise.all(promises.map(p => p.catch(e => e)))
     }
 
-    async removeMembers( req: ChannelsTypes.ChangeMembersRequest) {
-        const promises = req.members.map(user_id => this.api.delete(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.channel_id}/members/${user_id}`))
-        return Promise.all(promises.map(p=>p.catch(e=>e)))
+    async removeMembers(req: ChannelsTypes.ChangeMembersRequest) {
+        const promises = req.members.map(user_id => this.api.delete(`/internal/services/channels/v1/companies/${req.company_id}/workspaces/${req.workspace_id}/channels/${req.id}/members/${user_id}`))
+        return Promise.all(promises.map(p => p.catch(e => e)))
     }
 
     async getDirects(companyId: string) {
-        return await this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/direct/channels`, {}).then(a=>a['resources'])
+        return await this.api.get(`/internal/services/channels/v1/companies/${companyId}/workspaces/direct/channels`, {}).then(a => a['resources'])
     }
 
     markRead(companyId: string, workspaceId: string, channelId: string) {
-        return this.api.post(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}/read`, {"value":true}).then(a => {
+        return this.api.post(`/internal/services/channels/v1/companies/${companyId}/workspaces/${workspaceId}/channels/${channelId}/read`, {"value": true}).then(a => {
             console.log(a)
-            return(a)
+            return (a)
         })
     }
 
-    async addChannel(companyId: string, workspaceId: string, name: string, visibility: string, members?: string[], channelGroup?: string, description?: string, icon?: string) {
+    async addChannel(companyId: string, workspaceId: string, name: string, visibility: string, members?: string[], channelGroup?: string, description?: string, icon?: string, is_default? : boolean) {
 
         assert(companyId, 'company_id is required')
         assert(visibility, 'visibility is required')
@@ -114,12 +120,10 @@ export default class ChannelsService {
                 "channel_group": channelGroup,
                 "archived": false,
                 "visibility": visibility,
-
+                "is_default": is_default
                 // "default": true
-            }
+            } as any
         }
-
-
         if (members) {
             params.options = {"members": members}
         }

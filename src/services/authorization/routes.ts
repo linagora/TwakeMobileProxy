@@ -7,7 +7,7 @@ import AuthorizationService from "./service";
 import UsersService from "../users/service";
 import InfoService from "../info/service";
 
-export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
+export default function (fastify: FastifyInstance, opts: any, next: () => void) {
     function ctrl(request: FastifyRequest) {
         const api = new Api(request)
         return new AuthorizationController(new AuthorizationService(api), new UsersService(api), new InfoService(api))

@@ -21,7 +21,7 @@ import ChannelsService from "./service";
 import UsersService from "../users/service";
 
 
-export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
+export default function (fastify: FastifyInstance, _opts: any, next: () => void) {
 
 
     function ctrl(request: FastifyRequest) {
@@ -34,7 +34,8 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         method: "GET",
         url: '/channels',
         schema: channelsGetSchema,
-        handler: (request) => ctrl(request).public(request as FastifyRequest<{ Querystring: ChannelsTypes.PublicChannelsListParameters }>)
+        handler: (request) =>
+            ctrl(request).public(request as FastifyRequest<{ Querystring: ChannelsTypes.PublicChannelsListParameters }>)
     });
 
 
@@ -60,7 +61,6 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         schema: channelsMembersGetSchema,
         handler: (request) => ctrl(request).getMembers(request as FastifyRequest<{ Querystring: ChannelsTypes.ChannelParameters }>)
     });
-
 
 
     fastify.route({
@@ -103,7 +103,6 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         schema: channelsMembersPostSchema,
         handler: (request) => ctrl(request).addMembers(request as FastifyRequest<{ Body: ChannelsTypes.ChangeMembersRequest }>)
     });
-
 
 
     fastify.route({

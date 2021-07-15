@@ -1,10 +1,8 @@
-
 var assert = require('assert');
 const {xstep, step} = require("mocha-steps");
 
 // @ts-ignore
 const Api = require('./common/api.js')
-
 
 
 describe('Companies', async function () {
@@ -25,16 +23,15 @@ describe('Companies', async function () {
 
 
     step('Badges', async function () {
-        const badges = await api.getCompanyBadges( selected_company_id,true)
+        const badges = await api.getCompanyBadges(selected_company_id, true)
         assert(badges)
         console.log(badges)
     })
 
-    step('Applications', async function(){
+    step('Applications', async function () {
         let applications = await api.getApplications()
         assert(applications)
     })
-
 
 
 });

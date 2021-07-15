@@ -15,7 +15,7 @@ const axios = Axios.create({
     })
 });
 
-export class AuthorizationController{
+export class AuthorizationController {
 
     constructor(
         protected authorizationService: AuthorizationService,
@@ -26,10 +26,10 @@ export class AuthorizationController{
 
     async init(request: FastifyRequest<{ Body: AuthTypes.InitParams }>): Promise<any> {
         const {fcm_token, token, username, timezoneoffset} = request.body
-        if(!token && !request.jwtToken){
+        if (!token && !request.jwtToken) {
             throw new Forbidden('Token is not provided')
         }
-        const res = await this.authorizationService.loginByToken(username,token,fcm_token, request.jwtToken)
+        const res = await this.authorizationService.loginByToken(username, token, fcm_token, request.jwtToken)
         return this.doAuth(request.jwtToken, res, timezoneoffset)
     }
 
@@ -46,21 +46,27 @@ export class AuthorizationController{
         let res = null;
 
         const info = await this.infoService.serverInfo()
-        if (info.auth.console){
+        if (info.auth.console) {
             console.log(info.auth.console.mobile_endpoint_url)
-            try{
-            const r = await axios.get("http://localhost:8000", {params:{endpoint: info.auth.console.mobile_endpoint_url, login:username, password}})
-                const token = r.data.token
-                res = await this.authorizationService.loginByToken(username, token, fcm_token, request.jwtToken)
-            } catch(e){
-                if (e.response && [401,403].includes(e.response.status)) {
+            try {
+                const r = await axios.get("http://localhost:8000", {
+                    params: {
+                        endpoint: info.auth.console.mobile_endpoint_url,
+                        login: username,
+                        password: password
+                    }
+                })
+                res = r.data.jwt
+                // res = await this.authorizationService.loginByToken(username, token, fcm_token, request.jwtToken)
+            } catch (e) {
+                if (e.response && [401, 403].includes(e.response.status)) {
                     throw new Forbidden('Wrong credentials')
                 } else {
                     throw e
                 }
             }
         } else {
-             res = await this.authorizationService.loginByPassword(username, password, fcm_token)
+            res = await this.authorizationService.loginByPassword(username, password, fcm_token)
 
         }
 
@@ -76,9 +82,9 @@ export class AuthorizationController{
         return this.doAuth(request.jwtToken, res, timezoneoffset)
     }
 
-    async doAuth(currentJwtToken: string, data: {value:string,expiration:string,refresh:string,refresh_expiration:string}, timezoneoffset: number) {
+    async doAuth(currentJwtToken: string, data: { value: string, expiration: string, refresh: string, refresh_expiration: string }, timezoneoffset: number) {
 
-        if(!data){
+        if (!data) {
             throw new Forbidden("Wrong credentials")
         }
 
@@ -87,7 +93,7 @@ export class AuthorizationController{
         if (currentJwtToken) {
             delete authCache[currentJwtToken]
         }
-        authCache[token] =  await this.userService.setJWTToken(token).getCurrent(timezoneoffset)
+        authCache[token] = await this.userService.setJWTToken(token).getCurrent(timezoneoffset)
 
         return {
             "token": token,
@@ -97,9 +103,9 @@ export class AuthorizationController{
         }
     }
 
-    async logout(request: FastifyRequest<{Body: AuthTypes.LogoutParams}>) : Promise<any> {
+    async logout(request: FastifyRequest<{ Body: AuthTypes.LogoutParams }>): Promise<any> {
         delete authCache[request.jwtToken]
-        const { fcm_token } = request.body
+        const {fcm_token} = request.body
         return await this.authorizationService.logout(fcm_token)
     }
 }

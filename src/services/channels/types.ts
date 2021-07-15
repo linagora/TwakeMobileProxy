@@ -7,12 +7,12 @@ export declare namespace ChannelsTypes {
         workspace_id: string;
     }
 
-    export interface PublicChannelsListParameters extends BaseChannelsParameters{
+    export interface PublicChannelsListParameters extends BaseChannelsParameters {
         all: boolean
     }
 
-    export interface ChannelParameters extends BaseChannelsParameters{
-        channel_id: string | DirectChannel
+    export interface ChannelParameters extends BaseChannelsParameters {
+        id: string | DirectChannel
     }
 
 
@@ -28,7 +28,6 @@ export declare namespace ChannelsTypes {
         company_id: string
         visibility: string,
         members: [],
-        members_count: number,
         is_member: boolean
     }
 
@@ -37,7 +36,8 @@ export declare namespace ChannelsTypes {
         name: string
         icon: string
         description: string
-        channel_group: string,
+        channel_group: string
+        is_default: boolean
         visibility: string
         members: string[]
     }
@@ -47,7 +47,6 @@ export declare namespace ChannelsTypes {
     }
 
 
-
     export interface ChangeMembersRequest extends ChannelParameters {
         members: string[]
     }
@@ -55,6 +54,8 @@ export declare namespace ChannelsTypes {
     export interface UpdateRequest extends ChannelParameters {
         name: string,
         description: string,
-        icon: string
+        icon: string,
+        visibility: string,
+        is_default: boolean
     }
 }

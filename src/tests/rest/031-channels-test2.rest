@@ -1,0 +1,30 @@
+GET {{host}}/channels?company_id=60c9d0cc-6ae5-11eb-8a00-0242ac120006&workspace_id=2252fbc2-71f5-11eb-bf96-0242ac120006
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUzNjYwNzIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE2MTUzNjE4NzIsIm5iZiI6MTYxNTM2MTg3Miwic3ViIjoiZmY4YTJhMjItNmFlNS0xMWViLWI3MzktMDI0MmFjMTIwMDA2IiwiZW1haWwiOiJyb2NraW5wYXVsekBnbWFpbC5jb20iLCJvcmciOltdfQ.iY90tpRN-1ldL2e3IqHcG0bSmee58t7LFaGf4PQBcI0
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "60c9d0cc-6ae5-11eb-8a00-0242ac120006",
+  "workspace_id": "2252fbc2-71f5-11eb-bf96-0242ac120006",
+  "channel_id": "42a7f699-02b7-45f8-94ab-b1d1fd0ea15f"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+
+###
+
+DELETE {{host}}/channels
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTUzNjYwNzIsInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE2MTUzNjE4NzIsIm5iZiI6MTYxNTM2MTg3Miwic3ViIjoiZmY4YTJhMjItNmFlNS0xMWViLWI3MzktMDI0MmFjMTIwMDA2IiwiZW1haWwiOiJyb2NraW5wYXVsekBnbWFpbC5jb20iLCJvcmciOltdfQ.iY90tpRN-1ldL2e3IqHcG0bSmee58t7LFaGf4PQBcI0
+Content-Type: application/json
+Accept-version: 2.0.0
+
+{
+  "company_id": "60c9d0cc-6ae5-11eb-8a00-0242ac120006",
+  "workspace_id": "2252fbc2-71f5-11eb-bf96-0242ac120006",
+  "channel_id": "d4cda866-78a8-4282-9008-be51c80c72f8"
+}

@@ -4,7 +4,7 @@ import UploadController from "./controller";
 import UploadService from "./service";
 import {uploadSchema} from "./schemas";
 
-export default function (fastify: FastifyInstance, _opts: any, next: () => void)  {
+export default function (fastify: FastifyInstance, _opts: any, next: () => void) {
 
     function ctrl(request: FastifyRequest) {
         const api = new Api(request)

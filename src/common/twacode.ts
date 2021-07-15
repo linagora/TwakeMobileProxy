@@ -140,7 +140,7 @@ export async function fixIt(item: any, previewFunction: (elementId: string) => P
 }
 
 
-export function toTwacode(inputString: string | null) : Object[] | null {
+export function toTwacode(inputString: string | null): Object[] | null {
 
     if (!inputString) {
         return null
@@ -180,7 +180,7 @@ export function toTwacode(inputString: string | null) : Object[] | null {
 
             if (type === '\n') {
                 closeIndex = -1
-            } else if (type === '>'){
+            } else if (type === '>') {
                 const newLine = restString.indexOf('\n')
                 closeIndex = newLine > -1 ? newLine : restString.length
             } else {
@@ -189,7 +189,6 @@ export function toTwacode(inputString: string | null) : Object[] | null {
                     closeIndex = closeFound.index
                 }
             }
-
 
 
             if (closeIndex !== null) {

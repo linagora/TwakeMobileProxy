@@ -17,7 +17,7 @@ Sentry.init({
     dsn: "https://1b12ace826794ccda93012ee13d2ba0a@o310327.ingest.sentry.io/5544659",
     integrations: [
         // enable HTTP calls tracing
-        new Sentry.Integrations.Http({ tracing: true }),
+        new Sentry.Integrations.Http({tracing: true}),
     ],
     tracesSampleRate: 1.0,
 });
@@ -28,21 +28,21 @@ declare global {
         red: any
     }
 }
-console.bgred = function(data:string){
+console.bgred = function (data: string) {
     console.log('\x1b[41m' + data + '\x1b[0m')
 }
-console.red = function(data:string){
+console.red = function (data: string) {
     console.log('\x1b[31m' + data + '\x1b[0m')
 }
 
-if(process.env.CORE_HOST){
+if (process.env.CORE_HOST) {
     config.core_host = process.env.CORE_HOST.replace(/\/$/, "");
-    console.bgred('Started with CORE_HOST ' + config.core_host, )
+    console.bgred('Started with CORE_HOST ' + config.core_host,)
 } else {
-    console.bgred('Started without CORE_HOST variable')
+    console.bgred('Started without CORE_HOST')
 }
 
-const fastify: FastifyInstance = Fastify({logger: false,  trustProxy: true })
+const fastify: FastifyInstance = Fastify({logger: false, trustProxy: true})
 
 declare module "fastify" {
     export interface FastifyRequest {
@@ -81,11 +81,6 @@ fastify.addHook("onRequest", async (request, reply) => {
 //
 
 
-
-
-
-
-
 fastify.register(require('fastify-swagger'), {
     exposeRoute: true,
     routePrefix: '/documentation',
@@ -122,25 +117,24 @@ fastify.register(require('fastify-swagger'), {
 
 // Register fastify plugin to handle multipart uploads
 fastify.register(require('fastify-multipart'), {
-  limits: {
-    fieldNameSize: 200, // Max field name size in bytes
-    fieldSize: 10000,   // Max field value size in bytes
-    fields: 10,         // Max number of non-file fields
-    fileSize: FILE_SIZE, // For multipart forms, the max file size
-    files: 1,           // Max number of file fields
-  }
+    limits: {
+        fieldNameSize: 200, // Max field name size in bytes
+        fieldSize: 10000,   // Max field value size in bytes
+        fields: 10,         // Max number of non-file fields
+        fileSize: FILE_SIZE, // For multipart forms, the max file size
+        files: 1,           // Max number of file fields
+    }
 });
 
 
 fastify.register(channelsServiceRoutes, {prefix: '/internal/mobile'})
-fastify.register(workspacesServiceRoutes,{prefix: '/internal/mobile'})
-fastify.register(usersServiceRoutes,{prefix: '/internal/mobile'})
-fastify.register(messagesServiceRoutes,{prefix: '/internal/mobile'})
-fastify.register(authorizationServiceRoutes,{prefix: '/internal/mobile'})
-fastify.register(infoServiceRoutes,{prefix: '/internal/mobile'})
-fastify.register(companiesServiceRoutes,{prefix: '/internal/mobile'})
-fastify.register(uploadServiceRoutes,{prefix: '/internal/mobile'})
-
+fastify.register(workspacesServiceRoutes, {prefix: '/internal/mobile'})
+fastify.register(usersServiceRoutes, {prefix: '/internal/mobile'})
+fastify.register(messagesServiceRoutes, {prefix: '/internal/mobile'})
+fastify.register(authorizationServiceRoutes, {prefix: '/internal/mobile'})
+fastify.register(infoServiceRoutes, {prefix: '/internal/mobile'})
+fastify.register(companiesServiceRoutes, {prefix: '/internal/mobile'})
+fastify.register(uploadServiceRoutes, {prefix: '/internal/mobile'})
 
 
 fastify.setErrorHandler(function (error: Error, request, reply) {

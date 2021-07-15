@@ -10,13 +10,15 @@ export default class MessagesService {
     constructor(protected api: Api) {
     }
 
-    async whatsNew(req: WhatsNewRequest){
-        return this.api.get(`/internal/services/notifications/v1/badges`, {"company_id": req.company_id}).then(a=>a.resources)
+    async whatsNew(req: WhatsNewRequest) {
+        return this.api.get(`/internal/services/notifications/v1/badges`, {"company_id": req.company_id}).then(a => a.resources)
     }
 
-    fixDate (date: number): number { return String(date).length > 12 ? date : date * 1000  }
+    fixDate(date: number): number {
+        return String(date).length > 12 ? date : date * 1000
+    }
 
-    async getMessages(companyId: string, workspaceId: string, channelId: string, threadId?: string, messageId?: string,  limit?: number, offset?: string): Promise<any> {
+    async getMessages(companyId: string, workspaceId: string, channelId: string, threadId?: string, messageId?: string, limit?: number, offset?: string): Promise<any> {
         required(companyId, 'string')
         required(workspaceId, 'string')
         required(channelId, 'string')
@@ -30,21 +32,22 @@ export default class MessagesService {
                 channel_id: channelId,
                 limit: limit || 50,
                 offset: offset,
-                thread_id: threadId,
-                parent_message_id: threadId, // backward compatibility
+                parent_message_id: threadId,
                 id: messageId
             },
         }
 
 
-
-        return this.api.post('/ajax/discussion/get', params).then(a=>{
-            if (a && a.status == 'error'){
+        return this.api.post('/ajax/discussion/get', params).then(a => {
+            if (a && a.status == 'error') {
                 console.error('GOT ERROR', a)
                 throw new BadRequest("something went wrong")
             }
 
-            return a.data.map((a:any)=>{
+            if (!a.data) return []
+
+
+            return a.data.filter((a: any) => a).map((a: any) => {
                 a.modification_date = this.fixDate(a.modification_date)
                 a.creation_date = this.fixDate(a.creation_date)
                 return a
@@ -57,7 +60,7 @@ export default class MessagesService {
         assert(companyId)
         assert(workspaceId)
         assert(channelId)
-        assert(originalString)
+        // assert(originalString)
         assert(prepared)
 
         const params = {
@@ -65,8 +68,7 @@ export default class MessagesService {
                 company_id: companyId,
                 workspace_id: workspaceId,
                 channel_id: channelId,
-                thread_id: threadId,
-                parent_message_id: threadId, // backward compatibility
+                parent_message_id: threadId,
                 content: {
                     original_str: originalString,
                     prepared: prepared
@@ -74,12 +76,12 @@ export default class MessagesService {
             }
         } as any
 
-        if(messageId){
+        if (messageId) {
             params.object.message_id = messageId
             params.object.id = messageId
         }
 
-        return this.api.post('/ajax/discussion/save', params).then(a=>a.data)
+        return this.api.post('/ajax/discussion/save', params).then(a => a.data)
     }
 
     async getDriveObject(companyId: string, workspaceId: string, elementId: string) {
@@ -111,12 +113,11 @@ export default class MessagesService {
                 channel_id: channelId,
                 id: messageId,
                 _user_reaction: reaction,
-                parent_message_id: threadId, // backward compatibility
-                thread_id: threadId
+                parent_message_id: threadId
             }
         }
 
-        return this.api.post('/ajax/discussion/save', params).then(a=>a.data)
+        return this.api.post('/ajax/discussion/save', params).then(a => a.data)
     }
 
     async deleteMessage(companyId: string, workspaceId: string, channelId: string, messageId: string, threadId: string) {
@@ -131,8 +132,7 @@ export default class MessagesService {
                 workspace_id: workspaceId,
                 channel_id: channelId,
                 id: messageId,
-                thread_id: threadId,
-                parent_message_id: threadId, // backward compatibility
+                parent_message_id: threadId,
             }
         }
 

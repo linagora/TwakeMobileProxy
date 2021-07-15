@@ -3,7 +3,8 @@ import UploadService from "./service";
 import {UploadedFile, UploadResponse} from "./types";
 
 export default class UploadController {
-    constructor (protected uploadService: UploadService) {}
+    constructor(protected uploadService: UploadService) {
+    }
 
     // request: any, because God knows how to type 
     // this request so that it will have saveRequestToFile() function

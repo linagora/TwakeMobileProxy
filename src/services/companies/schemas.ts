@@ -9,7 +9,7 @@ export const badgesSchema = {
     querystring: {
         type: 'object',
         "required": ['company_id'],
-        "properties": {"company_id": {"type": "string"}, "all_companies": {"type":"boolean"}}
+        "properties": {"company_id": {"type": "string"}, "all_companies": {"type": "boolean"}}
     }
 }
 

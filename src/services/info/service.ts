@@ -33,18 +33,20 @@ export default class InfoService {
         return this.api.get('/ajax/core/version', {}).then(a => a.data).then(a => {
 
             if (a.auth && a.auth.console) {
-                a.auth.console.mobile_endpoint_url = this.api.host + "/ajax/users/console/openid?mobile=1"
+                a.auth.console.mobile_endpoint_url = this.api.host + "/login?mobile_login=1"
             }
             a.core_endpoint_url = this.api.host
             a.socket_endpoint = {
                 host: this.api.host,
                 path: "/socket"
             }
+            a.hostname = this.api.host.substr(this.api.host.indexOf("//")+2)
+            a.ver = '123'
             return a
         })
     }
 
     emoji() {
-        return new Promise(r=> r(emojiData))
+        return new Promise(r => r(emojiData))
     }
 }

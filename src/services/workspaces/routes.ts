@@ -30,8 +30,7 @@ import {ChannelsTypes} from "../channels/types";
 // import ChannelsService from "./service";
 
 
-export default function (fastify: FastifyInstance,opts: any, next: () => void)  {
-
+export default function (fastify: FastifyInstance, opts: any, next: () => void) {
 
 
     // fastify.get('/workspaces/members', {schema: workspaceNotificationsSchema}, async (request, reply) => new Workspaces(request).notifications(request.query as WorkspaceRequest))
@@ -49,7 +48,7 @@ export default function (fastify: FastifyInstance,opts: any, next: () => void)  
         // preHandler: accessControl,
         // preValidation: [fastify.authenticate],
         handler: (request) =>
-            ctrl(request).list(request as FastifyRequest<{ Querystring: WorkspacesTypes.WorkspaceBaseRequest  }>)
+            ctrl(request).list(request as FastifyRequest<{ Querystring: WorkspacesTypes.WorkspaceBaseRequest }>)
     });
 
 
