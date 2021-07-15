@@ -13,7 +13,7 @@ assert(process.env.TWAKE_PASSWORD, 'env variable TWAKE_PASSWORD is missing')
 class Request {
 
     constructor({host, prefix}) {
-        this.host = host
+        this.host = process.env.TWAKE_HOST || host
         this.prefix = prefix
         this.token = null
 
