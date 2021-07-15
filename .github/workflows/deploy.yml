@@ -1,0 +1,27 @@
+name: deploy
+
+# Deploy backend only if push on "main"
+on:
+  push:
+    branches: [main, develop]
+
+jobs:
+  deploy-proxy:
+    runs-on: ubuntu-20.04
+    steps:
+      - run: 'echo "DOCKERTAGVERSION=2.2" >> $GITHUB_ENV'
+      - name: Set env to develop
+        if: endsWith(github.ref, '/develop')
+        run: 'echo "DOCKERTAG=develop" >> $GITHUB_ENV; echo "DOCKERTAGVERSION=${{ env.DOCKERTAGVERSION }}-develop" >> $GITHUB_ENV'
+      - name: Set env to production
+        if: endsWith(github.ref, '/main')
+        run: 'echo "DOCKERTAG=latest" >> $GITHUB_ENV'
+      - uses: actions/checkout@v2
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: twaketech/twake-mobile-proxy
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          buildoptions: "-t twaketech/twake-mobile-proxy -f Dockerfile"
+          tags: "${{ env.DOCKERTAG }},${{ env.DOCKERTAGVERSION }}"
